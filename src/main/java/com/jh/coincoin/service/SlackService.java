@@ -38,7 +38,7 @@ public class SlackService {
     private final AdminService adminService;
     private final Slack slackClient = Slack.getInstance();
     private Map<String, IndicatorService> indicatorServiceMap;
-    private String webHookURL = "https://hooks.slack.com/services/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";
+    private final String webHookURL;
 
     @Autowired
     public void setIndicatorServiceMap(Set<IndicatorService> indicatorServiceSet) {
