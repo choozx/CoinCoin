@@ -21,4 +21,4 @@ spring:
     password: 1qw2!QW@
 
 slack:
-  token: ${slackToken}
+  token: ${SLACK_WEBHOOK_TOKEN}
