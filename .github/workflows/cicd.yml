@@ -37,7 +37,7 @@ jobs:
       - name: Docker image build
         run: |
           docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_TOKEN_KEY }}
-          docker build -t app
+          docker build -t app .
           docker tag app ${{ secrets.DOCKER_HUB_USERNAME }}/coincoin:latest
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/coincoin:latest
           
