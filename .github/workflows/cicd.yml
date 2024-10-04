@@ -38,7 +38,7 @@ jobs:
         run: docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/coincoin
 
       - name: Docker login
-          uses: docker/login-action@v2
+          uses: docker/login-action@v3.0.0
           with:
             username: ${{ secrets.DOCKER_HUB_USERNAME }}
             password: ${{ secrets.DOCKER_HUB_TOKEN_KEY }}
