@@ -118,6 +118,7 @@ public class CandleService {
     }
 
     private List<Candle> externalUpdate(Symbol symbol, long startTime, long endTime){
+        // FIXME 서버를 끄고 다시 바로 시작하면 시작시간이 종료시간보다 앞서는 버그 있음
         List<List<Object>> rawList = binanceFutureAPIService.getCandleList(symbol.getKey(), Interval.ONE_MINUTE.getName(), startTime, endTime);
 
         if (rawList ==  null)

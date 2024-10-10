@@ -20,5 +20,8 @@ spring:
     username: arc_admin
     password: 1qw2!QW@
 
+logging:
+  config: classpath:logback-local.xml
+
 slack:
   token: ${SLACK_WEBHOOK_TOKEN}
