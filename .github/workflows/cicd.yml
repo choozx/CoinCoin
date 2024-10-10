@@ -27,16 +27,14 @@ jobs:
           distribution: 'temurin'
 
       - name: make properties
-          run: |
-            cd ./src/main/resources
-            touch ./application-prod.yml
-            echo "${{ secrets.APPLICATION_PROD }}" > ./application-prod.yml
+      - run: cd ./src/main/resources
+      - run: touch ./application-prod.yml
+      - run: echo "${{ secrets.APPLICATION_PROD }}" > ./application-prod.yml
 
       - name: make logback
-          run: |
-            cd ./src/main/resources
-            touch ./logback-prod.xml
-            echo "${{ secrets.LOGBACK_PROD }}" > ./logback-prod.xml
+      - run: cd ./src/main/resources
+      - run: touch ./logback-prod.xml
+      - run: echo "${{ secrets.LOGBACK_PROD }}" > ./logback-prod.xml
 
       # Configure Gradle for optimal use in GitHub Actions, including caching of downloaded dependencies.
       # See: https://github.com/gradle/actions/blob/main/setup-gradle/README.md
