@@ -26,12 +26,16 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: make properties and logback
+      - name: make properties
           run: |
             cd ./src/main/resources
             touch ./application-prod.yml
-            touch ./logback-prod.xml
             echo "${{ secrets.APPLICATION_PROD }}" > ./application-prod.yml
+
+      - name: make logback
+          run: |
+            cd ./src/main/resources
+            touch ./logback-prod.xml
             echo "${{ secrets.LOGBACK_PROD }}" > ./logback-prod.xml
 
       # Configure Gradle for optimal use in GitHub Actions, including caching of downloaded dependencies.
