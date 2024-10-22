@@ -5,6 +5,8 @@ import com.jh.coincoin.util.CodeEnumFinder;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
+import java.util.Arrays;
+
 /**
  * Created by dale on 2024-09-11.
  */
@@ -20,6 +22,10 @@ public class BinanceType {
         Symbol(int code, String name) {
             this.code = code;
             this.name = name;
+        }
+
+        public static Symbol of(String name) {
+            return Arrays.stream(values()).filter(symbol -> symbol.name.equals(name)).findFirst().orElse(null);
         }
 
         @Override
@@ -68,6 +74,10 @@ public class BinanceType {
 
         public int getMinute() {
             return minute;
+        }
+
+        public static Interval of(String name) {
+            return Arrays.stream(values()).filter(interval -> interval.name.equals(name)).findFirst().orElse(null);
         }
     }
 

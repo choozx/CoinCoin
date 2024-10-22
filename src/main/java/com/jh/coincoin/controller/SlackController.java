@@ -23,15 +23,16 @@ public class SlackController {
     private final SlackService slackService;
 
 //    @PostMapping(value = "/slack/actions", produces = MediaType.APPLICATION_JSON_VALUE)
-//    public String handleActions(@RequestBody Slack.EventReq req){
+//    public String ConnectionTest(@RequestBody Slack.TestReq req){
 //        log.info(req.toString());
-//        return req.getToken();
+//        return req.getChallenge();
 //    }
 
     @PostMapping(value = "/slack/actions", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String handleActions(@RequestBody Slack.TestReq req){
+    public void handleActions(@RequestBody Slack.EventReq req){
         log.info(req.toString());
-        return req.getChallenge();
+
+        slackService.handleAction(req.getEvent());
     }
 
 }

@@ -47,13 +47,6 @@ public class ApiTest {
     }
 
     @Test
-    public void sendMessage(){
-        Map<String, String> message = new HashMap<>();
-        message.put("중본문", "소본문");
-        slackService.sendMessage("큰본문", message);
-    }
-
-    @Test
     public void intervalCandle() {
 //        candleService.manualUpdate(300);
 
