@@ -29,6 +29,10 @@ public class AdminEntity implements Persistable<Integer> {
     @Column(name = "value")
     private String value;
 
+    public void changeValue(String newValue) {
+        value = newValue;
+    }
+
     @Override
     public Integer getId() {
         return idx;

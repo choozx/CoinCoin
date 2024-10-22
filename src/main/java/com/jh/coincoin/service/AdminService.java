@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Created by dale on 2024-09-11.
@@ -53,20 +54,15 @@ public class AdminService {
         helpContext = rawAdminMap.get("HELP_CONTEXT");
     }
 
-//    public AdminService() {
-//        trackingSymbolList.add(Symbol.BTC_USDT);
-//        trackingSymbolList.add(Symbol.ETH_USDT);
-//
-//        trackingIndicatorNameList.add("RSI");
-//
-//        interval = Interval.FIFTEEN_MINUTE;
-//
-//        rsiSetting = Pair.of(30.0, 70.0);
-//        rsiPeriod = 14;
-//    }
+    public void setSymbolList(Symbol symbol) {
+        // TODO 예외처리 이미 추가되있는경우, 최대치 넘을경우
 
-    public void setSymbol() {
+        trackingSymbolList.add(symbol);
 
+        AdminEntity adminEntity = adminRepository.findByName("TRACKING_SYMBOL");
+        adminEntity.changeValue(trackingSymbolList.stream().map(String::valueOf).collect(Collectors.joining("|")));
+
+        adminRepository.saveAndFlush(adminEntity);
     }
 
     public void setIndicator() {
