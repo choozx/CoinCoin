@@ -54,13 +54,24 @@ public class AdminService {
         helpContext = rawAdminMap.get("HELP_CONTEXT");
     }
 
-    public void setSymbolList(Symbol symbol) {
+    public void setSymbol(Symbol symbol) {
         // TODO 예외처리 이미 추가되있는경우, 최대치 넘을경우
 
         trackingSymbolList.add(symbol);
 
         AdminEntity adminEntity = adminRepository.findByName("TRACKING_SYMBOL");
-        adminEntity.changeValue(trackingSymbolList.stream().map(String::valueOf).collect(Collectors.joining("|")));
+        List<Integer> symbolCodeList = trackingSymbolList.stream().map(Symbol::getCode).toList();
+        adminEntity.changeValue(symbolCodeList.stream().map(String::valueOf).collect(Collectors.joining("|")));
+
+        adminRepository.saveAndFlush(adminEntity);
+    }
+
+    public void deleteSymbol(Symbol symbol) {
+        trackingSymbolList.remove(symbol);
+
+        AdminEntity adminEntity = adminRepository.findByName("TRACKING_SYMBOL");
+        List<Integer> symbolCodeList = trackingSymbolList.stream().map(Symbol::getCode).toList();
+        adminEntity.changeValue(symbolCodeList.stream().map(String::valueOf).collect(Collectors.joining("|")));
 
         adminRepository.saveAndFlush(adminEntity);
     }
@@ -80,10 +91,10 @@ public class AdminService {
 
     private List<Symbol> parseSymbol() {
         String rawSymbol = rawAdminMap.get("TRACKING_SYMBOL");
-        String[] symbolIndex = rawSymbol.split(Pattern.quote("|"));
+        String[] symbolCodeIndex = rawSymbol.split(Pattern.quote("|"));
         List<Symbol> symbolList = new ArrayList<>();
-        for (String s : symbolIndex) {
-            Symbol symbol = Symbol.of(s);
+        for (String code : symbolCodeIndex) {
+            Symbol symbol = Symbol.of(Integer.parseInt(code));
             symbolList.add(symbol);
         }
         return symbolList;

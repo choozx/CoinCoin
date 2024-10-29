@@ -15,6 +15,10 @@ public class BinanceType {
     public enum Symbol implements CodeEnum<Integer> {
         BTC_USDT(1,"BTCUSDT"),
         ETH_USDT(2, "ETHUSDT"),
+        SOL_USDT(3, "SOLUSDT"),
+        XRP_USDT(4, "XRPUSDT"),
+        DOGE_USDT(5, "DOGEUSDT"),
+        TRX_USDT(6, "TRXUSDT"),
         ;
 
         private int code;
@@ -26,6 +30,10 @@ public class BinanceType {
 
         public static Symbol of(String name) {
             return Arrays.stream(values()).filter(symbol -> symbol.name.equals(name)).findFirst().orElse(null);
+        }
+
+        public static Symbol of(int code) {
+            return Arrays.stream(values()).filter(symbol -> symbol.code == code).findFirst().orElse(null);
         }
 
         @Override

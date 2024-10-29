@@ -6,6 +6,8 @@ import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.BinanceType.Interval;
 import com.jh.coincoin.repo.CandleRepository;
 import com.jh.coincoin.util.DateTimeUtil;
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -26,21 +28,25 @@ import static com.jh.coincoin.model.consts.GlobalConst.*;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class CandleService {
 
     private final BinanceFutureAPIService binanceFutureAPIService;
     private final AdminService adminService;
     private final CandleRepository candleRepository;
 
-    private Map<Symbol, TreeMap<Long, Candle>> allSymbolMap;
+    private Map<Symbol, TreeMap<Long, Candle>> allSymbolMap = new HashMap<>();
 
-    public CandleService(BinanceFutureAPIService binanceFutureAPIService, AdminService adminService, CandleRepository candleRepository) {
-        this.binanceFutureAPIService = binanceFutureAPIService;
-        this.adminService = adminService;
-        this.candleRepository = candleRepository;
+//    public CandleService(BinanceFutureAPIService binanceFutureAPIService, AdminService adminService, CandleRepository candleRepository) {
+//        this.binanceFutureAPIService = binanceFutureAPIService;
+//        this.adminService = adminService;
+//        this.candleRepository = candleRepository;
+//
+//        this.allSymbolMap = new HashMap<>();
+//    }
 
-        this.allSymbolMap = new HashMap<>();
-
+    @PostConstruct
+    public void init() {
         load2DB();
         update();
     }
@@ -83,22 +89,27 @@ public class CandleService {
 
         long now = DateTimeUtil.getCurrentTimeMillis();
         long endTime = DateTimeUtil.toEpochMilli(DateTimeUtil.toDateTime(now).truncatedTo(ChronoUnit.MINUTES).minusMinutes(1));
-        List<Candle> newCandleList = new ArrayList<>();
+        List<Candle> allNewCandleList = new ArrayList<>();
+        Map<Symbol, Integer> logMap = new HashMap<>();
         for (Symbol symbol : symbolList) {
-            TreeMap<Long, Candle> candleMap = allSymbolMap.get(symbol);
+            TreeMap<Long, Candle> candleMap = allSymbolMap.computeIfAbsent(symbol, k -> new TreeMap<>());
+//            TreeMap<Long, Candle> candleMap = allSymbolMap.get(symbol);
+//            if (candleMap == null)
+//                allSymbolMap.put(symbol, new TreeMap<>());
 
             long startSeedTime = candleMap.isEmpty() ? DateTimeUtil.toEpochMilli(DateTimeUtil.toDateTime(now).truncatedTo(ChronoUnit.MINUTES).minusMinutes(MAX_STORAGE_CANDLE_COUNT)) : candleMap.firstKey();
             long startTime = DateTimeUtil.toEpochMilli(DateTimeUtil.toDateTime(startSeedTime).plusMinutes(1));
 
             log.info("now : {} | start:{} | end:{}", DateTimeUtil.toDateTime(now), DateTimeUtil.toDateTime(startTime), DateTimeUtil.toDateTime(endTime));
-            List<Candle> candleList = externalUpdate(symbol, startTime, endTime);
-            log.info("API 로드 - {}:{}", symbol, candleList.size());
+            List<Candle> newCandleList = externalUpdate(symbol, startTime, endTime);
+            logMap.put(symbol, newCandleList.size());
 
-            newCandleList.addAll(candleList);
+            allNewCandleList.addAll(newCandleList);
         }
 
-        saveCandleList(newCandleList);
+        saveCandleList(allNewCandleList);
 
+        logMap.forEach((symbol, size) -> log.info("{} : {}개 로드", symbol, size));
         log.info("캔들 로드 완료");
     }
 
