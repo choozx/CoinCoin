@@ -1,5 +1,6 @@
 package com.jh.coincoin.model.type;
 
+import com.jh.coincoin.support.ServerException;
 import com.jh.coincoin.util.CodeEnum;
 
 import java.util.Arrays;
@@ -34,7 +35,8 @@ public class SlackType {
         }
 
         public static Command of(String stringCommand) {
-            return Arrays.stream(values()).filter(command -> command.typing.equals(stringCommand)).findFirst().orElse(null);
+            return Arrays.stream(values()).filter(command -> command.typing.equals(stringCommand)).findFirst()
+                    .orElseThrow(() -> new ServerException(ErrorType.WRONG_COMMAND, "찾을 수 없는 명령어"));
         }
     }
 }

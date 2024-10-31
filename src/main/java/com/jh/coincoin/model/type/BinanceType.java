@@ -1,5 +1,6 @@
 package com.jh.coincoin.model.type;
 
+import com.jh.coincoin.support.ServerException;
 import com.jh.coincoin.util.CodeEnum;
 import com.jh.coincoin.util.CodeEnumFinder;
 import jakarta.persistence.AttributeConverter;
@@ -29,11 +30,13 @@ public class BinanceType {
         }
 
         public static Symbol of(String name) {
-            return Arrays.stream(values()).filter(symbol -> symbol.name.equals(name)).findFirst().orElse(null);
+            return Arrays.stream(values()).filter(symbol -> symbol.name.equals(name)).findFirst()
+                    .orElseThrow(() -> new ServerException(ErrorType.COMMON_FAIL, "등록되지 않은 코인"));
         }
 
         public static Symbol of(int code) {
-            return Arrays.stream(values()).filter(symbol -> symbol.code == code).findFirst().orElse(null);
+            return Arrays.stream(values()).filter(symbol -> symbol.code == code).findFirst()
+                    .orElseThrow(() -> new ServerException(ErrorType.COMMON_FAIL, "등록되지 않은 코인"));
         }
 
         @Override
@@ -85,7 +88,8 @@ public class BinanceType {
         }
 
         public static Interval of(String name) {
-            return Arrays.stream(values()).filter(interval -> interval.name.equals(name)).findFirst().orElse(null);
+            return Arrays.stream(values()).filter(interval -> interval.name.equals(name)).findFirst()
+                    .orElseThrow(() -> new ServerException(ErrorType.COMMON_FAIL, "지원하지 않는 캔들봉"));
         }
     }
 

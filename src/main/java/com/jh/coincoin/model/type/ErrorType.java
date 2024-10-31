@@ -9,6 +9,7 @@ public enum ErrorType {
 
     WRONG_PARAMETER(100),
     WRONG_COMMAND(101),
+    OVERFLOW_CANDLE_COUNT(102),
     ;
 
     private int code;

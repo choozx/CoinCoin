@@ -1,9 +1,12 @@
 package com.jh.coincoin.service;
 
 import com.jh.coincoin.entity.AdminEntity;
+import com.jh.coincoin.model.consts.GlobalConst;
 import com.jh.coincoin.model.type.BinanceType.Interval;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
+import com.jh.coincoin.model.type.ErrorType;
 import com.jh.coincoin.repo.AdminRepository;
+import com.jh.coincoin.support.ServerException;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -55,7 +58,8 @@ public class AdminService {
     }
 
     public void setSymbol(Symbol symbol) {
-        // TODO 예외처리 이미 추가되있는경우, 최대치 넘을경우
+        if (trackingSymbolList.size() >= GlobalConst.MAX_TRACKING_SYMBOL_COUNT)
+            throw new ServerException(ErrorType.OVERFLOW_CANDLE_COUNT, "추가 가능한 코인갯수 초과");
 
         trackingSymbolList.add(symbol);
 
