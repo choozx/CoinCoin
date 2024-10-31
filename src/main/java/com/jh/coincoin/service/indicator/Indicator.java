@@ -8,7 +8,7 @@ import com.jh.coincoin.model.type.BinanceType.Interval;
  * Created by dale on 2024-09-11.
  */
 
-public interface IndicatorService {
+public interface Indicator {
     public String getName();
 
     public void calc();

@@ -21,7 +21,7 @@ import java.util.Map;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class RSIIndicatorService implements IndicatorService {
+public class RSIIndicator implements Indicator {
 
     private final CandleService candleService;
     private final AdminService adminService;

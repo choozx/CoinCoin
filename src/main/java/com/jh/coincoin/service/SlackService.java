@@ -1,10 +1,7 @@
 package com.jh.coincoin.service;
 
-import com.jh.coincoin.model.type.BinanceType.Symbol;
-import com.jh.coincoin.model.type.BinanceType.Interval;
 import com.jh.coincoin.model.type.ErrorType;
 import com.jh.coincoin.model.type.SlackType.Command;
-import com.jh.coincoin.service.indicator.IndicatorService;
 import com.jh.coincoin.model.Slack.Event;
 import com.jh.coincoin.service.slack.ActionHandler;
 import com.jh.coincoin.support.ServerException;
@@ -18,10 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,46 +34,13 @@ import static com.slack.api.webhook.WebhookPayloads.payload;
 @RequiredArgsConstructor
 public class SlackService {
 
-    private final AdminService adminService;
     private final Slack slackClient = Slack.getInstance();
-    private Map<String, IndicatorService> indicatorServiceMap;
     private Map<Command, ActionHandler> actionHandlerMap;
     private final String webHookURL;
 
     @Autowired
-    public void setIndicatorServiceMap(Set<IndicatorService> indicatorServiceSet) {
-        this.indicatorServiceMap = indicatorServiceSet.stream().collect(Collectors.toMap(IndicatorService::getName, Function.identity()));
-    }
-
-    @Autowired
     public void setActionHandlerMap(Set<ActionHandler> actionHandlerSet) {
         this.actionHandlerMap = actionHandlerSet.stream().collect(Collectors.toMap(ActionHandler::getCommand, Function.identity()));
-    }
-
-    // FIXME 여기의 책임이 아닌거 같음
-    public void sendAlert() {
-        Interval interval = adminService.getInterval();
-        if (!timeChecker(interval))
-            return;
-
-        List<String> indicatorNameList = adminService.getTrackingIndicatorNameList();
-        List<Symbol> symbolList = adminService.getTrackingSymbolList();
-
-        Map<String, String> messages = new HashMap<>();
-        for (String name : indicatorNameList) {
-            for (Symbol symbol : symbolList) {
-                IndicatorService indicator = indicatorServiceMap.get(name);
-                String result = indicator.getLastFigure(symbol, interval);
-
-                if (adminService.isDetect(name, result)) {
-                    String message = indicator.wrappingMessage(symbol, result);
-                    messages.put(name, message);
-                }
-            }
-        }
-
-        if (messages.size() != 0)
-            sendMessage("지표 감지", messages);
     }
 
     public void handleAction(Event event) {
@@ -140,18 +102,6 @@ public class SlackService {
                 .value(value)
                 .valueShortEnough(false)
                 .build();
-    }
-
-    private boolean timeChecker(Interval interval) {
-        int minute = LocalDateTime.now().getMinute();
-
-        if (interval == Interval.ONE_MINUTE)
-            return true;
-
-        if (interval == Interval.HOUR && minute == 0)
-            return true;
-
-        return minute / interval.getMinute() == 0;
     }
 
     private Pair<Command, List<String>> analyzeCommand(String rawCommand) {

@@ -2,8 +2,7 @@ package com.jh.coincoin;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.BinanceType.Interval;
 import com.jh.coincoin.service.CandleService;
-import com.jh.coincoin.service.SlackService;
-import com.jh.coincoin.service.indicator.RSIIndicatorService;
+import com.jh.coincoin.service.indicator.RSIIndicator;
 import com.jh.coincoin.util.DateTimeUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,9 +29,8 @@ public class ApiTest {
 
     private final String baseUrl = "https://fapi.binance.com";
     private final RestClient restClient = RestClient.create();
-    private final SlackService slackService;
     private final CandleService candleService;
-    private final RSIIndicatorService rsiIndicatorService;
+    private final RSIIndicator rsiIndicatorService;
 
 
     @Test

@@ -14,13 +14,12 @@ import org.springframework.stereotype.Service;
 public class Scheduler {
 
     private final CandleService candleService;
-    private final SlackService slackService;
+    private final IndicatorService indicatorService;
 
     // 매분 5초 때마다 실행
     @Scheduled(cron = "2 * * * * *")
     public void update(){
         candleService.update();
-
-        slackService.sendAlert();
+        indicatorService.sendAlert();
     }
 }
