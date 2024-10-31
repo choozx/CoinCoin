@@ -37,14 +37,6 @@ public class CandleService {
 
     private Map<Symbol, TreeMap<Long, Candle>> allSymbolMap = new HashMap<>();
 
-//    public CandleService(BinanceFutureAPIService binanceFutureAPIService, AdminService adminService, CandleRepository candleRepository) {
-//        this.binanceFutureAPIService = binanceFutureAPIService;
-//        this.adminService = adminService;
-//        this.candleRepository = candleRepository;
-//
-//        this.allSymbolMap = new HashMap<>();
-//    }
-
     @PostConstruct
     public void init() {
         load2DB();
@@ -93,9 +85,6 @@ public class CandleService {
         Map<Symbol, Integer> logMap = new HashMap<>();
         for (Symbol symbol : symbolList) {
             TreeMap<Long, Candle> candleMap = allSymbolMap.computeIfAbsent(symbol, k -> new TreeMap<>());
-//            TreeMap<Long, Candle> candleMap = allSymbolMap.get(symbol);
-//            if (candleMap == null)
-//                allSymbolMap.put(symbol, new TreeMap<>());
 
             long startSeedTime = candleMap.isEmpty() ? DateTimeUtil.toEpochMilli(DateTimeUtil.toDateTime(now).truncatedTo(ChronoUnit.MINUTES).minusMinutes(MAX_STORAGE_CANDLE_COUNT)) : candleMap.firstKey();
             long startTime = DateTimeUtil.toEpochMilli(DateTimeUtil.toDateTime(startSeedTime).plusMinutes(1));
