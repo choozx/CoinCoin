@@ -1,6 +1,9 @@
-FROM openjdk:8-jdk-alpine
+FROM openjdk:17-jdk-slim
 CMD ["./gradlew", "clean", "build"]
-VOLUME /tmp
-ARG JAR_FILE=build/libs/*.jar
-COPY ${JAR_FILE} app.jar
-ENTRYPOINT ["java","-jar","/app.jar"]
+WORKDIR /tmp
+COPY build/libs/app.jar /tmp/app.jar
+COPY coin-config/application-prod.yml /app/config/application-prod.yml
+COPY coin-config/logback.xml /app/config/logback.xml
+ENV SPRING_CONFIG_LOCATION=/app/config/application.yml
+ENV LOGGING_CONFIG=/app/config/logback.xml
+ENTRYPOINT ["java","-jar","/tmp/app.jar"]
