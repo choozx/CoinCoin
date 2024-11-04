@@ -26,11 +26,11 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - uses: actions/checkout@v4
       - name: Checkout config-repo
-          uses: actions/checkout@v4
-          with:
-            token: ${{secrets.CONFIG_REPO_TOKEN}}
-            submodules: true
+        with:
+          token: ${{secrets.CONFIG_REPO_TOKEN}}
+          submodules: true
 
 #      - uses: actions/checkout@v4
 #      - run: cd ./src/main/resources
