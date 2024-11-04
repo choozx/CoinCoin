@@ -1,0 +1,3 @@
+[submodule "src/main/resources/coin-config"]
+	path = src/main/resources/coin-config
+	url = https://github.com/choozx/coin-config.git
