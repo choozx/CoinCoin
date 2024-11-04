@@ -26,15 +26,21 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - uses: actions/checkout@v4
-      - run: cd ./src/main/resources
-      - run: touch ./application-prod.yml
-      - run: echo "${{ secrets.APPLICATION_PROD }}" > ./application-prod.yml
+      - name: Checkout config-repo
+          uses: actions/checkout@v4
+          with:
+            token: ${{secrets.CONFIG_REPO_TOKEN}}
+            submodules: true
 
-      - uses: actions/checkout@v4
-      - run: cd ./src/main/resources
-      - run: touch ./logback-prod.xml
-      - run: echo "${{ secrets.LOGBACK_PROD }}" > ./logback-prod.xml
+#      - uses: actions/checkout@v4
+#      - run: cd ./src/main/resources
+#      - run: touch ./application-prod.yml
+#      - run: echo "${{ secrets.APPLICATION_PROD }}" > ./application-prod.yml
+#
+#      - uses: actions/checkout@v4
+#      - run: cd ./src/main/resources
+#      - run: touch ./logback-prod.xml
+#      - run: echo "${{ secrets.LOGBACK_PROD }}" > ./logback-prod.xml
 #      - name: make properties
 #          run: |
 #            cd ./src/main/resources
