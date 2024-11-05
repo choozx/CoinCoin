@@ -7,4 +7,4 @@ COPY ${JAR_FILE} app.jar
 #COPY coin-config/logback-prod.xml /app/config/logback-prod.xml
 #ENV SPRING_CONFIG_LOCATION=/app/config/application-prod.yml
 #ENV LOGGING_CONFIG=/app/config/logback-prod.xml
-ENTRYPOINT ["java","-Dspring.profiles.active=prod","-jar","/app.jar"]
+ENTRYPOINT ["java","-Dspring.config.location=classpath:/coin-config/","-Dspring.profiles.active=prod","-jar","/app.jar"]
