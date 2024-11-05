@@ -4,9 +4,7 @@ import com.jh.coincoin.model.Slack;
 import com.jh.coincoin.service.SlackService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,17 +20,15 @@ public class SlackController {
 
     private final SlackService slackService;
 
-//    @PostMapping(value = "/slack/actions", produces = MediaType.APPLICATION_JSON_VALUE)
-//    public String ConnectionTest(@RequestBody Slack.TestReq req){
-//        log.info(req.toString());
-//        return req.getChallenge();
-//    }
-
     @PostMapping(value = "/slack/actions", produces = MediaType.APPLICATION_JSON_VALUE)
-    public void handleActions(@RequestBody Slack.EventReq req){
+    public String handleActions(@RequestBody Slack.EventReq req){
         log.info(req.toString());
 
-        slackService.handleAction(req.getEvent());
+        if (req.getChallenge() == null) {
+            slackService.handleAction(req.getEvent());
+        }
+
+        return req.getChallenge();
     }
 
 }

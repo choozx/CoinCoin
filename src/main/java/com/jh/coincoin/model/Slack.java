@@ -24,6 +24,8 @@ public class Slack {
     @Data
     public static class EventReq{
         private String token;
+        private String challenge;
+        private String type;
         @JsonProperty("team_id")
         private String teamId;
         @JsonProperty("api_app_id")
