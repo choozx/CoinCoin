@@ -75,6 +75,8 @@ public class RSIIndicator implements Indicator {
 
         double rs = au / ad;
         double rsi = 100 - (100 / (1 + rs));
+
+        log.info("RSI :: {} -> {}", symbol, rsi);
         return String.format("%.2f", rsi);
     }
 

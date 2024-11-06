@@ -65,6 +65,6 @@ public class IndicatorService {
         if (interval == BinanceType.Interval.HOUR && minute == 0)
             return true;
 
-        return minute / interval.getMinute() == 0;
+        return minute % interval.getMinute() == 0;
     }
 }

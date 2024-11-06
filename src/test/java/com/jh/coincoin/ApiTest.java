@@ -1,4 +1,5 @@
 package com.jh.coincoin;
+import com.jh.coincoin.model.type.BinanceType;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.BinanceType.Interval;
 import com.jh.coincoin.service.CandleService;
@@ -88,5 +89,21 @@ public class ApiTest {
 
         long epochMilli = DateTimeUtil.toEpochMilli(minus);
         log.info("result : {}", epochMilli);
+    }
+
+    @Test
+    public void cccc(){
+        Interval interval = Interval.FIVE_MINUTE;
+        boolean result = false;
+        int minute = LocalDateTime.now().getMinute();
+
+        if (interval == BinanceType.Interval.ONE_MINUTE)
+            result = true;
+
+        if (interval == BinanceType.Interval.HOUR && minute == 0)
+            result = true;
+
+        result = minute % interval.getMinute() == 0;
+        log.info("################### : {}", result);
     }
 }
