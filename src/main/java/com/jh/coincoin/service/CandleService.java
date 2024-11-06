@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import static com.jh.coincoin.model.consts.GlobalConst.MAX_STORAGE_CANDLE_COUNT;
+import static com.jh.coincoin.model.consts.GlobalConst.MAX_UPDATE_ONE_TIME;
 
 /**
  * Created by dale on 2024-09-07.
@@ -86,7 +87,7 @@ public class CandleService {
         for (Symbol symbol : symbolList) {
             TreeMap<Long, Candle> candleMap = allSymbolMap.get(symbol);
 
-            long startSeedTime = candleMap.isEmpty() ? DateTimeUtil.toEpochMilli(DateTimeUtil.toDateTime(now).truncatedTo(ChronoUnit.MINUTES).minusMinutes(MAX_STORAGE_CANDLE_COUNT)) : candleMap.firstKey();
+            long startSeedTime = candleMap.isEmpty() ? DateTimeUtil.toEpochMilli(DateTimeUtil.toDateTime(now).truncatedTo(ChronoUnit.MINUTES).minusMinutes(MAX_UPDATE_ONE_TIME)) : candleMap.firstKey();
             long startTime = DateTimeUtil.toEpochMilli(DateTimeUtil.toDateTime(startSeedTime).plusMinutes(1));
 
             log.info("now : {} | start:{} | end:{}", DateTimeUtil.toDateTime(now), DateTimeUtil.toDateTime(startTime), DateTimeUtil.toDateTime(endTime));
@@ -134,7 +135,7 @@ public class CandleService {
     }
 
     private void load2DB(Symbol symbol, long targetTimestamp) {
-        List<CandleEntity> candleEntityList = candleRepository.findTop500ByOpenTimeAfterAndSymbol(targetTimestamp, symbol);
+        List<CandleEntity> candleEntityList = candleRepository.findTop12000ByOpenTimeAfterAndSymbol(targetTimestamp, symbol);
         TreeMap<Long, Candle> candleMap = new TreeMap<>(Comparator.reverseOrder());
         candleEntityList.forEach(entity -> candleMap.put(entity.getOpenTime(), new Candle(entity)));
 
