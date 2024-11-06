@@ -3,6 +3,7 @@ package com.jh.coincoin.service.slack.actions;
 import com.jh.coincoin.model.type.BinanceType;
 import com.jh.coincoin.model.type.SlackType.Command;
 import com.jh.coincoin.service.AdminService;
+import com.jh.coincoin.service.CandleService;
 import com.jh.coincoin.service.slack.ActionHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ import java.util.Map;
 public class DeleteSymbolAction implements ActionHandler {
 
     private final AdminService adminService;
+    private final CandleService candleService;
 
     @Override
     public Command getCommand() {
@@ -32,6 +34,7 @@ public class DeleteSymbolAction implements ActionHandler {
         BinanceType.Symbol symbol = BinanceType.Symbol.of(symbolString);
 
         adminService.deleteSymbol(symbol);
+        candleService.removeTrackingCandle(symbol);
 
         Map<String, String> resText = new HashMap<>();
         resText.put("SYMBOL 제거완료", symbol.getKey());
