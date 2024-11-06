@@ -94,6 +94,13 @@ public class CandleService {
             for (Candle candle : newCandleList) {
                 candleMap.put(candle.getOpenTime(), candle);
             }
+
+            if (candleMap.size() > MAX_STORAGE_CANDLE_COUNT) {
+                int overflowCount = candleMap.size() - MAX_STORAGE_CANDLE_COUNT;
+                for (int i = 0; i < overflowCount; i++) {
+                    candleMap.pollLastEntry();
+                }
+            }
             logMap.put(symbol, newCandleList.size());
 
             allNewCandleList.addAll(newCandleList);
