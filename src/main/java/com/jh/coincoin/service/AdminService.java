@@ -48,7 +48,7 @@ public class AdminService {
         adminEntityList.forEach(admin -> rawAdminMap.put(admin.getName(), admin.getValue()));
 
         trackingSymbolList = parseSymbol();
-        trackingIndicatorNameList = parseList("TRACKING_INDICATOR_NAME");
+        trackingIndicatorNameList = parseList(rawAdminMap.get("TRACKING_INDICATOR_NAME"));
 
         interval = Interval.of(rawAdminMap.get("INTERVAL"));
         rsiSetting = parsePairDouble(rawAdminMap.get("RSI_SETTING"));

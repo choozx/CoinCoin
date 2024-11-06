@@ -20,6 +20,6 @@ public class Scheduler {
     @Scheduled(cron = "2 * * * * *")
     public void update(){
         candleService.update();
-        indicatorService.sendAlert();
+        indicatorService.detectIndicator();
     }
 }

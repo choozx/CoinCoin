@@ -134,7 +134,7 @@ public class CandleService {
     }
 
     private void load2DB(Symbol symbol, long targetTimestamp) {
-        List<CandleEntity> candleEntityList = candleRepository.findTop100ByOpenTimeAfterAndSymbol(targetTimestamp, symbol);
+        List<CandleEntity> candleEntityList = candleRepository.findTop1000ByOpenTimeAfterAndSymbol(targetTimestamp, symbol);
         TreeMap<Long, Candle> candleMap = new TreeMap<>(Comparator.reverseOrder());
         candleEntityList.forEach(entity -> candleMap.put(entity.getOpenTime(), new Candle(entity)));
 

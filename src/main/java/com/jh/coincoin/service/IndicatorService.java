@@ -31,7 +31,7 @@ public class IndicatorService {
         this.indicatorServiceMap = indicatorSet.stream().collect(Collectors.toMap(Indicator::getName, Function.identity()));
     }
 
-    public void sendAlert() {
+    public void detectIndicator() {
         BinanceType.Interval interval = adminService.getInterval();
         if (!timeChecker(interval))
             return;
