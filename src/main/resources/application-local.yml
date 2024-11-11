@@ -17,8 +17,8 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:20003/coin?serverTimezone=UTC&characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true
-    username: arc_admin
-    password: 1qw2!QW@
+    username: dale
+    password: 0000
 
 logging:
   config: classpath:logback-local.xml
