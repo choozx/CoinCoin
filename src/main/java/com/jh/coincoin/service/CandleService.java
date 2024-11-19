@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -21,7 +20,6 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import static com.jh.coincoin.model.consts.GlobalConst.MAX_STORAGE_CANDLE_COUNT;
-import static com.jh.coincoin.model.consts.GlobalConst.MAX_UPDATE_ONE_TIME;
 
 /**
  * Created by dale on 2024-09-07.
@@ -41,7 +39,6 @@ public class CandleService {
     @PostConstruct
     public void init() {
         allSymbolLoad2DB();
-        update();
     }
 
     public Map<Long, Candle> getCandleListPerInterval(Symbol symbol, Interval interval) {
@@ -80,36 +77,12 @@ public class CandleService {
     public void update() {
         List<Symbol> symbolList = adminService.getTrackingSymbolList();
 
-        long now = DateTimeUtil.getCurrentTimeMillis();
-        long endTime = DateTimeUtil.toEpochMilli(DateTimeUtil.toDateTime(now).truncatedTo(ChronoUnit.MINUTES).minusMinutes(1));
-        List<Candle> allNewCandleList = new ArrayList<>();
-        Map<Symbol, Integer> logMap = new HashMap<>();
         for (Symbol symbol : symbolList) {
             TreeMap<Long, Candle> candleMap = allSymbolMap.get(symbol);
-
-            long startSeedTime = candleMap.isEmpty() ? DateTimeUtil.toEpochMilli(DateTimeUtil.toDateTime(now).truncatedTo(ChronoUnit.MINUTES).minusMinutes(MAX_UPDATE_ONE_TIME)) : candleMap.firstKey();
-            long startTime = DateTimeUtil.toEpochMilli(DateTimeUtil.toDateTime(startSeedTime).plusMinutes(1));
-
-            log.info("now : {} | start:{} | end:{}", DateTimeUtil.toDateTime(now), DateTimeUtil.toDateTime(startTime), DateTimeUtil.toDateTime(endTime));
-            List<Candle> newCandleList = externalUpdate(symbol, startTime, endTime);
-            for (Candle candle : newCandleList) {
-                candleMap.put(candle.getOpenTime(), candle);
-            }
-
-            if (candleMap.size() > MAX_STORAGE_CANDLE_COUNT) {
-                int overflowCount = candleMap.size() - MAX_STORAGE_CANDLE_COUNT;
-                for (int i = 0; i < overflowCount; i++) {
-                    candleMap.pollLastEntry();
-                }
-            }
-            logMap.put(symbol, newCandleList.size());
-
-            allNewCandleList.addAll(newCandleList);
+            long lastOpenTime = candleMap.firstKey();
+            load2DB(symbol, lastOpenTime);
         }
 
-        saveCandleList(allNewCandleList);
-
-        logMap.forEach((symbol, size) -> log.info("{} : {}개 로드", symbol, size));
         log.info("캔들 로드 완료");
     }
 
@@ -135,39 +108,11 @@ public class CandleService {
     }
 
     private void load2DB(Symbol symbol, long targetTimestamp) {
-        List<CandleEntity> candleEntityList = candleRepository.findTop12000ByOpenTimeAfterAndSymbol(targetTimestamp, symbol);
-        TreeMap<Long, Candle> candleMap = new TreeMap<>(Comparator.reverseOrder());
+        List<CandleEntity> candleEntityList = candleRepository.findAllByOpenTimeAfterAndSymbol(targetTimestamp, symbol);
+        TreeMap<Long, Candle> candleMap = allSymbolMap.getOrDefault(symbol, new TreeMap<>(Comparator.reverseOrder()));
         candleEntityList.forEach(entity -> candleMap.put(entity.getOpenTime(), new Candle(entity)));
 
         allSymbolMap.put(symbol, candleMap);
-        log.info("DB 로드 - {}:{}", symbol, candleMap.size());
-    }
-
-    private List<Candle> externalUpdate(Symbol symbol, long startTime, long endTime) {
-        // FIXME 서버를 끄고 다시 바로 시작하면 시작시간이 종료시간보다 앞서는 버그 있음
-        List<List<Object>> rawList = binanceFutureAPIService.getCandleList(symbol.getKey(), Interval.ONE_MINUTE.getName(), startTime, endTime);
-
-        if (rawList == null)
-            return new ArrayList<>();
-
-        Map<Long, Candle> candleMap = allSymbolMap.get(symbol);
-        List<Candle> newCandleList = new ArrayList<>();
-        for (var rawCandle : rawList) {
-            Candle candle = new Candle(symbol, rawCandle);
-            candleMap.put(candle.getOpenTime(), candle);
-            newCandleList.add(candle);
-        }
-
-        return newCandleList;
-    }
-
-    private void saveCandleList(List<Candle> candleList) {
-        List<CandleEntity> candleEntityList = new ArrayList<>();
-        for (var candle : candleList) {
-            CandleEntity e = CandleEntity.create(candle);
-            candleEntityList.add(e);
-        }
-
-        candleRepository.saveAllAndFlush(candleEntityList);
+        log.info("DB 로드 - {}:{}", symbol, candleEntityList.size());
     }
 }

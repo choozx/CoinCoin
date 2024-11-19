@@ -35,7 +35,7 @@ dependencies {
     implementation("com.slack.api:bolt:1.42.0")
     implementation("com.slack.api:bolt-servlet:1.42.0")
     implementation("com.slack.api:bolt-jetty:1.42.0")
-    implementation("mysql:mysql-connector-java:8.0.19")
+    implementation("com.mysql:mysql-connector-j:8.2.0")
     implementation("org.jboss.logging:jboss-logging:3.4.1.Final")
 }
 

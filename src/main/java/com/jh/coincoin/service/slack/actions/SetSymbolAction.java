@@ -33,7 +33,7 @@ public class SetSymbolAction implements ActionHandler {
         String symbolString = commandContextList.get(0);
         Symbol symbol = Symbol.of(symbolString);
 
-        candleService.SymbolLoad2DB(symbol);
+        candleService.SymbolLoad2DB(symbol);    // FIXME 굳이 여기서 로드 해줘야할까? 어차피 스케쥴러 돌면 로드 할텐데
         adminService.setSymbol(symbol);
 
         Map<String, String> resText = new HashMap<>();

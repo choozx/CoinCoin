@@ -11,5 +11,5 @@ import java.util.List;
  */
 public interface CandleRepository extends JpaRepository<CandleEntity, Long> {
 
-    List<CandleEntity> findTop12000ByOpenTimeAfterAndSymbol(long openTime, BinanceType.Symbol symbol);
+    List<CandleEntity> findAllByOpenTimeAfterAndSymbol(long openTime, BinanceType.Symbol symbol);
 }
