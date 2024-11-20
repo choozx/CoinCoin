@@ -6,6 +6,5 @@ package com.jh.coincoin.model.consts;
 public class GlobalConst {
 
     public static final int MAX_STORAGE_CANDLE_COUNT = 12000;
-    public static final int MAX_UPDATE_ONE_TIME = 500;
     public static final int MAX_TRACKING_SYMBOL_COUNT = 5;
 }

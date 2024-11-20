@@ -30,7 +30,6 @@ import static com.jh.coincoin.model.consts.GlobalConst.MAX_STORAGE_CANDLE_COUNT;
 @RequiredArgsConstructor
 public class CandleService {
 
-    private final BinanceFutureAPIService binanceFutureAPIService;
     private final AdminService adminService;
     private final CandleRepository candleRepository;
 
@@ -111,6 +110,10 @@ public class CandleService {
         List<CandleEntity> candleEntityList = candleRepository.findAllByOpenTimeAfterAndSymbol(targetTimestamp, symbol);
         TreeMap<Long, Candle> candleMap = allSymbolMap.getOrDefault(symbol, new TreeMap<>(Comparator.reverseOrder()));
         candleEntityList.forEach(entity -> candleMap.put(entity.getOpenTime(), new Candle(entity)));
+
+        while (candleMap.size() > MAX_STORAGE_CANDLE_COUNT) {
+            candleMap.pollLastEntry();
+        }
 
         allSymbolMap.put(symbol, candleMap);
         log.info("DB 로드 - {}:{}", symbol, candleEntityList.size());

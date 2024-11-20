@@ -17,7 +17,7 @@ public class Scheduler {
     private final IndicatorService indicatorService;
 
     // 매분 5초 때마다 실행
-    @Scheduled(cron = "2 * * * * *")
+    @Scheduled(cron = "5 * * * * *")
     public void update(){
         candleService.update();
         indicatorService.detectIndicator();
