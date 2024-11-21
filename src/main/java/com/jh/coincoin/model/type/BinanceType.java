@@ -20,6 +20,7 @@ public class BinanceType {
         XRP_USDT(4, "XRPUSDT"),
         DOGE_USDT(5, "DOGEUSDT"),
         TRX_USDT(6, "TRXUSDT"),
+        FAIL(999, ""),
         ;
 
         private int code;

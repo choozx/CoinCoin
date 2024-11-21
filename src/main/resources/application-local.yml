@@ -20,6 +20,11 @@ spring:
     username: root
     password: 1234
 
+candle-collector:
+  host: localhost
+  port: 8081
+  url: http://${candle-collector.host}:${candle-collector.port}
+
 logging:
   config: classpath:logback-local.xml
 

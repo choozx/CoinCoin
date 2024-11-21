@@ -3,7 +3,7 @@ package com.jh.coincoin.service.slack.actions;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.SlackType.Command;
 import com.jh.coincoin.service.AdminService;
-import com.jh.coincoin.service.CandleService;
+import com.jh.coincoin.service.external.CandleCollectorAPIService;
 import com.jh.coincoin.service.slack.ActionHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +21,7 @@ import java.util.Map;
 public class SetSymbolAction implements ActionHandler {
 
     private final AdminService adminService;
+    private final CandleCollectorAPIService ccApiService;
 
     @Override
     public Command getCommand() {
@@ -32,7 +33,8 @@ public class SetSymbolAction implements ActionHandler {
         String symbolString = commandContextList.get(0);
         Symbol symbol = Symbol.of(symbolString);
 
-        // TODO go 서버에 트랙킹하도록 api 보내기 -> ok 떨어져야 아래 코드 실행
+        ccApiService.orderTrackingSymbol(symbol);
+
         adminService.setSymbol(symbol);
 
         Map<String, String> resText = new HashMap<>();

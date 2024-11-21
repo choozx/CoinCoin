@@ -4,8 +4,8 @@ import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.BinanceType.Interval;
 import com.jh.coincoin.service.AdminService;
 import com.jh.coincoin.service.CandleService;
+import com.jh.coincoin.service.external.CandleCollectorAPIService;
 import com.jh.coincoin.service.indicator.RSIIndicator;
-import com.jh.coincoin.service.slack.actions.SetSymbolAction;
 import com.jh.coincoin.util.DateTimeUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +35,7 @@ public class ApiTest {
     private final CandleService candleService;
     private final RSIIndicator rsiIndicatorService;
     private final AdminService adminService;
+    private final CandleCollectorAPIService candleCollectorAPIService;
 
 
     @Test
@@ -117,5 +118,11 @@ public class ApiTest {
         // TODO candle record insert
 
         candleService.update();
+    }
+
+    @Test
+    public void GO서버에_심볼_트랙킹하게하기() {
+        Symbol symbol = Symbol.BTC_USDT;
+        candleCollectorAPIService.orderTrackingSymbol(symbol);
     }
 }
