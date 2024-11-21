@@ -2,8 +2,10 @@ package com.jh.coincoin;
 import com.jh.coincoin.model.type.BinanceType;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.BinanceType.Interval;
+import com.jh.coincoin.service.AdminService;
 import com.jh.coincoin.service.CandleService;
 import com.jh.coincoin.service.indicator.RSIIndicator;
+import com.jh.coincoin.service.slack.actions.SetSymbolAction;
 import com.jh.coincoin.util.DateTimeUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +34,7 @@ public class ApiTest {
     private final RestClient restClient = RestClient.create();
     private final CandleService candleService;
     private final RSIIndicator rsiIndicatorService;
+    private final AdminService adminService;
 
 
     @Test
@@ -105,5 +108,14 @@ public class ApiTest {
 
         result = minute % interval.getMinute() == 0;
         log.info("################### : {}", result);
+    }
+
+    @Test
+    public void setSymbol() {
+        adminService.setSymbol(Symbol.TRX_USDT);
+
+        // TODO candle record insert
+
+        candleService.update();
     }
 }

@@ -76,20 +76,18 @@ public class CandleService {
     public void update() {
         List<Symbol> symbolList = adminService.getTrackingSymbolList();
 
+        long now = DateTimeUtil.getCurrentTimeMillis();
+        LocalDateTime targetTime = DateTimeUtil.toDateTime(now).truncatedTo(ChronoUnit.MINUTES).minusMinutes(MAX_STORAGE_CANDLE_COUNT);
         for (Symbol symbol : symbolList) {
+            long lastOpenTime = DateTimeUtil.toEpochMilli(targetTime);
             TreeMap<Long, Candle> candleMap = allSymbolMap.get(symbol);
-            long lastOpenTime = candleMap.firstKey();
+            if (candleMap != null && candleMap.size() != 0)
+                lastOpenTime = candleMap.firstKey();
+
             load2DB(symbol, lastOpenTime);
         }
 
         log.info("캔들 로드 완료");
-    }
-
-    public void SymbolLoad2DB(Symbol symbol) {
-        LocalDateTime targetTime = DateTimeUtil.toDateTime(DateTimeUtil.getCurrentTimeMillis()).truncatedTo(ChronoUnit.MINUTES).minusMinutes(MAX_STORAGE_CANDLE_COUNT);
-        long targetTimestamp = DateTimeUtil.toEpochMilli(targetTime);
-
-        load2DB(symbol, targetTimestamp);
     }
 
     public void removeTrackingCandle(Symbol symbol) {

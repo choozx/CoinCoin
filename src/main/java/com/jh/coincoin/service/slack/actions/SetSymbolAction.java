@@ -21,7 +21,6 @@ import java.util.Map;
 public class SetSymbolAction implements ActionHandler {
 
     private final AdminService adminService;
-    private final CandleService candleService;
 
     @Override
     public Command getCommand() {
@@ -33,7 +32,7 @@ public class SetSymbolAction implements ActionHandler {
         String symbolString = commandContextList.get(0);
         Symbol symbol = Symbol.of(symbolString);
 
-        candleService.SymbolLoad2DB(symbol);    // FIXME 굳이 여기서 로드 해줘야할까? 어차피 스케쥴러 돌면 로드 할텐데
+        // TODO go 서버에 트랙킹하도록 api 보내기 -> ok 떨어져야 아래 코드 실행
         adminService.setSymbol(symbol);
 
         Map<String, String> resText = new HashMap<>();
