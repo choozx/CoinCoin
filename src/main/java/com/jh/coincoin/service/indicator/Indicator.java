@@ -9,11 +9,9 @@ import com.jh.coincoin.model.type.BinanceType.Interval;
  */
 
 public interface Indicator {
-    public String getName();
+    String getName();
+    Double getLastFigure(Symbol symbol, Interval interval);
+    String wrappingMessage(Symbol symbol, Double result);
+    boolean isDetect(Double result);
 
-    public void calc();
-
-    public String getLastFigure(Symbol symbol, Interval interval);
-
-    public String wrappingMessage(Symbol symbol, String result);
 }

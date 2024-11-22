@@ -4,6 +4,7 @@ import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.BinanceType.Interval;
 import com.jh.coincoin.service.AdminService;
 import com.jh.coincoin.service.CandleService;
+import com.jh.coincoin.service.IndicatorService;
 import com.jh.coincoin.service.external.CandleCollectorAPIService;
 import com.jh.coincoin.service.indicator.RSIIndicator;
 import com.jh.coincoin.util.DateTimeUtil;
@@ -34,6 +35,7 @@ public class ApiTest {
     private final RestClient restClient = RestClient.create();
     private final CandleService candleService;
     private final RSIIndicator rsiIndicatorService;
+    private final IndicatorService indicatorService;
     private final AdminService adminService;
     private final CandleCollectorAPIService candleCollectorAPIService;
 
@@ -66,7 +68,7 @@ public class ApiTest {
     public void rsi() {
 //        candleService.manualUpdate(300);
 
-        String rsi = rsiIndicatorService.getLastFigure(Symbol.BTC_USDT, Interval.ONE_MINUTE);
+        Double rsi = rsiIndicatorService.getLastFigure(Symbol.BTC_USDT, Interval.ONE_MINUTE);
 
         log.info("RSI : {}", rsi);
     }
@@ -124,5 +126,10 @@ public class ApiTest {
     public void GO서버에_심볼_트랙킹하게하기() {
         Symbol symbol = Symbol.BTC_USDT;
         candleCollectorAPIService.orderTrackingSymbol(symbol);
+    }
+
+    @Test
+    public void 지표감지() {
+        indicatorService.detectIndicator();
     }
 }

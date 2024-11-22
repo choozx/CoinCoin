@@ -1,6 +1,7 @@
 package com.jh.coincoin.service;
 
-import com.jh.coincoin.model.type.BinanceType;
+import com.jh.coincoin.model.type.BinanceType.Symbol;
+import com.jh.coincoin.model.type.BinanceType.Interval;
 import com.jh.coincoin.service.indicator.Indicator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,20 +33,20 @@ public class IndicatorService {
     }
 
     public void detectIndicator() {
-        BinanceType.Interval interval = adminService.getInterval();
+        Interval interval = adminService.getInterval();
         if (!timeChecker(interval))
             return;
 
         List<String> indicatorNameList = adminService.getTrackingIndicatorNameList();
-        List<BinanceType.Symbol> symbolList = adminService.getTrackingSymbolList();
+        List<Symbol> symbolList = adminService.getTrackingSymbolList();
 
         Map<String, String> messages = new HashMap<>();
         for (String name : indicatorNameList) {
-            for (BinanceType.Symbol symbol : symbolList) {
+            for (Symbol symbol : symbolList) {
                 Indicator indicator = indicatorServiceMap.get(name);
-                String result = indicator.getLastFigure(symbol, interval);
+                Double result = indicator.getLastFigure(symbol, interval);
 
-                if (adminService.isDetect(name, result)) {
+                if (indicator.isDetect(result)) {
                     String message = indicator.wrappingMessage(symbol, result);
                     messages.put(name, message);
                 }
@@ -56,13 +57,13 @@ public class IndicatorService {
             slackService.sendMessage("지표 감지", messages);
     }
 
-    private boolean timeChecker(BinanceType.Interval interval) {
+    private boolean timeChecker(Interval interval) {
         int minute = LocalDateTime.now().getMinute();
 
-        if (interval == BinanceType.Interval.ONE_MINUTE)
+        if (interval == Interval.ONE_MINUTE)
             return true;
 
-        if (interval == BinanceType.Interval.HOUR && minute == 0)
+        if (interval == Interval.HOUR && minute == 0)
             return true;
 
         return minute % interval.getMinute() == 0;

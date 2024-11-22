@@ -7,6 +7,7 @@ import com.jh.coincoin.service.AdminService;
 import com.jh.coincoin.service.CandleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -32,12 +33,7 @@ public class RSIIndicator implements Indicator {
     }
 
     @Override
-    public void calc() {
-
-    }
-
-    @Override
-    public String getLastFigure(Symbol symbol, Interval interval) {
+    public Double getLastFigure(Symbol symbol, Interval interval) {
         Map<Long, Candle> candleMap = candleService.getCandleListPerInterval(symbol, interval, 200);
 
         List<Candle> candles = candleMap.values().stream()
@@ -77,12 +73,18 @@ public class RSIIndicator implements Indicator {
         double rsi = 100 - (100 / (1 + rs));
 
         log.info("RSI :: {} -> {}", symbol, rsi);
-        return String.format("%.2f", rsi);
+        return rsi;
     }
 
     @Override
-    public String wrappingMessage(Symbol symbol, String result) {
-        return symbol + " : " + result;
+    public String wrappingMessage(Symbol symbol, Double result) {
+        return symbol + " : " + String.format("%.2f", result);
+    }
+
+    @Override
+    public boolean isDetect(Double result) {
+        Pair<Double, Double> rsiSettingPair = adminService.getRsiSetting();
+        return result <= rsiSettingPair.getLeft() || result >= rsiSettingPair.getRight();
     }
 
 }

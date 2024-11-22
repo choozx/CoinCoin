@@ -84,15 +84,6 @@ public class AdminService {
 
     }
 
-    public boolean isDetect(String name, String result) {
-        if (name.equals("RSI")){
-            double rsi = Double.parseDouble(result);
-            return rsi <= rsiSetting.getLeft() || rsi >= rsiSetting.getRight();
-        }
-
-        return false;
-    }
-
     private List<Symbol> parseSymbol() {
         String rawSymbol = rawAdminMap.get("TRACKING_SYMBOL");
         String[] symbolCodeIndex = rawSymbol.split(Pattern.quote("|"));
