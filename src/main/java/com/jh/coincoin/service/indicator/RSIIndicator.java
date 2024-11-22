@@ -3,6 +3,7 @@ package com.jh.coincoin.service.indicator;
 import com.jh.coincoin.model.Candle;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.BinanceType.Interval;
+import com.jh.coincoin.model.type.IndicatorType;
 import com.jh.coincoin.service.AdminService;
 import com.jh.coincoin.service.CandleService;
 import lombok.RequiredArgsConstructor;
@@ -28,8 +29,8 @@ public class RSIIndicator implements Indicator {
     private final AdminService adminService;
 
     @Override
-    public String getName() {
-        return "RSI";
+    public IndicatorType getName() {
+        return IndicatorType.RSI;
     }
 
     @Override

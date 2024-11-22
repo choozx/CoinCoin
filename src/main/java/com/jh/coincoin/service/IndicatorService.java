@@ -2,6 +2,7 @@ package com.jh.coincoin.service;
 
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.BinanceType.Interval;
+import com.jh.coincoin.model.type.IndicatorType;
 import com.jh.coincoin.service.indicator.Indicator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +26,7 @@ public class IndicatorService {
 
     private final AdminService adminService;
     private final SlackService slackService;
-    private Map<String, Indicator> indicatorServiceMap;
+    private Map<IndicatorType, Indicator> indicatorServiceMap;
 
     @Autowired
     public void setIndicatorServiceMap(Set<Indicator> indicatorSet) {
@@ -37,18 +38,18 @@ public class IndicatorService {
         if (!timeChecker(interval))
             return;
 
-        List<String> indicatorNameList = adminService.getTrackingIndicatorNameList();
+        List<IndicatorType> indicatorNameList = adminService.getTrackingIndicatorList();
         List<Symbol> symbolList = adminService.getTrackingSymbolList();
 
         Map<String, String> messages = new HashMap<>();
-        for (String name : indicatorNameList) {
+        for (IndicatorType indicatorType : indicatorNameList) {
             for (Symbol symbol : symbolList) {
-                Indicator indicator = indicatorServiceMap.get(name);
+                Indicator indicator = indicatorServiceMap.get(indicatorType);
                 Double result = indicator.getLastFigure(symbol, interval);
 
                 if (indicator.isDetect(result)) {
                     String message = indicator.wrappingMessage(symbol, result);
-                    messages.put(name, message);
+                    messages.put(indicatorType.getKey(), message);
                 }
             }
         }

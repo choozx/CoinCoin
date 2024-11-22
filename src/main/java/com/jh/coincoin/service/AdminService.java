@@ -5,6 +5,7 @@ import com.jh.coincoin.model.consts.GlobalConst;
 import com.jh.coincoin.model.type.BinanceType.Interval;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.ErrorType;
+import com.jh.coincoin.model.type.IndicatorType;
 import com.jh.coincoin.repo.AdminRepository;
 import com.jh.coincoin.support.ServerException;
 import jakarta.annotation.PostConstruct;
@@ -34,7 +35,7 @@ public class AdminService {
     private Map<String, String> rawAdminMap;
 
     private List<Symbol> trackingSymbolList;  // 공유자원이라 동시성 이슈가 있긴하지만, 일단 나만 쓰는거라 나중에 생각...
-    private List<String> trackingIndicatorNameList;
+    private List<IndicatorType> trackingIndicatorList;
     private Interval interval;
     private Pair<Double, Double> rsiSetting;
     private int rsiPeriod;
@@ -48,7 +49,7 @@ public class AdminService {
         adminEntityList.forEach(admin -> rawAdminMap.put(admin.getName(), admin.getValue()));
 
         trackingSymbolList = parseSymbol();
-        trackingIndicatorNameList = parseList(rawAdminMap.get("TRACKING_INDICATOR_NAME"));
+        trackingIndicatorList = parseList(rawAdminMap.get("TRACKING_INDICATOR_NAME"));
 
         interval = Interval.of(rawAdminMap.get("INTERVAL"));
         rsiSetting = parsePairDouble(rawAdminMap.get("RSI_SETTING"));
@@ -95,9 +96,9 @@ public class AdminService {
         return symbolList;
     }
 
-    private List<String> parseList(String rawString) {
+    private List<IndicatorType> parseList(String rawString) {
         String[] rawStringIndex = rawString.split(Pattern.quote("|"));
-        return Arrays.stream(rawStringIndex).toList();
+        return Arrays.stream(rawStringIndex).map(s -> IndicatorType.of(Integer.parseInt(s))).collect(Collectors.toList());
     }
 
     private Pair<Double, Double> parsePairDouble(String rawString) {
