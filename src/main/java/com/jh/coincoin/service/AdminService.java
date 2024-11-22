@@ -81,10 +81,6 @@ public class AdminService {
         adminRepository.saveAndFlush(adminEntity);
     }
 
-    public void setIndicator() {
-
-    }
-
     private List<Symbol> parseSymbol() {
         String rawSymbol = rawAdminMap.get("TRACKING_SYMBOL");
         String[] symbolCodeIndex = rawSymbol.split(Pattern.quote("|"));
