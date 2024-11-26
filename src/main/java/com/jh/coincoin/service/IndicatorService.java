@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,8 +34,6 @@ public class IndicatorService {
 
     public void detectIndicator() {
         Interval interval = adminService.getInterval();
-        if (!timeChecker(interval))
-            return;
 
         List<IndicatorType> indicatorNameList = adminService.getTrackingIndicatorList();
         List<Symbol> symbolList = adminService.getTrackingSymbolList();
@@ -56,17 +53,5 @@ public class IndicatorService {
 
         if (messages.size() != 0)
             slackService.sendMessage("지표 감지", messages);
-    }
-
-    private boolean timeChecker(Interval interval) {
-        int minute = LocalDateTime.now().getMinute();
-
-        if (interval == Interval.ONE_MINUTE)
-            return true;
-
-        if (interval == Interval.HOUR && minute == 0)
-            return true;
-
-        return minute % interval.getMinute() == 0;
     }
 }

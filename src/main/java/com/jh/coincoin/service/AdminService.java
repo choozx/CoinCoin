@@ -6,6 +6,8 @@ import com.jh.coincoin.model.type.BinanceType.Interval;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.ErrorType;
 import com.jh.coincoin.model.type.IndicatorType;
+import com.jh.coincoin.model.type.StrategyType.BuyStrategyType;
+import com.jh.coincoin.model.type.StrategyType.OrderStrategyType;
 import com.jh.coincoin.repo.AdminRepository;
 import com.jh.coincoin.support.ServerException;
 import jakarta.annotation.PostConstruct;
@@ -100,5 +102,13 @@ public class AdminService {
     private Pair<Double, Double> parsePairDouble(String rawString) {
         String[] rawStringIndex = rawString.split(Pattern.quote("|"));
         return Pair.of(Double.parseDouble(rawStringIndex[0]), Double.parseDouble(rawStringIndex[1]));
+    }
+
+    public List<OrderStrategyType> getFollowOrderStrategyList() {
+        return new ArrayList<>();
+    }
+
+    public BuyStrategyType getFollowBuyStrategy() {
+        return BuyStrategyType.STOP_AND_LIMIT;
     }
 }
