@@ -106,6 +106,7 @@ public class StopAndLimitBuyStrategy extends BuyStrategy {
                 .type(Order.TAKE_PROFIT_MARKET)
                 .quantity(CommonUtil.formatDecimal(quantity, 3))
                 .stopPrice(CommonUtil.formatDecimal(calcPrice(side, Order.TAKE_PROFIT_MARKET, entryPrice), 2))
+                .closePosition(true)
                 .timestamp(now)
                 .build();
         binanceFutureAPIService.newOrder(tkOrder);
@@ -117,6 +118,7 @@ public class StopAndLimitBuyStrategy extends BuyStrategy {
                 .type(Order.STOP_MARKET)
                 .quantity(CommonUtil.formatDecimal(quantity, 3))
                 .stopPrice(CommonUtil.formatDecimal(calcPrice(side, Order.STOP_MARKET, entryPrice), 2))
+                .closePosition(true)
                 .timestamp(now)
                 .build();
         binanceFutureAPIService.newOrder(slOrder);

@@ -173,7 +173,7 @@ public class BinanceAPIServiceTest {
     @Test
     public void 진입_테스트() {
         Symbol symbol = Symbol.ETHUSDT;
-        Side side = Side.BUY;
+        Side side = Side.SELL;
 
         buyStrategy.order(symbol, side);
     }
