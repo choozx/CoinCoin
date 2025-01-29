@@ -39,9 +39,13 @@ public class AdminService {
     private List<Symbol> trackingSymbolList;  // 공유자원이라 동시성 이슈가 있긴하지만, 일단 나만 쓰는거라 나중에 생각...
     private List<IndicatorType> trackingIndicatorList;
     private Interval interval;
-    private Pair<Double, Double> rsiSetting;
+    private Pair<Double, Double> alertRsiValuePair; // 슬랙 알람을 위한 rsi값
+    private Pair<Double, Double> orderRsiValuePair; // 포지션 진입을 위한 rsi값
     private int rsiPeriod;
     private String helpContext;
+    private float orderBalanceRatio;
+    private int leverage;
+    private Pair<Double, Double> riskRewardRatio;
 
     @PostConstruct
     public void init() {
@@ -54,8 +58,12 @@ public class AdminService {
         trackingIndicatorList = parseList(rawAdminMap.get("TRACKING_INDICATOR_NAME"));
 
         interval = Interval.of(rawAdminMap.get("INTERVAL"));
-        rsiSetting = parsePairDouble(rawAdminMap.get("RSI_SETTING"));
+        alertRsiValuePair = parsePairDouble(rawAdminMap.get("RSI_SETTING"));
+        orderRsiValuePair = Pair.of(20.0, 80.0);
         rsiPeriod = Integer.parseInt(rawAdminMap.get("RSI_PERIOD"));
+        orderBalanceRatio = Float.parseFloat(rawAdminMap.get("ORDER_BALANCE_PERCENT"));
+        leverage = Integer.parseInt(rawAdminMap.get("LEVERAGE"));
+        riskRewardRatio = parsePairDouble(rawAdminMap.get("RISK_REWARD_RATIO"));
 
         helpContext = rawAdminMap.get("HELP_CONTEXT");
     }

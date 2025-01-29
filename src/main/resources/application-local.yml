@@ -30,3 +30,7 @@ logging:
 
 slack:
   token: ${SLACK_WEBHOOK_TOKEN}
+
+binance:
+  api-key: ${BINANCE_API_KEY}
+  secret-key: ${BINANCE_SECRET_KEY}

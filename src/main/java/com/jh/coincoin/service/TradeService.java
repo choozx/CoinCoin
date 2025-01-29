@@ -1,5 +1,6 @@
 package com.jh.coincoin.service;
 
+import com.jh.coincoin.model.type.BinanceType.Side;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.StrategyType.BuyStrategyType;
 import com.jh.coincoin.model.type.StrategyType.OrderStrategyType;
@@ -7,6 +8,7 @@ import com.jh.coincoin.service.external.BinanceFutureAPIService;
 import com.jh.coincoin.service.strategy.buy.BuyStrategy;
 import com.jh.coincoin.service.strategy.order.OrderStrategy;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -47,15 +49,15 @@ public class TradeService {
         BuyStrategyType buyStrategyType = adminService.getFollowBuyStrategy();
 
         for (Symbol symbol : trackingSymbolList) {
-            // TODO 이미 주문상태면 continue
 
             for (OrderStrategyType orderStrategyType : followStrategyList) {
                 OrderStrategy orderStrategy = orderStrategyMap.get(orderStrategyType);
 
-                if (orderStrategy.isHit(symbol)) {
+                Pair<Boolean, Side> hit = orderStrategy.isHit(symbol);
+                if (hit.getLeft()) {
                     // 주문 전략에 따른 주문
                     BuyStrategy buyStrategy = buyStrategyMap.get(buyStrategyType);
-                    buyStrategy.order();
+                    buyStrategy.order(symbol, hit.getRight());
                     break;
                 }
             }

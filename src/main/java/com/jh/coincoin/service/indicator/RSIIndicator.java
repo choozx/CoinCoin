@@ -84,8 +84,8 @@ public class RSIIndicator implements Indicator {
 
     @Override
     public boolean isDetect(Double result) {
-        Pair<Double, Double> rsiSettingPair = adminService.getRsiSetting();
-        return result <= rsiSettingPair.getLeft() || result >= rsiSettingPair.getRight();
+        Pair<Double, Double> rsiValuePair = adminService.getAlertRsiValuePair();
+        return result <= rsiValuePair.getLeft() || result >= rsiValuePair.getRight();
     }
 
 }

@@ -1,5 +1,6 @@
 package com.jh.coincoin.model.type;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.jh.coincoin.support.ServerException;
 import com.jh.coincoin.util.CodeEnum;
 import com.jh.coincoin.util.CodeEnumFinder;
@@ -14,17 +15,21 @@ import java.util.Arrays;
 public class BinanceType {
 
     public enum Symbol implements CodeEnum<Integer> {
-        BTC_USDT(1,"BTCUSDT"),
-        ETH_USDT(2, "ETHUSDT"),
-        SOL_USDT(3, "SOLUSDT"),
-        XRP_USDT(4, "XRPUSDT"),
-        DOGE_USDT(5, "DOGEUSDT"),
-        TRX_USDT(6, "TRXUSDT"),
+        BTCUSDT(1, "BTCUSDT"),
+        ETHUSDT(2, "ETHUSDT"),
+        SOLUSDT(3, "SOLUSDT"),
+        XRPUSDT(4, "XRPUSDT"),
+        DOGEUSDT(5, "DOGEUSDT"),
+        TRXUSDT(6, "TRXUSDT"),
+        BIGTIMEUSDT(7, "BIGTIMEUSDT"),
+        NOTUSDT(8, "NOTUSDT"),
+        CHZUSDT(9, "CHZUSDT"),
         FAIL(999, ""),
         ;
 
         private int code;
         private String name;
+
         Symbol(int code, String name) {
             this.code = code;
             this.name = name;
@@ -47,6 +52,11 @@ public class BinanceType {
 
         @Override
         public String getKey() {
+            return name;
+        }
+
+        @JsonValue
+        public String getName() {
             return name;
         }
 
@@ -75,12 +85,13 @@ public class BinanceType {
 
         private String name;
         private int minute;
+
         Interval(String name, int minute) {
             this.name = name;
             this.minute = minute;
         }
 
-        public String getName(){
+        public String getName() {
             return name;
         }
 
@@ -94,17 +105,109 @@ public class BinanceType {
         }
     }
 
+    public enum PositionSide {
+        BOTH(0, "BOTH"),
+        LONG(1, "LONG"),
+        SHORT(2, "SHORT"),
+        ;
+
+        private int code;
+        private String name;
+
+        PositionSide(int code, String name) {
+            this.code = code;
+            this.name = name;
+        }
+
+        public static PositionSide of(String name) {
+            return Arrays.stream(values()).filter(positionSide -> positionSide.name.equals(name)).findFirst()
+                    .orElseThrow(() -> new ServerException(ErrorType.COMMON_FAIL, "지원하지 않는 positionSide"));
+        }
+    }
+
+    public enum Side {
+        BUY,
+        SELL,
+        ;
+
+        public static Side reverse(Side side) {
+            if (side.equals(BUY))
+                return SELL;
+            else
+                return BUY;
+        }
+    }
+
+    public enum Order {
+        LIMIT,
+        MARKET,
+        STOP,
+        TAKE_PROFIT,
+        STOP_MARKET,
+        TAKE_PROFIT_MARKET,
+        TRAILING_STOP_MARKET,
+        ;
+    }
+
+    public enum TimeInForce {
+        GTC,
+        IOC,
+        FOK,
+        ;
+    }
+
+    public enum TriggerSource {
+        CONTRACT_PRICE,
+        MARK_PRICE,
+        ;
+    }
+
+    public enum NewOrderResp {
+        ACK,
+        RESULT,
+        ;
+    }
+
+    public enum PriceMatch {
+        NONE,
+        OPPONENT,
+        OPPONENT_5,
+        OPPONENT_10,
+        OPPONENT_20,
+        QUEUE,
+        QUEUE_5,
+        QUEUE_10,
+        QUEUE_20,
+        ;
+    }
+
+    public enum SelfTradePreventionMode {
+        NONE,
+        EXPIRE_TAKER,
+        EXPIRE_MAKER,
+        EXPIRE_BOTH,
+        ;
+    }
+
     public enum BinanceURL {
         BASE_URL("https://fapi.binance.com/fapi"),
-        GET_CANDLE("/v1/klines"),
+        GET_POSITION_INFO("/v3/positionRisk"),
+        GET_ACCOUNT_BALANCE("/v3/balance"),
+        GET_TICKER_PRICE("/v2/ticker/price"),
+        NEW_TEST_ORDER("/v1/order/test"),
+        NEW_ORDER("/v1/order"),
+        GET_OPEN_ORDER("/v1/openOrder"),
+        GET_ALL_ORDER("/v1/allOrders"),
+        MODIFY_LEVERAGE("/v1/leverage"),
         ;
 
         private final String url;
+
         BinanceURL(String url) {
             this.url = url;
         }
 
-        public String getUrl(){
+        public String getUrl() {
             return url;
         }
     }
