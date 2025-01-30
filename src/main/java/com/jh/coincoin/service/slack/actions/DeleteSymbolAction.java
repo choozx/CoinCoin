@@ -5,7 +5,6 @@ import com.jh.coincoin.model.type.SlackType.Command;
 import com.jh.coincoin.service.AdminService;
 import com.jh.coincoin.service.CandleService;
 import com.jh.coincoin.service.slack.ActionHandler;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -17,11 +16,16 @@ import java.util.Map;
  */
 
 @Service
-@RequiredArgsConstructor
-public class DeleteSymbolAction implements ActionHandler {
+public class DeleteSymbolAction extends ActionHandler {
 
     private final AdminService adminService;
     private final CandleService candleService;
+
+    public DeleteSymbolAction(String webHookURL, AdminService adminService, CandleService candleService) {
+        super(webHookURL);
+        this.adminService = adminService;
+        this.candleService = candleService;
+    }
 
     @Override
     public Command getCommand() {
@@ -29,7 +33,7 @@ public class DeleteSymbolAction implements ActionHandler {
     }
 
     @Override
-    public Map<String, String> doAction(List<String> commandContextList) {
+    public void doAction(List<String> commandContextList) {
         String symbolString = commandContextList.get(0);
         BinanceType.Symbol symbol = BinanceType.Symbol.of(symbolString);
 
@@ -38,6 +42,7 @@ public class DeleteSymbolAction implements ActionHandler {
 
         Map<String, String> resText = new HashMap<>();
         resText.put("SYMBOL 제거완료", symbol.getKey());
-        return resText;
+
+        sendMessage(resText);
     }
 }

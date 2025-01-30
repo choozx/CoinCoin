@@ -47,31 +47,13 @@ public class SlackService {
         Pair<Command, List<String>> command = analyzeCommand(event.getText());
 
         ActionHandler actionHandler = actionHandlerMap.get(command.getKey());
-        Map<String, String> resContext = actionHandler.doAction(command.getValue());
-
-        sendMessage(resContext);
+        actionHandler.doAction(command.getValue());
     }
 
     public void sendMessage(String title, Map<String, String> data){
         try {
             slackClient.send(webHookURL, payload(p -> p
                     .text(title) // 메시지 제목
-                    .attachments(List.of(
-                            Attachment.builder()
-                                    .fields( // 메시지 본문 내용
-                                            data.keySet().stream()
-                                                    .map(key -> generateSlackField(key, data.get(key)))
-                                                    .collect(Collectors.toList())
-                                    ).build())))
-            );
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void sendMessage(Map<String, String> data){
-        try {
-            slackClient.send(webHookURL, payload(p -> p
                     .attachments(List.of(
                             Attachment.builder()
                                     .fields( // 메시지 본문 내용

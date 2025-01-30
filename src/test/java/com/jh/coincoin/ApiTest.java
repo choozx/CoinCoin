@@ -87,7 +87,7 @@ public class ApiTest {
     }
 
     @Test
-    public void cccc(){
+    public void cccc() {
         Interval interval = Interval.FIVE_MINUTE;
         boolean result = false;
         int minute = LocalDateTime.now().getMinute();

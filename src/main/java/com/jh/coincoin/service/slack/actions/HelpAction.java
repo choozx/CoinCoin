@@ -3,7 +3,6 @@ package com.jh.coincoin.service.slack.actions;
 import com.jh.coincoin.model.type.SlackType.Command;
 import com.jh.coincoin.service.AdminService;
 import com.jh.coincoin.service.slack.ActionHandler;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -15,10 +14,14 @@ import java.util.Map;
  */
 
 @Service
-@RequiredArgsConstructor
-public class HelpAction implements ActionHandler {
+public class HelpAction extends ActionHandler {
 
     private final AdminService adminService;
+
+    public HelpAction(String webHookURL, AdminService adminService) {
+        super(webHookURL);
+        this.adminService = adminService;
+    }
 
     @Override
     public Command getCommand() {
@@ -26,11 +29,12 @@ public class HelpAction implements ActionHandler {
     }
 
     @Override
-    public Map<String, String> doAction(List<String> commandContextList) {
+    public void doAction(List<String> commandContextList) {
         String helpContext = adminService.getHelpContext();
 
         Map<String, String> context = new HashMap<>();
         context.put("HELP", helpContext);
-        return context;
+
+        sendMessage(context);
     }
 }

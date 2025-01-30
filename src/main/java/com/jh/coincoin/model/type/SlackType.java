@@ -13,7 +13,8 @@ public class SlackType {
     public enum Command implements CodeEnum<Integer> {
         HELP(1, "/h"),
         SET_SYMBOL(2, "/ss"),
-        DELETE_SYMBOL(3, "/ds")
+        DELETE_SYMBOL(3, "/ds"),
+        NEW_STRATEGY(4, "/new_strategy")
         ;
 
         private int code;
