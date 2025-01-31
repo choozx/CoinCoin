@@ -1,7 +1,6 @@
 package com.jh.coincoin.service.slack;
 
-import com.jh.coincoin.model.type.SlackType.Command;
-import com.jh.coincoin.service.SlackService;
+import com.jh.coincoin.model.type.SlackType.ActionCommand;
 import com.slack.api.Slack;
 import com.slack.api.model.Attachment;
 import com.slack.api.model.Field;
@@ -23,7 +22,7 @@ public abstract class ActionHandler {
 
     protected final Slack slackClient = Slack.getInstance();
     protected final String webHookURL;
-    public abstract Command getCommand();
+    public abstract ActionCommand getCommand();
     public abstract void doAction(List<String> commandContextList);
 
     protected void sendMessage(Map<String, String> data){

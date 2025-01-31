@@ -3,7 +3,10 @@ package com.jh.coincoin.service.strategy.order;
 import com.jh.coincoin.model.type.BinanceType.Side;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.StrategyType.OrderStrategyType;
+import com.slack.api.model.block.InputBlock;
 import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.List;
 
 /**
  * Created by dale on 2024-11-22.
@@ -14,4 +17,6 @@ public interface OrderStrategy {
     OrderStrategyType getType();
 
     Pair<Boolean, Side> isHit(Symbol symbol);
+
+    List<InputBlock> getTargetValueBlockList();
 }

@@ -34,7 +34,7 @@ public class SlackController {
 
     @GetMapping("/slack/interactive")
     public void handleInteractive() {
-
+        slackService.handleInteractive("decide_order_strategy", "rsi");
     }
 
 }

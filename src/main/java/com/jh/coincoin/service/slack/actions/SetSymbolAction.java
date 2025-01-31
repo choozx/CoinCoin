@@ -1,7 +1,7 @@
 package com.jh.coincoin.service.slack.actions;
 
 import com.jh.coincoin.model.type.BinanceType.Symbol;
-import com.jh.coincoin.model.type.SlackType.Command;
+import com.jh.coincoin.model.type.SlackType.ActionCommand;
 import com.jh.coincoin.service.AdminService;
 import com.jh.coincoin.service.external.CandleCollectorAPIService;
 import com.jh.coincoin.service.slack.ActionHandler;
@@ -28,8 +28,8 @@ public class SetSymbolAction extends ActionHandler {
     }
 
     @Override
-    public Command getCommand() {
-        return Command.SET_SYMBOL;
+    public ActionCommand getCommand() {
+        return ActionCommand.SET_SYMBOL;
     }
 
     @Override

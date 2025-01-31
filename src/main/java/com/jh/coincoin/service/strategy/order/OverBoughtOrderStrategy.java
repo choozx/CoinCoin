@@ -6,11 +6,17 @@ import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.StrategyType.OrderStrategyType;
 import com.jh.coincoin.service.AdminService;
 import com.jh.coincoin.service.indicator.RSIIndicator;
+import com.slack.api.model.block.InputBlock;
+import com.slack.api.model.block.composition.PlainTextObject;
+import com.slack.api.model.block.element.NumberInputElement;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
-import static com.jh.coincoin.model.type.StrategyType.OrderStrategyType.OVER_BOUGHT;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.jh.coincoin.model.type.StrategyType.OrderStrategyType.REVERSE_TREND_USING_RSI;
 
 /**
  * Created by dale on 2024-11-22.
@@ -26,7 +32,7 @@ public class OverBoughtOrderStrategy implements OrderStrategy {
 
     @Override
     public OrderStrategyType getType() {
-        return OVER_BOUGHT;
+        return REVERSE_TREND_USING_RSI;
     }
 
     @Override
@@ -43,5 +49,37 @@ public class OverBoughtOrderStrategy implements OrderStrategy {
             return Pair.of(true, Side.BUY);
 
         return Pair.of(false, null);
+    }
+
+    @Override
+    public List<InputBlock> getTargetValueBlockList() {
+        List<InputBlock> inputBlockList = new ArrayList<>();
+        InputBlock overBoughtValueBlock = InputBlock.builder()
+                .blockId("over_bought_target_value")
+                .label(PlainTextObject.builder().text("과매수 RSI 타겟 값 설정").build())
+                .element(NumberInputElement.builder()
+                        .actionId("select_over_bought_target_value")
+                        .minValue("0")
+                        .maxValue("100")
+                        .decimalAllowed(true)
+                        .placeholder(PlainTextObject.builder().text("과매수 타켓 rsi값을 설정하세요").build())
+                        .build())
+                .build();
+
+        InputBlock overSellValueBlock = InputBlock.builder()
+                .blockId("over_sell_target_value")
+                .label(PlainTextObject.builder().text("과매도 RSI 타겟 값 설정").build())
+                .element(NumberInputElement.builder()
+                        .actionId("select_over_sell_target_value")
+                        .minValue("0")
+                        .maxValue("100")
+                        .decimalAllowed(true)
+                        .placeholder(PlainTextObject.builder().text("과매도 타켓 rsi값을 설정하세요").build())
+                        .build())
+                .build();
+
+        inputBlockList.add(overBoughtValueBlock);
+        inputBlockList.add(overSellValueBlock);
+        return inputBlockList;
     }
 }

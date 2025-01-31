@@ -1,6 +1,6 @@
 package com.jh.coincoin.service.slack.actions;
 
-import com.jh.coincoin.model.type.SlackType.Command;
+import com.jh.coincoin.model.type.SlackType.ActionCommand;
 import com.jh.coincoin.service.AdminService;
 import com.jh.coincoin.service.slack.ActionHandler;
 import org.springframework.stereotype.Service;
@@ -24,8 +24,8 @@ public class HelpAction extends ActionHandler {
     }
 
     @Override
-    public Command getCommand() {
-        return Command.HELP;
+    public ActionCommand getCommand() {
+        return ActionCommand.HELP;
     }
 
     @Override
