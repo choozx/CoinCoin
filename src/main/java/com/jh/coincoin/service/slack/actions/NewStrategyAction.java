@@ -2,21 +2,17 @@ package com.jh.coincoin.service.slack.actions;
 
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.BinanceType.Interval;
-import com.jh.coincoin.model.type.IndicatorType;
+import com.jh.coincoin.model.type.StrategyType.OrderStrategyType;
 import com.jh.coincoin.model.type.SlackType.Command;
 import com.jh.coincoin.service.AdminService;
 import com.jh.coincoin.service.slack.ActionHandler;
-import com.slack.api.model.block.ActionsBlock;
-import com.slack.api.model.block.DividerBlock;
+import com.slack.api.methods.SlackApiException;
 import com.slack.api.model.block.InputBlock;
-import com.slack.api.model.block.LayoutBlock;
-import com.slack.api.model.block.SectionBlock;
-import com.slack.api.model.block.composition.MarkdownTextObject;
 import com.slack.api.model.block.composition.OptionObject;
 import com.slack.api.model.block.composition.PlainTextObject;
-import com.slack.api.model.block.element.ButtonElement;
 import com.slack.api.model.block.element.StaticSelectElement;
-import com.slack.api.webhook.Payload;
+import com.slack.api.model.view.View;
+import com.slack.api.model.view.Views;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -47,21 +43,19 @@ public class NewStrategyAction extends ActionHandler {
 
     @Override
     public void doAction(List<String> commandContextList) {
-        List<LayoutBlock> list = new ArrayList<>();
-
-        List<OptionObject> indicatorOptionList = new ArrayList<>();
-        for (IndicatorType type : IndicatorType.values()) {
+        List<OptionObject> orderStrategyOptionList = new ArrayList<>();
+        for (OrderStrategyType type : OrderStrategyType.values()) {
             OptionObject optionObject = OptionObject.builder()
                     .text(PlainTextObject.builder()
-                            .text(type.toString())
+                            .text(type.name())
                             .build())
-                    .value(type.getKey())
+                    .value(type.name())
                     .build();
-            indicatorOptionList.add(optionObject);
+            orderStrategyOptionList.add(optionObject);
         }
 
         List<OptionObject> intervalOptionList = new ArrayList<>();
-        for (Interval interval: Interval.values()) {
+        for (Interval interval : Interval.values()) {
             OptionObject optionObject = OptionObject.builder()
                     .text(PlainTextObject.builder()
                             .text(interval.getName())
@@ -83,32 +77,51 @@ public class NewStrategyAction extends ActionHandler {
             symbolOptionList.add(optionObject);
         }
 
-        SectionBlock sectionBlock = SectionBlock.builder()
-                .text(MarkdownTextObject.builder()
-                        .text("새로운 전략")
+        InputBlock entryStrategyBlock = InputBlock.builder()
+                .blockId("entry_strategy")
+                .label(PlainTextObject.builder().text("진입 전략").build())
+                .element(StaticSelectElement.builder()
+                        .actionId("select_entry_strategy")
+                        .placeholder(PlainTextObject.builder().text("전략을 선택하세요").build())
+                        .options(orderStrategyOptionList)
                         .build())
                 .build();
 
-        DividerBlock dividerBlock = DividerBlock.builder()
-                .blockId("divider")
+        InputBlock intervalBlock = InputBlock.builder()
+                .blockId("interval")
+                .label(PlainTextObject.builder().text("적용 캔들").build())
+                .element(StaticSelectElement.builder()
+                        .actionId("select_interval")
+                        .placeholder(PlainTextObject.builder().text("캔들을 선택하세요").build())
+                        .options(intervalOptionList)
+                        .build())
                 .build();
 
-        InputBlock inputBlock = InputBlock.builder()
-
+        InputBlock symbolBlock = InputBlock.builder()
+                .blockId("symbol")
+                .label(PlainTextObject.builder().text("코인 선택").build())
+                .element(StaticSelectElement.builder()
+                        .actionId("select_symbol")
+                        .placeholder(PlainTextObject.builder().text("코인을 선택하세요").build())
+                        .options(symbolOptionList)
+                        .build())
                 .build();
 
-        list.add(sectionBlock);
-        list.add(dividerBlock);
-        list.add(inputBlock);
-
-        Payload payload = Payload.builder()
-                .text("새로운 전략")
-                .blocks(list)
-                .build();
+        View modalView = Views.view(v -> v
+                .type("modal")
+                .callbackId("new_strategy")
+                .title(Views.viewTitle(title -> title.type("plain_text").text("새로운 전력")))
+                .submit(Views.viewSubmit(submit -> submit.type("plain_text").text("Submit")))
+                .close(Views.viewClose(close -> close.type("plain_text").text("Cancel")))
+                .blocks(Arrays.asList(entryStrategyBlock, intervalBlock, symbolBlock))
+        );
 
         try {
-            slackClient.send(webHookURL, payload);
-        } catch (IOException e) {
+            slackClient.methods("").viewsOpen(r -> r
+                    .triggerId("triggerId")
+                    .view(modalView)
+            );
+        } catch (IOException | SlackApiException e) {
             throw new RuntimeException(e);
         }
     }
