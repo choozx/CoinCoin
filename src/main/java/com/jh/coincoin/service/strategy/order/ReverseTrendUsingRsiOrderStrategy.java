@@ -1,10 +1,12 @@
 package com.jh.coincoin.service.strategy.order;
 
-import com.jh.coincoin.model.type.BinanceType;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jh.coincoin.model.Strategy.RSI;
+import com.jh.coincoin.model.type.BinanceType.Interval;
 import com.jh.coincoin.model.type.BinanceType.Side;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.StrategyType.OrderStrategyType;
-import com.jh.coincoin.service.AdminService;
 import com.jh.coincoin.service.indicator.RSIIndicator;
 import com.slack.api.model.block.InputBlock;
 import com.slack.api.model.block.composition.PlainTextObject;
@@ -25,27 +27,40 @@ import static com.jh.coincoin.model.type.StrategyType.OrderStrategyType.REVERSE_
 
 @Service
 @RequiredArgsConstructor
-public class OverBoughtOrderStrategy implements OrderStrategy {
+public class ReverseTrendUsingRsiOrderStrategy implements OrderStrategy {
 
     private final RSIIndicator rsiIndicator;
-    private final AdminService adminService;
 
     @Override
     public OrderStrategyType getType() {
         return REVERSE_TREND_USING_RSI;
     }
 
+//    @Override
+//    public Pair<Boolean, Side> isHit(Symbol symbol) {
+//        BinanceType.Interval interval = adminService.getInterval();
+//        Double rsiRatio = rsiIndicator.getLastFigure(symbol, interval);
+//
+//        Pair<Double, Double> orderRsiValuePair = adminService.getOrderRsiValuePair();
+//
+//        if (rsiRatio >= orderRsiValuePair.getRight())
+//            return Pair.of(true, Side.SELL);
+//
+//        if (rsiRatio <= orderRsiValuePair.getLeft())
+//            return Pair.of(true, Side.BUY);
+//
+//        return Pair.of(false, null);
+//    }
+
     @Override
-    public Pair<Boolean, Side> isHit(Symbol symbol) {
-        BinanceType.Interval interval = adminService.getInterval();
+    public Pair<Boolean, Side> isHit(Symbol symbol, Interval interval, String targetValue) {
+        RSI rsi = convertToRSI(targetValue);
         Double rsiRatio = rsiIndicator.getLastFigure(symbol, interval);
 
-        Pair<Double, Double> orderRsiValuePair = adminService.getOrderRsiValuePair();
-
-        if (rsiRatio >= orderRsiValuePair.getRight())
+        if (rsiRatio >= rsi.getOverbought())
             return Pair.of(true, Side.SELL);
 
-        if (rsiRatio <= orderRsiValuePair.getLeft())
+        if (rsiRatio <= rsi.getOversold())
             return Pair.of(true, Side.BUY);
 
         return Pair.of(false, null);
@@ -81,5 +96,16 @@ public class OverBoughtOrderStrategy implements OrderStrategy {
         inputBlockList.add(overBoughtValueBlock);
         inputBlockList.add(overSellValueBlock);
         return inputBlockList;
+    }
+
+    private RSI convertToRSI(String jsonValue) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        RSI rsi;
+        try {
+            rsi = objectMapper.readValue(jsonValue, RSI.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        return rsi;
     }
 }

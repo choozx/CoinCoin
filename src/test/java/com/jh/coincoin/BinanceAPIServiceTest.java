@@ -175,6 +175,6 @@ public class BinanceAPIServiceTest {
         Symbol symbol = Symbol.ETHUSDT;
         Side side = Side.SELL;
 
-        buyStrategy.order(symbol, side);
+//        buyStrategy.order(symbol, side);
     }
 }

@@ -103,6 +103,11 @@ public class BinanceType {
             return Arrays.stream(values()).filter(interval -> interval.name.equals(name)).findFirst()
                     .orElseThrow(() -> new ServerException(ErrorType.COMMON_FAIL, "지원하지 않는 캔들봉"));
         }
+
+        public static Interval of(int minute) {
+            return Arrays.stream(values()).filter(interval -> interval.minute == minute).findFirst()
+                    .orElseThrow(() -> new ServerException(ErrorType.COMMON_FAIL, "지원하지 않는 캔들봉"));
+        }
     }
 
     public enum PositionSide {
@@ -138,6 +143,7 @@ public class BinanceType {
         }
     }
 
+    // 여러 주문 타입이 있지만, 손절/익절 주문은 왠만하면 STOP_MARKET, TAKE_PROFIT_MARKET을 사용한다.
     public enum Order {
         LIMIT,
         MARKET,

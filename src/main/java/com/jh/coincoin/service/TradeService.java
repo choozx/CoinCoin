@@ -1,10 +1,13 @@
 package com.jh.coincoin.service;
 
+import com.jh.coincoin.model.Strategy.OrderStrategyDto;
+import com.jh.coincoin.model.Strategy.BuyStrategyDto;
+import com.jh.coincoin.model.Strategy.StrategyDto;
+import com.jh.coincoin.model.type.BinanceType;
 import com.jh.coincoin.model.type.BinanceType.Side;
-import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.StrategyType.BuyStrategyType;
 import com.jh.coincoin.model.type.StrategyType.OrderStrategyType;
-import com.jh.coincoin.service.external.BinanceFutureAPIService;
+import com.jh.coincoin.service.strategy.StrategyService;
 import com.jh.coincoin.service.strategy.buy.BuyStrategy;
 import com.jh.coincoin.service.strategy.order.OrderStrategy;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +15,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,8 +32,7 @@ import java.util.stream.Collectors;
 public class TradeService {
 
     // 매수를 위한 전략 서버스
-    private final AdminService adminService;
-    private final BinanceFutureAPIService binanceFutureAPIService;
+    private final StrategyService strategyService;
 
     private Map<OrderStrategyType, OrderStrategy> orderStrategyMap;
     private Map<BuyStrategyType, BuyStrategy> buyStrategyMap;
@@ -43,27 +47,57 @@ public class TradeService {
         this.buyStrategyMap = buyStrategySet.stream().collect(Collectors.toMap(BuyStrategy::getType, Function.identity()));
     }
 
-    public void trade() {
-        List<Symbol> trackingSymbolList = adminService.getTrackingSymbolList(); // FIXME 추후 지표를 위한 심볼리스트와 매수 진행을 위한 심볼리스트를 나눌 수 있음
-        List<OrderStrategyType> followStrategyList = adminService.getFollowOrderStrategyList();
-        BuyStrategyType buyStrategyType = adminService.getFollowBuyStrategy();
+//    /* 코인 하나당 하나의 전략만 가질 수 있음*/
+//    public void trade() {
+//        List<Symbol> trackingSymbolList = adminService.getTrackingSymbolList(); // FIXME 추후 지표를 위한 심볼리스트와 매수 진행을 위한 심볼리스트를 나눌 수 있음
+//        List<OrderStrategyType> followStrategyList = adminService.getFollowOrderStrategyList();
+//        BuyStrategyType buyStrategyType = adminService.getFollowBuyStrategy();
+//
+//        for (Symbol symbol : trackingSymbolList) {
+//
+//            for (OrderStrategyType orderStrategyType : followStrategyList) {
+//                OrderStrategy orderStrategy = orderStrategyMap.get(orderStrategyType);
+//
+//                Pair<Boolean, Side> hit = orderStrategy.isHit(symbol);
+//                if (hit.getLeft()) {
+//                    // 주문 전략에 따른 주문
+//                    BuyStrategy buyStrategy = buyStrategyMap.get(buyStrategyType);
+//                    buyStrategy.order(symbol, hit.getRight());
+//                    break;
+//                }
+//            }
+//        }
+//    }
 
-        for (Symbol symbol : trackingSymbolList) {
+    /* 코인 하나당 하나의 전략만 가질 수 있음*/
+    public void tradeV2() {
+        List<StrategyDto> strategyDtoList = strategyService.getStrategyListByInterval(getMatchingIntervalList());
 
-            for (OrderStrategyType orderStrategyType : followStrategyList) {
-                OrderStrategy orderStrategy = orderStrategyMap.get(orderStrategyType);
+        for (StrategyDto strategyDto : strategyDtoList) {
+            OrderStrategyDto orderStrategyDto = strategyDto.getOrderStrategy();
 
-                Pair<Boolean, Side> hit = orderStrategy.isHit(symbol);
-                if (hit.getLeft()) {
-                    // 주문 전략에 따른 주문
-                    BuyStrategy buyStrategy = buyStrategyMap.get(buyStrategyType);
-                    buyStrategy.order(symbol, hit.getRight());
-                    break;
-                }
+            OrderStrategy orderStrategy = orderStrategyMap.get(orderStrategyDto.getType());
+            Pair<Boolean, Side> hit = orderStrategy.isHit(strategyDto.getSymbol(), strategyDto.getInterval(), orderStrategyDto.getTargetValue());
+
+            if (hit.getLeft()) {
+                BuyStrategyDto buyStrategyDto = strategyDto.getBuyStrategy();
+                BuyStrategy buyStrategy = buyStrategyMap.get(buyStrategyDto.getType());
+                buyStrategy.order(strategyDto.getSymbol(), hit.getRight(), buyStrategyDto.getLeverage(), buyStrategyDto.getRiskRewardRatioDto(), buyStrategyDto.getOrderBalanceRatio());
             }
         }
+    }
 
-        // need
-        // 1. 매수를 위한 파라미터를 담을 클래스 -> adminService에서 관리
+    private List<Integer> getMatchingIntervalList() {
+        int minute = LocalDateTime.now().getMinute();
+
+        List<Integer> targetIntervalList = new ArrayList<>();
+        targetIntervalList.add(1);  // 인터벌이 1분은 항상 포함되니까
+
+        for (BinanceType.Interval interval : BinanceType.Interval.values()) {
+            if (minute % interval.getMinute() == 0) {
+                targetIntervalList.add(interval.getMinute());
+            }
+        }
+        return targetIntervalList;
     }
 }

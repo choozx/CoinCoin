@@ -1,5 +1,6 @@
 package com.jh.coincoin.service.strategy.order;
 
+import com.jh.coincoin.model.type.BinanceType.Interval;
 import com.jh.coincoin.model.type.BinanceType.Side;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.StrategyType.OrderStrategyType;
@@ -16,7 +17,9 @@ public interface OrderStrategy {
 
     OrderStrategyType getType();
 
-    Pair<Boolean, Side> isHit(Symbol symbol);
+//    Pair<Boolean, Side> isHit(Symbol symbol);
 
     List<InputBlock> getTargetValueBlockList();
+
+    Pair<Boolean, Side> isHit(Symbol symbol, Interval interval, String targetValue);
 }

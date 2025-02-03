@@ -119,4 +119,8 @@ public class AdminService {
     public BuyStrategyType getFollowBuyStrategy() {
         return BuyStrategyType.STOP_AND_LIMIT;
     }
+
+    public void getStrategyList() {
+
+    }
 }
