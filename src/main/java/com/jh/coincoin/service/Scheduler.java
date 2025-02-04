@@ -26,11 +26,11 @@ public class Scheduler {
         candleService.update();
 
         Interval interval = adminService.getInterval();
-        if (timeChecker(interval)) {
+        if (timeChecker(interval))
             indicatorService.detectIndicator();
-        }
 
-        tradeService.tradeV2();
+        if (adminService.isOnAutoTrade())
+            tradeService.tradeV2();
     }
 
     private boolean timeChecker(Interval interval) {

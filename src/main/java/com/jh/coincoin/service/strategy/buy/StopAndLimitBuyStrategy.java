@@ -112,6 +112,8 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
         PositionInfoRes positionInfoRes = positionInfoResList.get(0);   // 이 전략의 경우에는 포지션을 하나만 잡을것이기 인덱스 0에서 가져온다
         log.info("주문 정보 확인 : {}", positionInfoRes);
 
+        // TODO 주문 내용 슬랙에 전송
+
         RiskRewardRatioDto riskRewardRatioDto = orderParamDto.getRiskRewardRatioDto();
         RiskRewardCalculator calculator = riskRewardCalculatorMap.get(riskRewardRatioDto.getType());
 
