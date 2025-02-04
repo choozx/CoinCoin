@@ -6,6 +6,7 @@ import com.jh.coincoin.util.CodeEnum;
 import com.jh.coincoin.util.CodeEnumFinder;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
+import lombok.Getter;
 
 import java.util.Arrays;
 
@@ -75,6 +76,7 @@ public class BinanceType {
         }
     }
 
+    @Getter
     public enum Interval {
         ONE_MINUTE("1m", 1),
         FIVE_MINUTE("5m", 5),
@@ -89,14 +91,6 @@ public class BinanceType {
         Interval(String name, int minute) {
             this.name = name;
             this.minute = minute;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public int getMinute() {
-            return minute;
         }
 
         public static Interval of(String name) {
@@ -195,6 +189,7 @@ public class BinanceType {
         ;
     }
 
+    @Getter
     public enum BinanceURL {
         BASE_URL("https://fapi.binance.com/fapi"),
         GET_POSITION_INFO("/v3/positionRisk"),
@@ -211,10 +206,6 @@ public class BinanceType {
 
         BinanceURL(String url) {
             this.url = url;
-        }
-
-        public String getUrl() {
-            return url;
         }
     }
 }

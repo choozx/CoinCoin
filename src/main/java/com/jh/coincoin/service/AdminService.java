@@ -6,8 +6,6 @@ import com.jh.coincoin.model.type.BinanceType.Interval;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.ErrorType;
 import com.jh.coincoin.model.type.IndicatorType;
-import com.jh.coincoin.model.type.StrategyType.BuyStrategyType;
-import com.jh.coincoin.model.type.StrategyType.OrderStrategyType;
 import com.jh.coincoin.repo.AdminRepository;
 import com.jh.coincoin.support.ServerException;
 import jakarta.annotation.PostConstruct;
@@ -40,12 +38,8 @@ public class AdminService {
     private List<IndicatorType> trackingIndicatorList;
     private Interval interval;
     private Pair<Double, Double> alertRsiValuePair; // 슬랙 알람을 위한 rsi값
-    private Pair<Double, Double> orderRsiValuePair; // 포지션 진입을 위한 rsi값
     private int rsiPeriod;
     private String helpContext;
-    private float orderBalanceRatio;
-    private int leverage;
-    private Pair<Double, Double> riskRewardRatio;
 
     @PostConstruct
     public void init() {
@@ -59,11 +53,7 @@ public class AdminService {
 
         interval = Interval.of(rawAdminMap.get("INTERVAL"));
         alertRsiValuePair = parsePairDouble(rawAdminMap.get("RSI_SETTING"));
-        orderRsiValuePair = Pair.of(20.0, 80.0);
         rsiPeriod = Integer.parseInt(rawAdminMap.get("RSI_PERIOD"));
-        orderBalanceRatio = Float.parseFloat(rawAdminMap.get("ORDER_BALANCE_PERCENT"));
-        leverage = Integer.parseInt(rawAdminMap.get("LEVERAGE"));
-        riskRewardRatio = parsePairDouble(rawAdminMap.get("RISK_REWARD_RATIO"));
 
         helpContext = rawAdminMap.get("HELP_CONTEXT");
     }
@@ -110,17 +100,5 @@ public class AdminService {
     private Pair<Double, Double> parsePairDouble(String rawString) {
         String[] rawStringIndex = rawString.split(Pattern.quote("|"));
         return Pair.of(Double.parseDouble(rawStringIndex[0]), Double.parseDouble(rawStringIndex[1]));
-    }
-
-    public List<OrderStrategyType> getFollowOrderStrategyList() {
-        return new ArrayList<>();
-    }
-
-    public BuyStrategyType getFollowBuyStrategy() {
-        return BuyStrategyType.STOP_AND_LIMIT;
-    }
-
-    public void getStrategyList() {
-
     }
 }

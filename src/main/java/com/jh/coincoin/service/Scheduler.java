@@ -1,15 +1,11 @@
 package com.jh.coincoin.service;
 
 import com.jh.coincoin.model.type.BinanceType.Interval;
-import com.jh.coincoin.util.DateTimeUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
 
 /**
  * Created by dale on 2024-09-11.
@@ -32,7 +28,6 @@ public class Scheduler {
         Interval interval = adminService.getInterval();
         if (timeChecker(interval)) {
             indicatorService.detectIndicator();
-//            tradeService.trade();
         }
 
         tradeService.tradeV2();

@@ -36,22 +36,6 @@ public class ReverseTrendUsingRsiOrderStrategy implements OrderStrategy {
         return REVERSE_TREND_USING_RSI;
     }
 
-//    @Override
-//    public Pair<Boolean, Side> isHit(Symbol symbol) {
-//        BinanceType.Interval interval = adminService.getInterval();
-//        Double rsiRatio = rsiIndicator.getLastFigure(symbol, interval);
-//
-//        Pair<Double, Double> orderRsiValuePair = adminService.getOrderRsiValuePair();
-//
-//        if (rsiRatio >= orderRsiValuePair.getRight())
-//            return Pair.of(true, Side.SELL);
-//
-//        if (rsiRatio <= orderRsiValuePair.getLeft())
-//            return Pair.of(true, Side.BUY);
-//
-//        return Pair.of(false, null);
-//    }
-
     @Override
     public Pair<Boolean, Side> isHit(Symbol symbol, Interval interval, String targetValue) {
         RSI rsi = convertToRSI(targetValue);

@@ -87,15 +87,22 @@ public class StrategyType {
     }
 
     @Getter
-    public enum RiskRewardRatioType implements CodeEnum<Integer>{
-        FIXED_RATIO(1),
-        PEAK_RATIO(2),
+    public enum RiskRewardRatioType implements CodeEnum<Integer> {
+        FIXED_RATIO(1, "fixed_ratio"),
+        PEAK_RATIO(2, "peak_ratio"),
         ;
 
         private final int code;
+        private final String name;
 
-        RiskRewardRatioType(int code) {
+        RiskRewardRatioType(int code, String name) {
             this.code = code;
+            this.name = name;
+        }
+
+        @Override
+        public Integer getCode() {
+            return code;
         }
 
         @Override

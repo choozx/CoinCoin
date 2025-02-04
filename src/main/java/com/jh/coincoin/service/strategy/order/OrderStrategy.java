@@ -17,8 +17,6 @@ public interface OrderStrategy {
 
     OrderStrategyType getType();
 
-//    Pair<Boolean, Side> isHit(Symbol symbol);
-
     List<InputBlock> getTargetValueBlockList();
 
     Pair<Boolean, Side> isHit(Symbol symbol, Interval interval, String targetValue);
