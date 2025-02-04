@@ -1,9 +1,8 @@
 package com.jh.coincoin.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jh.coincoin.entity.BuyStrategyEntity;
 import com.jh.coincoin.entity.OrderStrategyEntity;
+import com.jh.coincoin.entity.RiskRewardRatioStrategyEntity;
 import com.jh.coincoin.entity.StrategyEntity;
 import com.jh.coincoin.model.type.BinanceType.Order;
 import com.jh.coincoin.model.type.BinanceType.Side;
@@ -72,19 +71,12 @@ public class Strategy {
         private double orderBalanceRatio;
 
         public static BuyStrategyDto create(BuyStrategyEntity buyStrategyEntity) {
-            ObjectMapper objectMapper = new ObjectMapper();
-
             BuyStrategyDto buyStrategyDto = new BuyStrategyDto();
             buyStrategyDto.idx = buyStrategyEntity.getIdx();
             buyStrategyDto.type = buyStrategyEntity.getType();
             buyStrategyDto.leverage = buyStrategyEntity.getLeverage();
             buyStrategyDto.orderBalanceRatio = buyStrategyEntity.getOrderBalanceRatio();
-
-            try {
-                buyStrategyDto.riskRewardRatioDto = objectMapper.readValue(buyStrategyEntity.getRiskRewardRatio(), RiskRewardRatioDto.class);
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
+            buyStrategyDto.riskRewardRatioDto = RiskRewardRatioDto.create(buyStrategyEntity.getRiskRewardRatioStrategyEntity());
 
             return buyStrategyDto;
         }
@@ -93,8 +85,16 @@ public class Strategy {
     @Data
     public static class RiskRewardRatioDto {
         private RiskRewardRatioType type;
-        private int stop;   // 손절비율
-        private int limit;  // 익절비율
+        private double stop;   // 손절비율
+        private double limit;  // 익절비율
+
+        public static RiskRewardRatioDto create(RiskRewardRatioStrategyEntity riskRewardRatioStrategyEntity) {
+            RiskRewardRatioDto riskRewardRatioDto = new RiskRewardRatioDto();
+            riskRewardRatioDto.type = riskRewardRatioStrategyEntity.getType();
+            riskRewardRatioDto.stop = riskRewardRatioStrategyEntity.getStop();
+            riskRewardRatioDto.limit = riskRewardRatioStrategyEntity.getLimit();
+            return riskRewardRatioDto;
+        }
     }
 
     @Getter

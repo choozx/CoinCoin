@@ -11,17 +11,5 @@ import com.jh.coincoin.model.type.StrategyType.BuyStrategyType;
 public interface BuyStrategy {
 
     BuyStrategyType getType();
-//    void order(Symbol symbol, Side side);
     void order(OrderParamDto orderParamDto);
-
-//    protected Double calcPrice(Side side, Order order, double entryPrice) {
-//        Pair<Double, Double> riskRewardRatio = adminService.getRiskRewardRatio();
-//        double ratio = order.equals(Order.TAKE_PROFIT_MARKET) ? riskRewardRatio.getRight() : riskRewardRatio.getLeft();
-//        double priceChange = entryPrice * ratio / 100;
-//        boolean isProfitOrder = order.equals(Order.TAKE_PROFIT_MARKET);
-//
-//        return side.equals(Side.BUY)
-//                ? entryPrice + (isProfitOrder ? priceChange : -priceChange)
-//                : entryPrice - (isProfitOrder ? priceChange : -priceChange);
-//    }
 }

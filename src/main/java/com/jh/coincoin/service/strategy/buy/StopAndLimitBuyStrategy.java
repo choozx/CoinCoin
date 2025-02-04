@@ -228,12 +228,13 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
                 .entryPrice(entryPrice)
                 .riskRewardRatio(riskRewardRatioDto.getStop())
                 .build();
+        double slPrice = calculator.calcPrice(slPriceDto);
         NewOrderReq slOrder = NewOrderReq.builder()
                 .symbol(symbol)
                 .side(Side.reverse(side))
                 .type(Order.STOP_MARKET)
                 .quantity(CommonUtil.formatDecimal(quantity, 3))
-                .stopPrice(CommonUtil.formatDecimal(calculator.calcPrice(slPriceDto), 2))
+                .stopPrice(CommonUtil.formatDecimal(slPrice, 2))
                 .closePosition(true)
                 .timestamp(now)
                 .build();

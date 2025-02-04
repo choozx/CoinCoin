@@ -20,12 +20,14 @@ public class BuyStrategyEntity implements Persistable<Long> {
     @Column(name = "type")
     @Convert(converter = BuyStrategyConverter.class)
     private BuyStrategyType type;
-    @Column(name = "risk_reward_ratio")
-    private String riskRewardRatio;    // 구매시 기준이 될 값.
     @Column(name = "leverage")
     private int leverage;
     @Column(name = "order_balance_ratio")
     private double orderBalanceRatio;
+
+    @ManyToOne
+    @JoinColumn(name = "risk_reward_ratio_strategy_idx")
+    private RiskRewardRatioStrategyEntity riskRewardRatioStrategyEntity;
 
     @Override
     public Long getId() {
