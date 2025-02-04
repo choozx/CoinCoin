@@ -87,7 +87,7 @@ public class StrategyType {
     }
 
     @Getter
-    public enum RiskRewardRatioType {
+    public enum RiskRewardRatioType implements CodeEnum<Integer>{
         FIXED_RATIO(1),
         PEAK_RATIO(2),
         ;
@@ -96,6 +96,25 @@ public class StrategyType {
 
         RiskRewardRatioType(int code) {
             this.code = code;
+        }
+
+        @Override
+        public String getKey() {
+            return "";
+        }
+
+        @Converter
+        public static class RiskRewardRatioConverter implements AttributeConverter<RiskRewardRatioType, Integer> {
+
+            @Override
+            public Integer convertToDatabaseColumn(RiskRewardRatioType riskRewardRatioType) {
+                return riskRewardRatioType.code;
+            }
+
+            @Override
+            public RiskRewardRatioType convertToEntityAttribute(Integer integer) {
+                return CodeEnumFinder.findByCode(RiskRewardRatioType.class, integer);
+            }
         }
     }
 

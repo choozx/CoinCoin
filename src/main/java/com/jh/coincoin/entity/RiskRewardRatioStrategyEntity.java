@@ -1,6 +1,7 @@
 package com.jh.coincoin.entity;
 
 import com.jh.coincoin.model.type.StrategyType.RiskRewardRatioType;
+import com.jh.coincoin.model.type.StrategyType.RiskRewardRatioType.RiskRewardRatioConverter;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,6 +18,7 @@ public class RiskRewardRatioStrategyEntity implements Persistable<Long> {
     @Column(name = "idx")
     private long idx;
     @Column(name = "type")
+    @Convert(converter = RiskRewardRatioConverter.class)
     private RiskRewardRatioType type;
     @Column(name = "stop")
     private double stop;    // 손절비율
