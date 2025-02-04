@@ -1,14 +1,13 @@
 package com.jh.coincoin.service.slack.actions;
 
 import com.jh.coincoin.model.type.BinanceType;
-import com.jh.coincoin.model.type.SlackType.ActionCommand;
+import com.jh.coincoin.model.type.SlackType.SlashCommand;
 import com.jh.coincoin.service.AdminService;
 import com.jh.coincoin.service.CandleService;
-import com.jh.coincoin.service.slack.ActionHandler;
+import com.jh.coincoin.service.slack.SlashCommandHandler;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -16,26 +15,25 @@ import java.util.Map;
  */
 
 @Service
-public class DeleteSymbolAction extends ActionHandler {
+public class DeleteSymbolSlashCommand extends SlashCommandHandler {
 
     private final AdminService adminService;
     private final CandleService candleService;
 
-    public DeleteSymbolAction(String webHookURL, AdminService adminService, CandleService candleService) {
+    public DeleteSymbolSlashCommand(String webHookURL, AdminService adminService, CandleService candleService) {
         super(webHookURL);
         this.adminService = adminService;
         this.candleService = candleService;
     }
 
     @Override
-    public ActionCommand getCommand() {
-        return ActionCommand.DELETE_SYMBOL;
+    public SlashCommand getCommand() {
+        return SlashCommand.DELETE_SYMBOL;
     }
 
     @Override
-    public void doAction(List<String> commandContextList) {
-        String symbolString = commandContextList.get(0);
-        BinanceType.Symbol symbol = BinanceType.Symbol.of(symbolString);
+    public void doCommand(String triggerId, String parameter) {
+        BinanceType.Symbol symbol = BinanceType.Symbol.of(parameter);
 
         adminService.deleteSymbol(symbol);
         candleService.removeTrackingCandle(symbol);

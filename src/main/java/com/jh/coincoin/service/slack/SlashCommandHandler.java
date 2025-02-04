@@ -1,6 +1,6 @@
 package com.jh.coincoin.service.slack;
 
-import com.jh.coincoin.model.type.SlackType.ActionCommand;
+import com.jh.coincoin.model.type.SlackType.SlashCommand;
 import com.slack.api.Slack;
 import com.slack.api.model.Attachment;
 import com.slack.api.model.Field;
@@ -18,12 +18,12 @@ import static com.slack.api.webhook.WebhookPayloads.payload;
  */
 
 @RequiredArgsConstructor
-public abstract class ActionHandler {
+public abstract class SlashCommandHandler {
 
     protected final Slack slackClient = Slack.getInstance();
     protected final String webHookURL;
-    public abstract ActionCommand getCommand();
-    public abstract void doAction(List<String> commandContextList);
+    public abstract SlashCommand getCommand();
+    public abstract void doCommand(String triggerId, String parameter);
 
     protected void sendMessage(Map<String, String> data){
         try {

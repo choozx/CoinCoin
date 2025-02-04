@@ -1,5 +1,9 @@
 package com.jh.coincoin.model.type;
 
+import com.jh.coincoin.support.ServerException;
+
+import java.util.Arrays;
+
 /**
  * Created by dale on 2024-11-22.
  */
@@ -16,6 +20,11 @@ public class StrategyType {
         OrderStrategyType(int code, String name) {
             this.code = code;
             this.name = name;
+        }
+
+        public static OrderStrategyType of(String name) {
+            return Arrays.stream(values()).filter(type -> type.name.equals(name)).findFirst()
+                    .orElseThrow(() -> new ServerException(ErrorType.WRONG_COMMAND, "찾을 수 없는 전략"));
         }
     }
 

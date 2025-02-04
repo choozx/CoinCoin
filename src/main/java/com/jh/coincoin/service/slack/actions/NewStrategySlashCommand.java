@@ -2,8 +2,8 @@ package com.jh.coincoin.service.slack.actions;
 
 import com.jh.coincoin.model.type.SlackType.InteractiveCommand;
 import com.jh.coincoin.model.type.StrategyType.OrderStrategyType;
-import com.jh.coincoin.model.type.SlackType.ActionCommand;
-import com.jh.coincoin.service.slack.ActionHandler;
+import com.jh.coincoin.model.type.SlackType.SlashCommand;
+import com.jh.coincoin.service.slack.SlashCommandHandler;
 import com.slack.api.methods.SlackApiException;
 import com.slack.api.model.block.InputBlock;
 import com.slack.api.model.block.composition.OptionObject;
@@ -12,6 +12,7 @@ import com.slack.api.model.block.element.StaticSelectElement;
 import com.slack.api.model.view.View;
 import com.slack.api.model.view.Views;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -25,19 +26,22 @@ import java.util.List;
 
 @Slf4j
 @Service
-public class NewStrategyAction extends ActionHandler {
+public class NewStrategySlashCommand extends SlashCommandHandler {
 
-    public NewStrategyAction(String webHookURL) {
+    @Value("${slack.bot-token}")
+    private String botToken;
+
+    public NewStrategySlashCommand(String webHookURL) {
         super(webHookURL);
     }
 
     @Override
-    public ActionCommand getCommand() {
-        return ActionCommand.NEW_STRATEGY;
+    public SlashCommand getCommand() {
+        return SlashCommand.NEW_STRATEGY;
     }
 
     @Override
-    public void doAction(List<String> commandContextList) {
+    public void doCommand(String triggerId, String parameter) {
         List<OptionObject> orderStrategyOptionList = new ArrayList<>();
         for (OrderStrategyType type : OrderStrategyType.values()) {
             OptionObject optionObject = OptionObject.builder()
@@ -69,8 +73,8 @@ public class NewStrategyAction extends ActionHandler {
         );
 
         try {
-            slackClient.methods("").viewsOpen(r -> r
-                    .triggerId(InteractiveCommand.DECIDE_ORDER_STRATEGY.getKey())
+            slackClient.methods(botToken).viewsOpen(r -> r
+                    .triggerId(triggerId)
                     .view(modalView)
             );
         } catch (IOException | SlackApiException e) {

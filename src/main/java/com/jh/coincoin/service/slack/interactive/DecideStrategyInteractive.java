@@ -1,5 +1,6 @@
 package com.jh.coincoin.service.slack.interactive;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.jh.coincoin.model.consts.GlobalConst;
 import com.jh.coincoin.model.type.BinanceType;
 import com.jh.coincoin.model.type.SlackType.InteractiveCommand;
@@ -19,7 +20,9 @@ import com.slack.api.model.block.element.StaticSelectElement;
 import com.slack.api.model.view.View;
 import com.slack.api.model.view.Views;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -29,9 +32,13 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DecideStrategyInteractive implements InteractiveHandler {
+
+    @Value("${slack.bot-token}")
+    private String botToken;
 
     private final Slack slackClient = Slack.getInstance();
     private final AdminService adminService;
@@ -49,7 +56,10 @@ public class DecideStrategyInteractive implements InteractiveHandler {
     }
 
     @Override
-    public void handleInteractive(String type) {
+    public void handleInteractive(JsonNode jsonNode, String viewId) {
+        String orderStrategyTypeString = jsonNode.path("entry_strategy").path("select_entry_strategy").path("selected_option").path("value").asText();
+        OrderStrategyType orderStrategyType = OrderStrategyType.valueOf(orderStrategyTypeString);
+
         List<OptionObject> intervalOptionList = new ArrayList<>();
         for (BinanceType.Interval interval : BinanceType.Interval.values()) {
             OptionObject optionObject = OptionObject.builder()
@@ -77,7 +87,7 @@ public class DecideStrategyInteractive implements InteractiveHandler {
 
         HeaderBlock headerBlock = HeaderBlock.builder()
                 .blockId("header")
-                .text(PlainTextObject.builder().text(type + " 전략 시트").build())
+                .text(PlainTextObject.builder().text(orderStrategyType.name() + " 전략 시트").build())
                 .build();
         layoutBlockList.add(headerBlock);
 
@@ -130,7 +140,7 @@ public class DecideStrategyInteractive implements InteractiveHandler {
                 .build();
         layoutBlockList.add(marginRatioBlock);
 
-        List<InputBlock> strategyValueBlock = orderStrategyMap.get(OrderStrategyType.valueOf(type)).getTargetValueBlockList();
+        List<InputBlock> strategyValueBlock = orderStrategyMap.get(orderStrategyType).getTargetValueBlockList();
         layoutBlockList.addAll(strategyValueBlock);
 
         View modalView = Views.view(v -> v
@@ -143,8 +153,8 @@ public class DecideStrategyInteractive implements InteractiveHandler {
         );
 
         try {
-            slackClient.methods("").viewsOpen(r -> r
-                    .triggerId("create_new_strategy")
+            slackClient.methods(botToken).viewsUpdate(r -> r
+                    .viewId(viewId)
                     .view(modalView)
             );
         } catch (IOException | SlackApiException e) {

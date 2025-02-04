@@ -10,17 +10,17 @@ import java.util.Arrays;
  */
 public class SlackType {
 
-    public enum ActionCommand implements CodeEnum<Integer> {
-        HELP(1, "/h"),
-        SET_SYMBOL(2, "/ss"),
-        DELETE_SYMBOL(3, "/ds"),
+    public enum SlashCommand implements CodeEnum<Integer> {
+        HELP(1, "/help"),
+        SET_SYMBOL(2, "/set_symbol"),
+        DELETE_SYMBOL(3, "/delete_symbol"),
         NEW_STRATEGY(4, "/new_strategy")
         ;
 
         private final int code;
         private final String command;
 
-        ActionCommand(int code, String command) {
+        SlashCommand(int code, String command) {
             this.code = code;
             this.command = command;
         }
@@ -35,7 +35,7 @@ public class SlackType {
             return command;
         }
 
-        public static ActionCommand of(String stringCommand) {
+        public static SlashCommand of(String stringCommand) {
             return Arrays.stream(values()).filter(command -> command.command.equals(stringCommand)).findFirst()
                     .orElseThrow(() -> new ServerException(ErrorType.WRONG_COMMAND, "찾을 수 없는 명령어"));
         }

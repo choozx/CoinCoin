@@ -1,14 +1,13 @@
 package com.jh.coincoin.service.slack.actions;
 
 import com.jh.coincoin.model.type.BinanceType.Symbol;
-import com.jh.coincoin.model.type.SlackType.ActionCommand;
+import com.jh.coincoin.model.type.SlackType.SlashCommand;
 import com.jh.coincoin.service.AdminService;
 import com.jh.coincoin.service.external.CandleCollectorAPIService;
-import com.jh.coincoin.service.slack.ActionHandler;
+import com.jh.coincoin.service.slack.SlashCommandHandler;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -16,26 +15,25 @@ import java.util.Map;
  */
 
 @Service
-public class SetSymbolAction extends ActionHandler {
+public class SetSymbolSlashCommand extends SlashCommandHandler {
 
     private final AdminService adminService;
     private final CandleCollectorAPIService ccApiService;
 
-    public SetSymbolAction(String webHookURL, AdminService adminService, CandleCollectorAPIService ccApiService) {
+    public SetSymbolSlashCommand(String webHookURL, AdminService adminService, CandleCollectorAPIService ccApiService) {
         super(webHookURL);
         this.adminService = adminService;
         this.ccApiService = ccApiService;
     }
 
     @Override
-    public ActionCommand getCommand() {
-        return ActionCommand.SET_SYMBOL;
+    public SlashCommand getCommand() {
+        return SlashCommand.SET_SYMBOL;
     }
 
     @Override
-    public void doAction(List<String> commandContextList) {
-        String symbolString = commandContextList.get(0);
-        Symbol symbol = Symbol.of(symbolString);
+    public void doCommand(String triggerId, String parameter) {
+        Symbol symbol = Symbol.of(parameter);
 
         ccApiService.orderTrackingSymbol(symbol);
 

@@ -1,12 +1,11 @@
 package com.jh.coincoin.service.slack.actions;
 
-import com.jh.coincoin.model.type.SlackType.ActionCommand;
+import com.jh.coincoin.model.type.SlackType.SlashCommand;
 import com.jh.coincoin.service.AdminService;
-import com.jh.coincoin.service.slack.ActionHandler;
+import com.jh.coincoin.service.slack.SlashCommandHandler;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -14,22 +13,22 @@ import java.util.Map;
  */
 
 @Service
-public class HelpAction extends ActionHandler {
+public class HelpSlashCommand extends SlashCommandHandler {
 
     private final AdminService adminService;
 
-    public HelpAction(String webHookURL, AdminService adminService) {
+    public HelpSlashCommand(String webHookURL, AdminService adminService) {
         super(webHookURL);
         this.adminService = adminService;
     }
 
     @Override
-    public ActionCommand getCommand() {
-        return ActionCommand.HELP;
+    public SlashCommand getCommand() {
+        return SlashCommand.HELP;
     }
 
     @Override
-    public void doAction(List<String> commandContextList) {
+    public void doCommand(String triggerId, String parameter) {
         String helpContext = adminService.getHelpContext();
 
         Map<String, String> context = new HashMap<>();
