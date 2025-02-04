@@ -40,12 +40,12 @@ public class CandleService {
         allSymbolLoad2DB();
     }
 
-    public Map<Long, Candle> getCandleListPerInterval(Symbol symbol, Interval interval) {
+    public Map<Long, Candle> getCandleMap(Symbol symbol, Interval interval) {
         var candleMap = allSymbolMap.get(symbol);
-        return getCandleListPerInterval(symbol, interval, candleMap.size());
+        return getCandleMap(symbol, interval, candleMap.size());
     }
 
-    public Map<Long, Candle> getCandleListPerInterval(Symbol symbol, Interval interval, int candleCount) {
+    public Map<Long, Candle> getCandleMap(Symbol symbol, Interval interval, int candleCount) {
         Map<Long, Candle> candleMap = allSymbolMap.get(symbol);
 
         Map<Long, Candle> candleMapPerInterval = new TreeMap<>(Comparator.reverseOrder());
@@ -71,6 +71,11 @@ public class CandleService {
         }
 
         return candleMapPerInterval;
+    }
+
+    public Candle getLastCandle(Symbol symbol, Interval interval) {
+        Map<Long, Candle> lastCandleMap = getCandleMap(symbol, interval, 1);
+        return lastCandleMap.values().stream().toList().get(0);
     }
 
     public void update() {

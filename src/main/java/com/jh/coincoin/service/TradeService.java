@@ -1,5 +1,6 @@
 package com.jh.coincoin.service;
 
+import com.jh.coincoin.model.Strategy.OrderParamDto;
 import com.jh.coincoin.model.Strategy.OrderStrategyDto;
 import com.jh.coincoin.model.Strategy.BuyStrategyDto;
 import com.jh.coincoin.model.Strategy.StrategyDto;
@@ -82,7 +83,16 @@ public class TradeService {
             if (hit.getLeft()) {
                 BuyStrategyDto buyStrategyDto = strategyDto.getBuyStrategy();
                 BuyStrategy buyStrategy = buyStrategyMap.get(buyStrategyDto.getType());
-                buyStrategy.order(strategyDto.getSymbol(), hit.getRight(), buyStrategyDto.getLeverage(), buyStrategyDto.getRiskRewardRatioDto(), buyStrategyDto.getOrderBalanceRatio());
+
+                OrderParamDto orderParamDto = OrderParamDto.builder()
+                        .symbol(strategyDto.getSymbol())
+                        .side(hit.getRight())
+                        .interval(strategyDto.getInterval())
+                        .leverage(buyStrategyDto.getLeverage())
+                        .riskRewardRatioDto(buyStrategyDto.getRiskRewardRatioDto())
+                        .orderBalanceRatio(buyStrategyDto.getOrderBalanceRatio())
+                        .build();
+                buyStrategy.order(orderParamDto);
             }
         }
     }

@@ -1,8 +1,6 @@
 package com.jh.coincoin.service.strategy.buy;
 
-import com.jh.coincoin.model.Strategy.RiskRewardRatioDto;
-import com.jh.coincoin.model.type.BinanceType.Symbol;
-import com.jh.coincoin.model.type.BinanceType.Side;
+import com.jh.coincoin.model.Strategy.OrderParamDto;
 import com.jh.coincoin.model.type.StrategyType.BuyStrategyType;
 
 /**
@@ -14,7 +12,7 @@ public interface BuyStrategy {
 
     BuyStrategyType getType();
 //    void order(Symbol symbol, Side side);
-    void order(Symbol symbol, Side side, int leverage, RiskRewardRatioDto riskRewardRatioDto, double orderBalanceRatio);
+    void order(OrderParamDto orderParamDto);
 
 //    protected Double calcPrice(Side side, Order order, double entryPrice) {
 //        Pair<Double, Double> riskRewardRatio = adminService.getRiskRewardRatio();

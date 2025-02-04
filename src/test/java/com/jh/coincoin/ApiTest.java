@@ -45,7 +45,7 @@ public class ApiTest {
 //        candleService.manualUpdate(300);
 
         Interval interval = Interval.ONE_MINUTE;
-        var candleMap = candleService.getCandleListPerInterval(Symbol.BTCUSDT, interval);
+        var candleMap = candleService.getCandleMap(Symbol.BTCUSDT, interval);
 
         log.info("================{}분봉================", interval.getMinute());
         for (var keyValue : candleMap.entrySet()) {
@@ -65,7 +65,7 @@ public class ApiTest {
     @Test
     public void repoTest() {
         Interval interval = Interval.ONE_MINUTE;
-        var candleMap = candleService.getCandleListPerInterval(Symbol.BTCUSDT, interval);
+        var candleMap = candleService.getCandleMap(Symbol.BTCUSDT, interval);
 
 //        candleService.saveCandle(candleMap.values().stream().toList());
     }

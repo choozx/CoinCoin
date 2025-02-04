@@ -35,7 +35,7 @@ public class RSIIndicator implements Indicator {
 
     @Override
     public Double getLastFigure(Symbol symbol, Interval interval) {
-        Map<Long, Candle> candleMap = candleService.getCandleListPerInterval(symbol, interval, 200);
+        Map<Long, Candle> candleMap = candleService.getCandleMap(symbol, interval, 200);
 
         List<Candle> candles = candleMap.values().stream()
                 .sorted(Comparator.comparing(Candle::getOpenTime))

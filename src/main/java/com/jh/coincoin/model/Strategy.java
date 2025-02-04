@@ -5,12 +5,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jh.coincoin.entity.BuyStrategyEntity;
 import com.jh.coincoin.entity.OrderStrategyEntity;
 import com.jh.coincoin.entity.StrategyEntity;
+import com.jh.coincoin.model.type.BinanceType.Order;
+import com.jh.coincoin.model.type.BinanceType.Side;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.BinanceType.Interval;
 import com.jh.coincoin.model.type.StrategyType.RiskRewardRatioType;
 import com.jh.coincoin.model.type.StrategyType.BuyStrategyType;
 import com.jh.coincoin.model.type.StrategyType.OrderStrategyType;
+import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 
 public class Strategy {
 
@@ -48,6 +52,17 @@ public class Strategy {
         }
     }
 
+    @Getter
+    @Builder
+    public static class OrderParamDto {
+        private Symbol symbol;
+        private Side side;
+        private Interval interval;
+        private int leverage;
+        private RiskRewardRatioDto riskRewardRatioDto;
+        private double orderBalanceRatio;
+    }
+
     @Data
     public static class BuyStrategyDto {
         private long idx;
@@ -75,12 +90,22 @@ public class Strategy {
         }
     }
 
-
     @Data
     public static class RiskRewardRatioDto {
         private RiskRewardRatioType type;
         private int stop;   // 손절비율
         private int limit;  // 익절비율
+    }
+
+    @Getter
+    @Builder
+    public static class PriceCalculatorDto {
+        private Symbol symbol;
+        private Interval interval;
+        private Side side;
+        private Order order;
+        private double entryPrice;
+        private double riskRewardRatio;
     }
 
     @Data
