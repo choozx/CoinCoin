@@ -32,14 +32,12 @@ public class IndicatorService {
         this.indicatorServiceMap = indicatorSet.stream().collect(Collectors.toMap(Indicator::getName, Function.identity()));
     }
 
-    public void detectIndicator() {
-        Interval interval = adminService.getInterval();
-
-        List<IndicatorType> indicatorNameList = adminService.getTrackingIndicatorList();
+    public void detectIndicator(Interval interval) {
+        List<IndicatorType> indicatorList = adminService.getTrackingIndicatorList();
         List<Symbol> symbolList = adminService.getTrackingSymbolList();
 
         Map<String, String> messages = new HashMap<>();
-        for (IndicatorType indicatorType : indicatorNameList) {
+        for (IndicatorType indicatorType : indicatorList) {
             for (Symbol symbol : symbolList) {
                 Indicator indicator = indicatorServiceMap.get(indicatorType);
                 Double result = indicator.getLastFigure(symbol, interval);

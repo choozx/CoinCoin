@@ -121,7 +121,7 @@ public class ApiTest {
 
     @Test
     public void 지표감지() {
-        indicatorService.detectIndicator();
+        indicatorService.detectIndicator(Interval.FIFTEEN_MINUTE);
     }
 
     @Test

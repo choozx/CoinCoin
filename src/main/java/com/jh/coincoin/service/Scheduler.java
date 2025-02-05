@@ -27,7 +27,7 @@ public class Scheduler {
 
         Interval interval = adminService.getInterval();
         if (timeChecker(interval))
-            indicatorService.detectIndicator();
+            indicatorService.detectIndicator(interval);
 
         if (adminService.isOnAutoTrade())
             tradeService.tradeV2();
