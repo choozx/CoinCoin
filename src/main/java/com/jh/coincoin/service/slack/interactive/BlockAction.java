@@ -34,11 +34,11 @@ public class BlockAction implements InteractiveTypeHandler {
 
     @Override
     public void handleInteractiveType(JsonNode jsonNode) {
-        SheetType sheetType = SheetType.ORDER;
+        SheetType sheetType = SheetType.of(jsonNode.path("view").path("callback_id").asText());
         SheetHandler handler = strategySheetMap.get(sheetType);
 
-        String viewId = "";
-        JsonNode selectedOption = jsonNode.get("view");
-        handler.updateSheet(viewId, selectedOption);
+        String viewId = jsonNode.path("view").path("id").asText();
+        JsonNode selectedOptionList = jsonNode.get("actions");
+        handler.updateSheet(viewId, selectedOptionList);
     }
 }

@@ -44,14 +44,10 @@ public class SlackController {
         JsonNode jsonNode;
         try {
             jsonNode = mapper.readTree(payload);
+            log.info("json node :{}", jsonNode);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-        JsonNode values = jsonNode.path("view").path("state").path("values");
-        String viewId = jsonNode.path("view").path("id").asText();
-
-        // key를 어떤껄 써야되나...
-        log.info("viewId : {} | json node :{}", viewId, jsonNode);
 
         slackService.handleInteractive(jsonNode);
     }

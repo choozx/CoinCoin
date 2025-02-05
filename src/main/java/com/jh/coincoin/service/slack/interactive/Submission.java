@@ -33,9 +33,10 @@ public class Submission implements InteractiveTypeHandler {
 
     @Override
     public void handleInteractiveType(JsonNode jsonNode) {
-        SheetType sheetType = SheetType.ORDER;
+        SheetType sheetType = SheetType.of(jsonNode.path("view").path("callback_id").asText());
         SheetHandler handler = strategySheetMap.get(sheetType);
 
-        handler.submitSheet(jsonNode);
+        JsonNode decideStrategyValue = jsonNode.path("view").path("state").path("values");
+        handler.submitSheet(decideStrategyValue);
     }
 }

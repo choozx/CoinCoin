@@ -1,6 +1,5 @@
 package com.jh.coincoin.entity;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.jh.coincoin.model.type.StrategyType.OrderStrategyType;
 import com.jh.coincoin.model.type.StrategyType.OrderStrategyType.OrderStrategyConverter;
 import jakarta.persistence.*;
@@ -24,8 +23,10 @@ public class OrderStrategyEntity implements Persistable<Long> {
     @Column(name = "target_value")
     private String targetValue;    // 주문 진입시 기준이 될 값.
 
-    public static OrderStrategyEntity create(JsonNode jsonNode, String targetValue) {
+    public static OrderStrategyEntity create(OrderStrategyType type, String targetValue) {
         OrderStrategyEntity entity = new OrderStrategyEntity();
+        entity.type = type;
+        entity.targetValue = targetValue;
         return entity;
     }
 

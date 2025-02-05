@@ -21,17 +21,17 @@ public class Scheduler {
     private final TradeService tradeService;
 
     // 매분 5초 때마다 실행
-    @Scheduled(cron = "5 * * * * *")
-    public void update(){
-        candleService.update();
-
-        Interval interval = adminService.getInterval();
-        if (timeChecker(interval))
-            indicatorService.detectIndicator(interval);
-
-        if (adminService.isOnAutoTrade())
-            tradeService.tradeV2();
-    }
+//    @Scheduled(cron = "5 * * * * *")
+//    public void update(){
+//        candleService.update();
+//
+//        Interval interval = adminService.getInterval();
+//        if (timeChecker(interval))
+//            indicatorService.detectIndicator(interval);
+//
+//        if (adminService.isOnAutoTrade())
+//            tradeService.tradeV2();
+//    }
 
     private boolean timeChecker(Interval interval) {
         int minute = LocalDateTime.now().getMinute();

@@ -45,8 +45,10 @@ public class OrderSheet implements SheetHandler {
     }
 
     @Override
-    public void updateSheet(String viewId, JsonNode selectedOption) {
-        OrderStrategyType selectedOrderType = OrderStrategyType.of(selectedOption.get("state").get("values").get("order_strategy").asText());
+    public void updateSheet(String viewId, JsonNode selectedOptionList) {
+        JsonNode selectOption = selectedOptionList.get(0);
+        OrderStrategyType selectedOrderType = OrderStrategyType.of(selectOption.path("selected_option").path("value").asText());
+
         OptionObject selectedOrderStrategy = OptionObject.builder()
                 .text(PlainTextObject.builder()
                         .text(selectedOrderType.getDescription())
@@ -85,6 +87,7 @@ public class OrderSheet implements SheetHandler {
         layoutBlockList.addAll(valueBlockList);
 
         View modalView = Views.view(v -> v
+                .type("modal")
                 .callbackId(SheetType.ORDER.getKey())
                 .title(Views.viewTitle(title -> title.type("plain_text").text("새로운 진입 전략")))
                 .submit(Views.viewSubmit(submit -> submit.type("plain_text").text("Submit")))
@@ -103,11 +106,10 @@ public class OrderSheet implements SheetHandler {
     }
 
     @Override
-    public void submitSheet(JsonNode jsonNode) {
-        OrderStrategyType selectedOrderType = OrderStrategyType.of(jsonNode.get("state").get("values").get("order_strategy").asText());
+    public void submitSheet(JsonNode decideStrategyValue) {
+        OrderStrategyType selectedOrderType = OrderStrategyType.of(decideStrategyValue.path("order_strategy").path("select_order_strategy").path("selected_option").path("value").asText());
         OrderStrategy orderStrategy = orderStrategyMap.get(selectedOrderType);
 
-        JsonNode decideStrategy = jsonNode.get("state").get("values");
-        orderStrategy.save(decideStrategy);
+        orderStrategy.save(decideStrategyValue);
     }
 }

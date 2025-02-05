@@ -17,6 +17,7 @@ import com.slack.api.model.block.element.NumberInputElement;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,10 +46,10 @@ public class ReverseTrendUsingRsiOrderStrategy implements OrderStrategy {
         RSIValue rsiValue = convertToRSI(targetValue);
         Double rsiRatio = rsiIndicator.getLastFigure(symbol, interval);
 
-        if (rsiRatio >= rsiValue.getOverbought())
+        if (rsiRatio >= rsiValue.getOverBought())
             return Pair.of(true, Side.SELL);
 
-        if (rsiRatio <= rsiValue.getOversold())
+        if (rsiRatio <= rsiValue.getOverSell())
             return Pair.of(true, Side.BUY);
 
         return Pair.of(false, null);
@@ -87,9 +88,17 @@ public class ReverseTrendUsingRsiOrderStrategy implements OrderStrategy {
     }
 
     @Override
+    @Transactional
     public void save(JsonNode decideStrategy) {
+        OrderStrategyType selectedOrderType = OrderStrategyType.of(decideStrategy.path("order_strategy").path("select_order_strategy").path("selected_option").path("value").asText());
+        int overBought = Integer.parseInt(decideStrategy.path("over_bought_target_value").path("select_over_bought_target_value").path("value").asText());
+        int overSell = Integer.parseInt(decideStrategy.path("over_sell_target_value").path("select_over_sell_target_value").path("value").asText());
+
         ObjectMapper objectMapper = new ObjectMapper();
-        RSIValue rsiValue = new RSIValue();
+        RSIValue rsiValue = RSIValue.builder()
+                .overBought(overBought)
+                .overSell(overSell)
+                .build();
 
         String rsiValueString;
         try {
@@ -97,7 +106,7 @@ public class ReverseTrendUsingRsiOrderStrategy implements OrderStrategy {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-        OrderStrategyEntity orderStrategyEntity = OrderStrategyEntity.create(decideStrategy, rsiValueString);
+        OrderStrategyEntity orderStrategyEntity = OrderStrategyEntity.create(selectedOrderType, rsiValueString);
 
         orderStrategyRepository.saveAndFlush(orderStrategyEntity);
     }

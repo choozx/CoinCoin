@@ -7,6 +7,6 @@ import com.jh.coincoin.model.type.SlackType.SheetType;
 public interface SheetHandler {
 
     SheetType getType();
-    void updateSheet(String viewId, JsonNode selectedOption);
+    void updateSheet(String viewId, JsonNode selectedOptionList);
     void submitSheet(JsonNode jsonNode);
 }

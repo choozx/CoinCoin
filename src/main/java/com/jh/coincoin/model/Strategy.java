@@ -109,8 +109,9 @@ public class Strategy {
     }
 
     @Data
+    @Builder
     public static class RSIValue {
-        private int overbought;
-        private int oversold;
+        private int overBought;
+        private int overSell;
     }
 }

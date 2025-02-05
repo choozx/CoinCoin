@@ -19,6 +19,7 @@ public class StrategyType {
 
     public enum OrderStrategyType implements CodeEnum<Integer> {
         REVERSE_TREND_USING_RSI(1, "reverse_trend_using_rsi", "역추세 매매법 (RSI)"),
+        TEST(2, "test", "테스트 기법")
         ;
 
         private final int code;

@@ -65,6 +65,7 @@ public class CreateOrderStrategyCommand extends SlashCommandHandler {
                 .build();
 
         View modalView = Views.view(v -> v
+                .type("modal")
                 .callbackId(SheetType.ORDER.getKey())
                 .title(Views.viewTitle(title -> title.type("plain_text").text("새로운 전략")))
                 .submit(Views.viewSubmit(submit -> submit.type("plain_text").text("Submit")))
