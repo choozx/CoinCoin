@@ -15,8 +15,8 @@ public class SlackType {
         SET_SYMBOL(2, "/set_symbol"),
         DELETE_SYMBOL(3, "/delete_symbol"),
         CREATE_TRADE_STRATEGY(4, "/create_trade_strategy"),
-        CREATE_ORDER_STRATEGY(4, "/create_order_strategy"),
-        CREATE_BUY_STRATEGY(4, "/create_buy_strategy"),
+        CREATE_ORDER_STRATEGY(5, "/create_order_strategy"),
+        CREATE_BUY_STRATEGY(6, "/create_buy_strategy"),
         ;
 
         private final int code;
@@ -76,7 +76,6 @@ public class SlackType {
         TRADE(1, "trade"),
         ORDER(2, "order"),
         BUY(3, "buy"),
-        RISK_REWARD_RATIO(4, "risk_reward_ratio"),
         ;
 
         private final int code;

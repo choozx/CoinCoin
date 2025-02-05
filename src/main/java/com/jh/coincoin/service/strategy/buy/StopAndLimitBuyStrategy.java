@@ -9,7 +9,6 @@ import com.jh.coincoin.model.Binance.AccountBalanceReq;
 import com.jh.coincoin.model.Binance.AccountBalanceRes;
 import com.jh.coincoin.model.Binance.NewOrderReq;
 import com.jh.coincoin.model.Strategy.PriceCalculatorDto;
-import com.jh.coincoin.model.Strategy.RiskRewardRatioDto;
 import com.jh.coincoin.model.Strategy.OrderParamDto;
 import com.jh.coincoin.model.consts.GlobalConst;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
@@ -114,8 +113,7 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
 
         // TODO 주문 내용 슬랙에 전송
 
-        RiskRewardRatioDto riskRewardRatioDto = orderParamDto.getRiskRewardRatioDto();
-        RiskRewardCalculator calculator = riskRewardCalculatorMap.get(riskRewardRatioDto.getType());
+        RiskRewardCalculator calculator = riskRewardCalculatorMap.get(orderParamDto.getRiskRewardRatioType());
 
         // 익절가 주문
         double entryPrice = positionInfoRes.getEntryPrice();
@@ -125,7 +123,7 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
                 .side(side)
                 .order(Order.TAKE_PROFIT_MARKET)
                 .entryPrice(entryPrice)
-                .riskRewardRatio(riskRewardRatioDto.getLimit())
+                .riskRewardRatio(orderParamDto.getLimit())
                 .build();
         double tkPrice = calculator.calcPrice(tkPriceDto);
         NewOrderReq tkOrder = NewOrderReq.builder()
@@ -146,7 +144,7 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
                 .side(side)
                 .order(Order.STOP_MARKET)
                 .entryPrice(entryPrice)
-                .riskRewardRatio(riskRewardRatioDto.getStop())
+                .riskRewardRatio(orderParamDto.getStop())
                 .build();
         double slPrice = calculator.calcPrice(slPriceDto);
         NewOrderReq slOrder = NewOrderReq.builder()

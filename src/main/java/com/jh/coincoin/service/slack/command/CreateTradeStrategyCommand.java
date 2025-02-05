@@ -165,7 +165,7 @@ public class CreateTradeStrategyCommand extends SlashCommandHandler {
         layoutBlockList.add(intervalBlock);
         layoutBlockList.add(leverageBlock);
         layoutBlockList.add(orderStrategyBlock);
-//        layoutBlockList.add(buyStrategyBlock);
+        layoutBlockList.add(buyStrategyBlock);
 
         View modalView = Views.view(v -> v
                 .type("modal")

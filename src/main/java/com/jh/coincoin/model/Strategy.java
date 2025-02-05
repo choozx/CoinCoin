@@ -2,7 +2,6 @@ package com.jh.coincoin.model;
 
 import com.jh.coincoin.entity.BuyStrategyEntity;
 import com.jh.coincoin.entity.OrderStrategyEntity;
-import com.jh.coincoin.entity.RiskRewardRatioStrategyEntity;
 import com.jh.coincoin.entity.TradeStrategyEntity;
 import com.jh.coincoin.model.type.BinanceType.Order;
 import com.jh.coincoin.model.type.BinanceType.Side;
@@ -58,17 +57,21 @@ public class Strategy {
         private Side side;
         private Interval interval;
         private int leverage;
-        private RiskRewardRatioDto riskRewardRatioDto;
         private double orderBalanceRatio;
+        private RiskRewardRatioType riskRewardRatioType;
+        private double stop;   // 손절비율
+        private double limit;  // 익절비율
     }
 
     @Data
     public static class BuyStrategyDto {
         private long idx;
         private BuyStrategyType type;
-        private RiskRewardRatioDto riskRewardRatioDto;
         private int leverage;
         private double orderBalanceRatio;
+        private RiskRewardRatioType riskRewardRatioType;
+        private double stop;   // 손절비율
+        private double limit;  // 익절비율
 
         public static BuyStrategyDto create(BuyStrategyEntity buyStrategyEntity) {
             BuyStrategyDto buyStrategyDto = new BuyStrategyDto();
@@ -76,24 +79,11 @@ public class Strategy {
             buyStrategyDto.type = buyStrategyEntity.getType();
             buyStrategyDto.leverage = buyStrategyEntity.getLeverage();
             buyStrategyDto.orderBalanceRatio = buyStrategyEntity.getOrderBalanceRatio();
-            buyStrategyDto.riskRewardRatioDto = RiskRewardRatioDto.create(buyStrategyEntity.getRiskRewardRatioStrategyEntity());
+            buyStrategyDto.riskRewardRatioType = buyStrategyEntity.getRiskRewardRatioType();
+            buyStrategyDto.stop = buyStrategyDto.getStop();
+            buyStrategyDto.limit = buyStrategyDto.getLimit();
 
             return buyStrategyDto;
-        }
-    }
-
-    @Data
-    public static class RiskRewardRatioDto {
-        private RiskRewardRatioType type;
-        private double stop;   // 손절비율
-        private double limit;  // 익절비율
-
-        public static RiskRewardRatioDto create(RiskRewardRatioStrategyEntity riskRewardRatioStrategyEntity) {
-            RiskRewardRatioDto riskRewardRatioDto = new RiskRewardRatioDto();
-            riskRewardRatioDto.type = riskRewardRatioStrategyEntity.getType();
-            riskRewardRatioDto.stop = riskRewardRatioStrategyEntity.getStop();
-            riskRewardRatioDto.limit = riskRewardRatioStrategyEntity.getLimit();
-            return riskRewardRatioDto;
         }
     }
 

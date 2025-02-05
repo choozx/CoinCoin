@@ -67,8 +67,10 @@ public class TradeService {
                         .side(hit.getRight())
                         .interval(tradeStrategyDto.getInterval())
                         .leverage(buyStrategyDto.getLeverage())
-                        .riskRewardRatioDto(buyStrategyDto.getRiskRewardRatioDto())
                         .orderBalanceRatio(buyStrategyDto.getOrderBalanceRatio())
+                        .riskRewardRatioType(buyStrategyDto.getRiskRewardRatioType())
+                        .stop(buyStrategyDto.getStop())
+                        .limit(buyStrategyDto.getLimit())
                         .build();
                 buyStrategy.order(orderParamDto);
             }

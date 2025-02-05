@@ -1,5 +1,7 @@
 package com.jh.coincoin.entity;
 
+import com.jh.coincoin.model.type.StrategyType.RiskRewardRatioType;
+import com.jh.coincoin.model.type.StrategyType.RiskRewardRatioType.RiskRewardRatioConverter;
 import com.jh.coincoin.model.type.StrategyType.BuyStrategyType;
 import com.jh.coincoin.model.type.StrategyType.BuyStrategyType.BuyStrategyConverter;
 import jakarta.persistence.*;
@@ -24,10 +26,13 @@ public class BuyStrategyEntity implements Persistable<Long> {
     private int leverage;
     @Column(name = "order_balance_ratio")
     private double orderBalanceRatio;
-
-    @ManyToOne
-    @JoinColumn(name = "risk_reward_ratio_strategy_idx")
-    private RiskRewardRatioStrategyEntity riskRewardRatioStrategyEntity;
+    @Column(name = "risk_reward_ratio_type")
+    @Convert(converter = RiskRewardRatioConverter.class)
+    private RiskRewardRatioType riskRewardRatioType;
+    @Column(name = "stop")
+    private double stop;    // 손절비율
+    @Column(name = "limit")
+    private double limit;   // 익절비율
 
     @Override
     public Long getId() {

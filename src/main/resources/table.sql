@@ -23,14 +23,7 @@ CREATE TABLE buy_strategy
     type int NOT NULL,
     leverage int NOT NULL,
     order_balance_ratio double(4,3) NOT NULL,
-    risk_reward_ratio_strategy_id BIGINT NOT null,
-    CONSTRAINT fk_risk_reward_ratio_strategy FOREIGN KEY (risk_reward_ratio_strategy_id) REFERENCES risk_reward_ratio_strategy (idx),
-);
-
-CREATE TABLE risk_reward_ratio_strategy
-(
-    idx BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    type int NOT NULL,
-    stop double(5, 3) NOT NULL,
-    limit double(5, 3) NOT NULL,
+    risk_reward_ratio_type int not null,
+    stop double(5,4) not null,
+    limit double(5,4) not null
 );
