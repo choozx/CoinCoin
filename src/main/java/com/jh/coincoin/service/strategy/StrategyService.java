@@ -1,5 +1,6 @@
 package com.jh.coincoin.service.strategy;
 
+import com.jh.coincoin.entity.BuyStrategyEntity;
 import com.jh.coincoin.entity.TradeStrategyEntity;
 import com.jh.coincoin.model.Strategy.OrderStrategyDto;
 import com.jh.coincoin.model.Strategy.BuyStrategyDto;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -38,8 +40,7 @@ public class StrategyService {
     }
 
     public List<BuyStrategyDto> getBuyStrategyList() {
-        List<BuyStrategyDto> buyStrategyDtoList = new ArrayList<>();
-        buyStrategyRepository.findAll().forEach(buyStrategyEntity -> buyStrategyDtoList.add(BuyStrategyDto.create(buyStrategyEntity)));
-        return buyStrategyDtoList;
+        List<BuyStrategyEntity> buyStrategyEntityList = buyStrategyRepository.findAll();
+        return buyStrategyEntityList.stream().map(BuyStrategyDto::create).collect(Collectors.toList());
     }
 }

@@ -59,7 +59,7 @@ public class CreateTradeStrategyCommand extends SlashCommandHandler {
         for (OrderStrategyDto dto : strategyService.getOrderStrategyList()) {
             OptionObject optionObject = OptionObject.builder()
                     .text(PlainTextObject.builder()
-                            .text(dto.getType().name())
+                            .text(dto.getType().getDescription())
                             .build())
                     .value(String.valueOf(dto.getIdx()))
                     .build();
@@ -165,9 +165,10 @@ public class CreateTradeStrategyCommand extends SlashCommandHandler {
         layoutBlockList.add(intervalBlock);
         layoutBlockList.add(leverageBlock);
         layoutBlockList.add(orderStrategyBlock);
-        layoutBlockList.add(buyStrategyBlock);
+//        layoutBlockList.add(buyStrategyBlock);
 
         View modalView = Views.view(v -> v
+                .type("modal")
                 .callbackId(SheetType.TRADE.getKey())
                 .title(Views.viewTitle(title -> title.type("plain_text").text("새로운 전략")))
                 .submit(Views.viewSubmit(submit -> submit.type("plain_text").text("Submit")))
