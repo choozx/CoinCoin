@@ -1,5 +1,6 @@
 package com.jh.coincoin;
 import com.jh.coincoin.model.Binance.NewOrderReq;
+import com.jh.coincoin.model.Strategy;
 import com.jh.coincoin.model.type.BinanceType.Order;
 import com.jh.coincoin.model.type.BinanceType.PositionSide;
 import com.jh.coincoin.model.type.BinanceType.Side;
@@ -10,6 +11,7 @@ import com.jh.coincoin.service.CandleService;
 import com.jh.coincoin.service.IndicatorService;
 import com.jh.coincoin.service.external.CandleCollectorAPIService;
 import com.jh.coincoin.service.indicator.RSIIndicator;
+import com.jh.coincoin.service.strategy.buy.calculator.FixedRatio;
 import com.jh.coincoin.util.DateTimeUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,7 +47,7 @@ public class ApiTest {
 //        candleService.manualUpdate(300);
 
         Interval interval = Interval.ONE_MINUTE;
-        var candleMap = candleService.getCandleListPerInterval(Symbol.BTCUSDT, interval);
+        var candleMap = candleService.getCandleMap(Symbol.BTCUSDT, interval);
 
         log.info("================{}분봉================", interval.getMinute());
         for (var keyValue : candleMap.entrySet()) {
@@ -65,7 +67,7 @@ public class ApiTest {
     @Test
     public void repoTest() {
         Interval interval = Interval.ONE_MINUTE;
-        var candleMap = candleService.getCandleListPerInterval(Symbol.BTCUSDT, interval);
+        var candleMap = candleService.getCandleMap(Symbol.BTCUSDT, interval);
 
 //        candleService.saveCandle(candleMap.values().stream().toList());
     }
@@ -119,7 +121,7 @@ public class ApiTest {
 
     @Test
     public void 지표감지() {
-        indicatorService.detectIndicator();
+        indicatorService.detectIndicator(Interval.FIFTEEN_MINUTE);
     }
 
     @Test
@@ -138,24 +140,15 @@ public class ApiTest {
     }
 
     @Test
-    public void 나누기_테스트() {
-        Pair<Double, Double> riskRewardRatio = adminService.getRiskRewardRatio();
-        double rewardRatio = riskRewardRatio.getRight();
-        double riskRatio = riskRewardRatio.getLeft();
-        double avgPrice = 61000;
-        log.info("{}", avgPrice - (avgPrice * riskRatio / 100));
-    }
+    public void 손익_가격_계산() {
+        FixedRatio fixedRatio = new FixedRatio();
+        double price = fixedRatio.calcPrice(Strategy.PriceCalculatorDto.builder()
+                .entryPrice(100)
+                .riskRewardRatio(1)
+                .order(Order.TAKE_PROFIT_MARKET)
+                .side(Side.BUY)
+                .build());
 
-    @Test
-    public void 타겟_가격_계산() {
-        Order order = Order.STOP_MARKET;
-        double initPrice = 1000.0;
-        Side side = Side.SELL;
-
-        Pair<Double, Double> riskRewardRatio = adminService.getRiskRewardRatio();
-
-//        double decidePrice = CommonUtil.calcPrice(side, order, initPrice, riskRewardRatio.getRight());
-
-//        log.info("decide price : {}", decidePrice);
+        log.info("계산된 가격: {}", price);
     }
 }

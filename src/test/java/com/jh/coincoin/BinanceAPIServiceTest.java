@@ -7,10 +7,8 @@ import com.jh.coincoin.model.type.BinanceType.Order;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.BinanceType.Side;
 import com.jh.coincoin.model.type.BinanceType.BinanceURL;
-import com.jh.coincoin.service.AdminService;
+import com.jh.coincoin.service.TradeService;
 import com.jh.coincoin.service.external.BinanceFutureAPIService;
-import com.jh.coincoin.service.strategy.buy.StopAndLimitBuyStrategy;
-import com.jh.coincoin.util.CommonUtil;
 import com.jh.coincoin.util.DateTimeUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,8 +32,7 @@ public class BinanceAPIServiceTest {
 
     private final RestClient restClient = RestClient.create();
     private final BinanceFutureAPIService apiService;
-    private final AdminService adminService;
-    private final StopAndLimitBuyStrategy buyStrategy;
+    private final TradeService tradeService;
 
     @Test
     public void ping(){
@@ -126,55 +123,8 @@ public class BinanceAPIServiceTest {
     }
 
     @Test
-    public void 주문_확인후_익절가_주문() {
-        Symbol symbol = Symbol.ETHUSDT;
-        Side side = Side.BUY;
-        long now = DateTimeUtil.getCurrentTimeMillis();
-
-        Binance.PositionInfoReq req = Binance.PositionInfoReq.builder()
-                .symbol(symbol)
-                .timestamp(now)
-                .build();
-        var res = apiService.getPositionInfo(req);
-
-        for (PositionInfoRes positionInfoRes: res) {
-            log.info("{}", positionInfoRes);
-        }
-        PositionInfoRes positionInfoRes = res.get(0);
-//
-        var riskRewardRatio = adminService.getRiskRewardRatio();
-
-        double avgPrice = positionInfoRes.getEntryPrice();
-        double quantity = positionInfoRes.getPositionAmount();
-
-        double rewardRatio = riskRewardRatio.getRight();
-        NewOrderReq tkOrder = NewOrderReq.builder()
-                .symbol(symbol)
-                .side(Side.reverse(side))
-                .type(Order.TAKE_PROFIT_MARKET)
-                .quantity(CommonUtil.formatDecimal(quantity, 3))
-                .stopPrice(CommonUtil.formatDecimal(avgPrice + (avgPrice * rewardRatio / 100), 2))
-                .timestamp(now)
-                .build();
-        apiService.newOrder(tkOrder);
-
-        double riskRatio = riskRewardRatio.getLeft();
-        NewOrderReq slOrder = NewOrderReq.builder()
-                .symbol(symbol)
-                .side(Side.reverse(side))
-                .type(Order.STOP_MARKET)
-                .quantity(CommonUtil.formatDecimal(quantity, 3))
-                .stopPrice(CommonUtil.formatDecimal(avgPrice - (avgPrice * riskRatio / 100), 2))
-                .timestamp(now)
-                .build();
-        apiService.newOrder(slOrder);
-    }
-
-    @Test
-    public void 진입_테스트() {
-        Symbol symbol = Symbol.ETHUSDT;
-        Side side = Side.SELL;
-
-        buyStrategy.order(symbol, side);
+    public void 자동매매_테스트() {
+        // 돌리기 전에 테이블 만들고 데이터 넣어야함
+        tradeService.tradeV2();
     }
 }

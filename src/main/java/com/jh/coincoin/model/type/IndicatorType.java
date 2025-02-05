@@ -12,8 +12,8 @@ public enum IndicatorType implements CodeEnum<Integer> {
     RSI(1, "rsi"),
     ;
 
-    private int code;
-    private String name;
+    private final int code;
+    private final String name;
 
     IndicatorType(int code, String name) {
         this.code = code;

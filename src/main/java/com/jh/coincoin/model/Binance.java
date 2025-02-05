@@ -28,10 +28,6 @@ public class Binance {
 
     public static class BaseReq {
         public String toQueryString() {
-            if (this == null) {
-                throw new IllegalArgumentException("Object cannot be null");
-            }
-
             StringJoiner queryString = new StringJoiner("&");
             Field[] fields = this.getClass().getDeclaredFields();
 

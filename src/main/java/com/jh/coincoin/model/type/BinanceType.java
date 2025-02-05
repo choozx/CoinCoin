@@ -6,6 +6,7 @@ import com.jh.coincoin.util.CodeEnum;
 import com.jh.coincoin.util.CodeEnumFinder;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
+import lombok.Getter;
 
 import java.util.Arrays;
 
@@ -75,6 +76,7 @@ public class BinanceType {
         }
     }
 
+    @Getter
     public enum Interval {
         ONE_MINUTE("1m", 1),
         FIVE_MINUTE("5m", 5),
@@ -91,16 +93,13 @@ public class BinanceType {
             this.minute = minute;
         }
 
-        public String getName() {
-            return name;
-        }
-
-        public int getMinute() {
-            return minute;
-        }
-
         public static Interval of(String name) {
             return Arrays.stream(values()).filter(interval -> interval.name.equals(name)).findFirst()
+                    .orElseThrow(() -> new ServerException(ErrorType.COMMON_FAIL, "지원하지 않는 캔들봉"));
+        }
+
+        public static Interval of(int minute) {
+            return Arrays.stream(values()).filter(interval -> interval.minute == minute).findFirst()
                     .orElseThrow(() -> new ServerException(ErrorType.COMMON_FAIL, "지원하지 않는 캔들봉"));
         }
     }
@@ -138,6 +137,7 @@ public class BinanceType {
         }
     }
 
+    // 여러 주문 타입이 있지만, 손절/익절 주문은 왠만하면 STOP_MARKET, TAKE_PROFIT_MARKET을 사용한다.
     public enum Order {
         LIMIT,
         MARKET,
@@ -189,6 +189,7 @@ public class BinanceType {
         ;
     }
 
+    @Getter
     public enum BinanceURL {
         BASE_URL("https://fapi.binance.com/fapi"),
         GET_POSITION_INFO("/v3/positionRisk"),
@@ -205,10 +206,6 @@ public class BinanceType {
 
         BinanceURL(String url) {
             this.url = url;
-        }
-
-        public String getUrl() {
-            return url;
         }
     }
 }

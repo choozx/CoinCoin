@@ -1,12 +1,11 @@
 package com.jh.coincoin.service;
 
-import com.jh.coincoin.model.type.BinanceType;
+import com.jh.coincoin.model.type.BinanceType.Interval;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-
 
 /**
  * Created by dale on 2024-09-11.
@@ -26,20 +25,21 @@ public class Scheduler {
     public void update(){
         candleService.update();
 
-        BinanceType.Interval interval = adminService.getInterval();
-        if (timeChecker(interval)) {
-            indicatorService.detectIndicator();
-            tradeService.trade();
-        }
+        Interval interval = adminService.getInterval();
+        if (timeChecker(interval))
+            indicatorService.detectIndicator(interval);
+
+        if (adminService.isOnAutoTrade())
+            tradeService.tradeV2();
     }
 
-    private boolean timeChecker(BinanceType.Interval interval) {
+    private boolean timeChecker(Interval interval) {
         int minute = LocalDateTime.now().getMinute();
 
-        if (interval == BinanceType.Interval.ONE_MINUTE)
+        if (interval == Interval.ONE_MINUTE)
             return true;
 
-        if (interval == BinanceType.Interval.HOUR && minute == 0)
+        if (interval == Interval.HOUR && minute == 0)
             return true;
 
         return minute % interval.getMinute() == 0;
