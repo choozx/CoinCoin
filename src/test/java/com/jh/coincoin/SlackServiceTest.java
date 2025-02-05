@@ -1,6 +1,6 @@
 package com.jh.coincoin;
 
-import com.jh.coincoin.service.slack.actions.CreateTradeStrategyCommand;
+import com.jh.coincoin.service.slack.command.CreateTradeStrategyCommand;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;

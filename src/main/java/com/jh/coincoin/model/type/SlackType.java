@@ -14,7 +14,9 @@ public class SlackType {
         HELP(1, "/help"),
         SET_SYMBOL(2, "/set_symbol"),
         DELETE_SYMBOL(3, "/delete_symbol"),
-        NEW_STRATEGY(4, "/new_strategy")
+        CREATE_TRADE_STRATEGY(4, "/create_trade_strategy"),
+        CREATE_ORDER_STRATEGY(4, "/create_order_strategy"),
+        CREATE_BUY_STRATEGY(4, "/create_buy_strategy"),
         ;
 
         private final int code;
@@ -41,17 +43,17 @@ public class SlackType {
         }
     }
 
-    public enum InteractiveCommand implements CodeEnum<Integer> {
-        DECIDE_ORDER_STRATEGY(1, "decide_order_strategy"),
-        SUBMIT_NEW_STRATEGY(2, "submit_new_strategy"),
+    public enum InteractiveType implements CodeEnum<Integer> {
+        BLOCK_ACTIONS(1, "block_actions"),
+        VIEW_SUBMISSION(2, "view_submission"),
         ;
 
         private final int code;
-        private final String callbackId;
+        private final String name;
 
-        InteractiveCommand(int code, String callbackId) {
+        InteractiveType(int code, String name) {
             this.code = code;
-            this.callbackId = callbackId;
+            this.name = name;
         }
 
         @Override
@@ -61,12 +63,43 @@ public class SlackType {
 
         @Override
         public String getKey() {
-            return callbackId;
+            return name;
         }
 
-        public static InteractiveCommand of(String stringCommand) {
-            return Arrays.stream(values()).filter(command -> command.callbackId.equals(stringCommand)).findFirst()
-                    .orElseThrow(() -> new ServerException(ErrorType.WRONG_COMMAND, "찾을 수 없는 명령어"));
+        public static InteractiveType of(String name) {
+            return Arrays.stream(values()).filter(type -> type.name.equals(name)).findFirst()
+                    .orElseThrow(() -> new ServerException(ErrorType.WRONG_COMMAND, "찾을 수 없는 타입"));
+        }
+    }
+
+    public enum SheetType implements CodeEnum<Integer> {
+        TRADE(1, "trade"),
+        ORDER(2, "order"),
+        BUY(3, "buy"),
+        RISK_REWARD_RATIO(4, "risk_reward_ratio"),
+        ;
+
+        private final int code;
+        private final String key;
+
+        SheetType(int code, String key) {
+            this.code = code;
+            this.key = key;
+        }
+
+        @Override
+        public Integer getCode() {
+            return code;
+        }
+
+        @Override
+        public String getKey() {
+            return key;
+        }
+
+        public static SheetType of(String key) {
+            return Arrays.stream(values()).filter(type -> type.key.equals(key)).findFirst()
+                    .orElseThrow(() -> new ServerException(ErrorType.WRONG_COMMAND, "찾을 수 없는 전략"));
         }
     }
 }

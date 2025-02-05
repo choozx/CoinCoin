@@ -48,11 +48,12 @@ public class SlackController {
             throw new RuntimeException(e);
         }
         JsonNode values = jsonNode.path("view").path("state").path("values");
-        String triggerId = jsonNode.path("trigger_id").asText();
         String viewId = jsonNode.path("view").path("id").asText();
+
+        // key를 어떤껄 써야되나...
         log.info("viewId : {} | json node :{}", viewId, jsonNode);
 
-        slackService.handleInteractive(SlackType.InteractiveCommand.DECIDE_ORDER_STRATEGY.getKey(), values, viewId);
+        slackService.handleInteractive(jsonNode);
     }
 
     @PostMapping("/slack/command")

@@ -1,10 +1,11 @@
-package com.jh.coincoin.service.slack.actions;
+package com.jh.coincoin.service.slack.command;
 
+import com.jh.coincoin.model.Strategy.OrderStrategyDto;
+import com.jh.coincoin.model.Strategy.BuyStrategyDto;
 import com.jh.coincoin.model.consts.GlobalConst;
 import com.jh.coincoin.model.type.BinanceType.Interval;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
-import com.jh.coincoin.model.type.SlackType.InteractiveCommand;
-import com.jh.coincoin.model.type.StrategyType.OrderStrategyType;
+import com.jh.coincoin.model.type.SlackType.SheetType;
 import com.jh.coincoin.model.type.SlackType.SlashCommand;
 import com.jh.coincoin.service.AdminService;
 import com.jh.coincoin.service.slack.SlashCommandHandler;
@@ -49,20 +50,31 @@ public class CreateTradeStrategyCommand extends SlashCommandHandler {
 
     @Override
     public SlashCommand getCommand() {
-        return SlashCommand.NEW_STRATEGY;
+        return SlashCommand.CREATE_TRADE_STRATEGY;
     }
 
     @Override
     public void doCommand(String triggerId, String parameter) {
         List<OptionObject> orderStrategyOptionList = new ArrayList<>();
-        for (OrderStrategyType type : OrderStrategyType.values()) {
+        for (OrderStrategyDto dto : strategyService.getOrderStrategyList()) {
             OptionObject optionObject = OptionObject.builder()
                     .text(PlainTextObject.builder()
-                            .text(type.name())
+                            .text(dto.getType().name())
                             .build())
-                    .value(type.name())
+                    .value(String.valueOf(dto.getIdx()))
                     .build();
             orderStrategyOptionList.add(optionObject);
+        }
+
+        List<OptionObject> buyStrategyOptionList = new ArrayList<>();
+        for (BuyStrategyDto dto : strategyService.getBuyStrategyList()) {
+            OptionObject optionObject = OptionObject.builder()
+                    .text(PlainTextObject.builder()
+                            .text(dto.getType().name())
+                            .build())
+                    .value(String.valueOf(dto.getIdx()))
+                    .build();
+            buyStrategyOptionList.add(optionObject);
         }
 
         List<OptionObject> intervalOptionList = new ArrayList<>();
@@ -128,13 +140,23 @@ public class CreateTradeStrategyCommand extends SlashCommandHandler {
                         .build())
                 .build();
 
-        InputBlock entryStrategyBlock = InputBlock.builder()
-                .blockId("entry_strategy")
+        InputBlock orderStrategyBlock = InputBlock.builder()
+                .blockId("order_strategy")
                 .label(PlainTextObject.builder().text("진입 전략").build())
                 .element(StaticSelectElement.builder()
-                        .actionId("select_entry_strategy")
+                        .actionId("select_order_strategy")
                         .placeholder(PlainTextObject.builder().text("진입 전략을 선택하세요").build())
                         .options(orderStrategyOptionList)
+                        .build())
+                .build();
+
+        InputBlock buyStrategyBlock = InputBlock.builder()
+                .blockId("buy_strategy")
+                .label(PlainTextObject.builder().text("매수 전략").build())
+                .element(StaticSelectElement.builder()
+                        .actionId("select_buy_strategy")
+                        .placeholder(PlainTextObject.builder().text("매수 전략을 선택하세요").build())
+                        .options(buyStrategyOptionList)
                         .build())
                 .build();
 
@@ -142,11 +164,11 @@ public class CreateTradeStrategyCommand extends SlashCommandHandler {
         layoutBlockList.add(symbolBlock);
         layoutBlockList.add(intervalBlock);
         layoutBlockList.add(leverageBlock);
-        layoutBlockList.add(entryStrategyBlock);
+        layoutBlockList.add(orderStrategyBlock);
+        layoutBlockList.add(buyStrategyBlock);
 
         View modalView = Views.view(v -> v
-                .type("modal")
-                .callbackId(InteractiveCommand.DECIDE_ORDER_STRATEGY.getKey())
+                .callbackId(SheetType.TRADE.getKey())
                 .title(Views.viewTitle(title -> title.type("plain_text").text("새로운 전략")))
                 .submit(Views.viewSubmit(submit -> submit.type("plain_text").text("Submit")))
                 .close(Views.viewClose(close -> close.type("plain_text").text("Cancel")))

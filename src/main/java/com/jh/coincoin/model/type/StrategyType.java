@@ -3,11 +3,14 @@ package com.jh.coincoin.model.type;
 import com.jh.coincoin.support.ServerException;
 import com.jh.coincoin.util.CodeEnum;
 import com.jh.coincoin.util.CodeEnumFinder;
+import com.slack.api.model.block.composition.OptionObject;
+import com.slack.api.model.block.composition.PlainTextObject;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 import lombok.Getter;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by dale on 2024-11-22.
@@ -15,16 +18,18 @@ import java.util.Arrays;
 public class StrategyType {
 
     public enum OrderStrategyType implements CodeEnum<Integer> {
-        REVERSE_TREND_USING_RSI(1, "reverse_trend_using_rsi"),
-        OVER_SOLD(2, "over_sold"),
+        REVERSE_TREND_USING_RSI(1, "reverse_trend_using_rsi", "역추세 매매법 (RSI)"),
         ;
 
         private final int code;
-        private final String name;
+        private final String key;
+        @Getter
+        private final String description;
 
-        OrderStrategyType(int code, String name) {
+        OrderStrategyType(int code, String key, String description) {
             this.code = code;
-            this.name = name;
+            this.key = key;
+            this.description = description;
         }
 
         @Override
@@ -34,12 +39,23 @@ public class StrategyType {
 
         @Override
         public String getKey() {
-            return name;
+            return key;
         }
 
-        public static OrderStrategyType of(String name) {
-            return Arrays.stream(values()).filter(type -> type.name.equals(name)).findFirst()
+        public static OrderStrategyType of(String key) {
+            return Arrays.stream(values()).filter(type -> type.key.equals(key)).findFirst()
                     .orElseThrow(() -> new ServerException(ErrorType.WRONG_COMMAND, "찾을 수 없는 전략"));
+        }
+
+        public static List<OptionObject> toOptionObjectList() {
+            return Arrays.stream(values())
+                    .map(type -> OptionObject.builder()
+                            .text(PlainTextObject.builder()
+                                    .text(type.description)
+                                    .build())
+                            .value(type.key)
+                            .build())
+                    .toList();
         }
 
         @Converter

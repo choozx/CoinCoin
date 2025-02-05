@@ -48,28 +48,6 @@ public class TradeService {
         this.buyStrategyMap = buyStrategySet.stream().collect(Collectors.toMap(BuyStrategy::getType, Function.identity()));
     }
 
-//    /* 코인 하나당 하나의 전략만 가질 수 있음*/
-//    public void trade() {
-//        List<Symbol> trackingSymbolList = adminService.getTrackingSymbolList(); // FIXME 추후 지표를 위한 심볼리스트와 매수 진행을 위한 심볼리스트를 나눌 수 있음
-//        List<OrderStrategyType> followStrategyList = adminService.getFollowOrderStrategyList();
-//        BuyStrategyType buyStrategyType = adminService.getFollowBuyStrategy();
-//
-//        for (Symbol symbol : trackingSymbolList) {
-//
-//            for (OrderStrategyType orderStrategyType : followStrategyList) {
-//                OrderStrategy orderStrategy = orderStrategyMap.get(orderStrategyType);
-//
-//                Pair<Boolean, Side> hit = orderStrategy.isHit(symbol);
-//                if (hit.getLeft()) {
-//                    // 주문 전략에 따른 주문
-//                    BuyStrategy buyStrategy = buyStrategyMap.get(buyStrategyType);
-//                    buyStrategy.order(symbol, hit.getRight());
-//                    break;
-//                }
-//            }
-//        }
-//    }
-
     /* 코인 하나당 하나의 전략만 가질 수 있음*/
     public void tradeV2() {
         List<TradeStrategyDto> tradeStrategyDtoList = strategyService.getTradeStrategyListByInterval(getMatchingIntervalList());

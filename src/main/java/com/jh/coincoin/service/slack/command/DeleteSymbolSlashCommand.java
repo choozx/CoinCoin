@@ -1,4 +1,4 @@
-package com.jh.coincoin.service.slack.actions;
+package com.jh.coincoin.service.slack.command;
 
 import com.jh.coincoin.model.type.BinanceType;
 import com.jh.coincoin.model.type.SlackType.SlashCommand;

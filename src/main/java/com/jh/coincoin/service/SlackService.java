@@ -2,10 +2,10 @@ package com.jh.coincoin.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.jh.coincoin.model.type.ErrorType;
-import com.jh.coincoin.model.type.SlackType.InteractiveCommand;
+import com.jh.coincoin.model.type.SlackType.InteractiveType;
 import com.jh.coincoin.model.type.SlackType.SlashCommand;
 import com.jh.coincoin.service.slack.SlashCommandHandler;
-import com.jh.coincoin.service.slack.InteractiveHandler;
+import com.jh.coincoin.service.slack.InteractiveTypeHandler;
 import com.jh.coincoin.support.ServerException;
 import com.slack.api.Slack;
 import com.slack.api.model.Attachment;
@@ -35,7 +35,7 @@ public class SlackService {
     private final Slack slackClient = Slack.getInstance();
 
     private Map<SlashCommand, SlashCommandHandler> slashCommandMap;
-    private Map<InteractiveCommand, InteractiveHandler> interactiveHandlerMap;
+    private Map<InteractiveType, InteractiveTypeHandler> interactiveHandlerMap;
 
     private final String webHookURL;
 
@@ -45,27 +45,20 @@ public class SlackService {
     }
 
     @Autowired
-    public void setInteractiveHandlerMap(Set<InteractiveHandler> interactiveHandlerSet) {
-        this.interactiveHandlerMap = interactiveHandlerSet.stream().collect(Collectors.toMap(InteractiveHandler::getCommand, Function.identity()));
+    public void setInteractiveHandlerMap(Set<InteractiveTypeHandler> interactiveTypeHandlerSet) {
+        this.interactiveHandlerMap = interactiveTypeHandlerSet.stream().collect(Collectors.toMap(InteractiveTypeHandler::getType, Function.identity()));
     }
 
     public void handleActionV2(SlashCommand slashCommand, String triggerId, String parameter) {
-        /*  다시 처음부터 생각해야겠다.
-        *   커맨드 슬레시를 입력하면 고정값들이 들어가는 항목들은 전부 내려준다. slackClient.viewOpen
-        *   그리고 고정값이 아닌 선택에 의해 항목이 변하는것들은 항목이 선택되는 이벤트가 발생하도록하여
-        *   viewUpdate로 모달은 업데이트한다.
-        *   다만 새로운 전략을 만들거나 할때는 미리 만들고 전략을 만들어야 한다.
-        */
-
-
         SlashCommandHandler handler = slashCommandMap.get(slashCommand);
         handler.doCommand(triggerId, parameter);
     }
 
-    public void handleInteractive(String callbackId, JsonNode jsonNode, String viewId) {
+    public void handleInteractive(JsonNode jsonNode) {
+        InteractiveType type = InteractiveType.of(jsonNode.path("type").asText());
 
-        InteractiveHandler interactiveHandler = interactiveHandlerMap.get(InteractiveCommand.of(callbackId));
-        interactiveHandler.handleInteractive(jsonNode, viewId);
+        InteractiveTypeHandler interactiveTypeHandler = interactiveHandlerMap.get(type);
+        interactiveTypeHandler.handleInteractiveType(jsonNode);
     }
 
     public void sendMessage(String title, Map<String, String> data){

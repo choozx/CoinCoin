@@ -51,7 +51,7 @@ public class ReverseTrendUsingRsiOrderStrategy implements OrderStrategy {
     }
 
     @Override
-    public List<InputBlock> getTargetValueBlockList() {
+    public List<InputBlock> getInputBlockList() {
         List<InputBlock> inputBlockList = new ArrayList<>();
         InputBlock overBoughtValueBlock = InputBlock.builder()
                 .blockId("over_bought_target_value")
