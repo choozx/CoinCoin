@@ -1,8 +1,8 @@
 package com.jh.coincoin.service.strategy;
 
-import com.jh.coincoin.entity.StrategyEntity;
-import com.jh.coincoin.model.Strategy.StrategyDto;
-import com.jh.coincoin.repo.StrategyRepository;
+import com.jh.coincoin.entity.TradeStrategyEntity;
+import com.jh.coincoin.model.Strategy.TradeStrategyDto;
+import com.jh.coincoin.repo.TradeStrategyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -13,15 +13,17 @@ import java.util.List;
 @RequiredArgsConstructor
 public class StrategyService {
 
-    private final StrategyRepository strategyRepository;
+    private final TradeStrategyRepository tradeStrategyRepository;
 
-    public List<StrategyDto> getStrategyListByInterval(List<Integer> matchingIntervalList) {
-        List<StrategyEntity> strategyEntityList = strategyRepository.findAllByIntervalIn(matchingIntervalList);
+    public List<TradeStrategyDto> getTradeStrategyListByInterval(List<Integer> matchingIntervalList) {
+        List<TradeStrategyEntity> tradeStrategyEntityList = tradeStrategyRepository.findAllByIntervalIn(matchingIntervalList);
 
-        List<StrategyDto> strategyDtoList = new ArrayList<>();
-        for (StrategyEntity strategyEntity : strategyEntityList) {
-            strategyDtoList.add(StrategyDto.create(strategyEntity));
+        List<TradeStrategyDto> tradeStrategyDtoList = new ArrayList<>();
+        for (TradeStrategyEntity tradeStrategyEntity : tradeStrategyEntityList) {
+            tradeStrategyDtoList.add(TradeStrategyDto.create(tradeStrategyEntity));
         }
-        return strategyDtoList;
+        return tradeStrategyDtoList;
     }
+
+
 }

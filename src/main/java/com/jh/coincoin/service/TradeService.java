@@ -3,7 +3,7 @@ package com.jh.coincoin.service;
 import com.jh.coincoin.model.Strategy.OrderParamDto;
 import com.jh.coincoin.model.Strategy.OrderStrategyDto;
 import com.jh.coincoin.model.Strategy.BuyStrategyDto;
-import com.jh.coincoin.model.Strategy.StrategyDto;
+import com.jh.coincoin.model.Strategy.TradeStrategyDto;
 import com.jh.coincoin.model.type.BinanceType;
 import com.jh.coincoin.model.type.BinanceType.Side;
 import com.jh.coincoin.model.type.StrategyType.BuyStrategyType;
@@ -72,22 +72,22 @@ public class TradeService {
 
     /* 코인 하나당 하나의 전략만 가질 수 있음*/
     public void tradeV2() {
-        List<StrategyDto> strategyDtoList = strategyService.getStrategyListByInterval(getMatchingIntervalList());
+        List<TradeStrategyDto> tradeStrategyDtoList = strategyService.getTradeStrategyListByInterval(getMatchingIntervalList());
 
-        for (StrategyDto strategyDto : strategyDtoList) {
-            OrderStrategyDto orderStrategyDto = strategyDto.getOrderStrategy();
+        for (TradeStrategyDto tradeStrategyDto : tradeStrategyDtoList) {
+            OrderStrategyDto orderStrategyDto = tradeStrategyDto.getOrderStrategy();
 
             OrderStrategy orderStrategy = orderStrategyMap.get(orderStrategyDto.getType());
-            Pair<Boolean, Side> hit = orderStrategy.isHit(strategyDto.getSymbol(), strategyDto.getInterval(), orderStrategyDto.getTargetValue());
+            Pair<Boolean, Side> hit = orderStrategy.isHit(tradeStrategyDto.getSymbol(), tradeStrategyDto.getInterval(), orderStrategyDto.getTargetValue());
 
             if (hit.getLeft()) {
-                BuyStrategyDto buyStrategyDto = strategyDto.getBuyStrategy();
+                BuyStrategyDto buyStrategyDto = tradeStrategyDto.getBuyStrategy();
                 BuyStrategy buyStrategy = buyStrategyMap.get(buyStrategyDto.getType());
 
                 OrderParamDto orderParamDto = OrderParamDto.builder()
-                        .symbol(strategyDto.getSymbol())
+                        .symbol(tradeStrategyDto.getSymbol())
                         .side(hit.getRight())
-                        .interval(strategyDto.getInterval())
+                        .interval(tradeStrategyDto.getInterval())
                         .leverage(buyStrategyDto.getLeverage())
                         .riskRewardRatioDto(buyStrategyDto.getRiskRewardRatioDto())
                         .orderBalanceRatio(buyStrategyDto.getOrderBalanceRatio())

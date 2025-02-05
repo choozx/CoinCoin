@@ -1,6 +1,6 @@
 package com.jh.coincoin;
 
-import com.jh.coincoin.service.slack.actions.NewStrategySlashCommand;
+import com.jh.coincoin.service.slack.actions.CreateTradeStrategyCommand;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -19,7 +19,7 @@ import org.springframework.test.context.TestConstructor;
 @TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
 public class SlackServiceTest {
 
-    private final NewStrategySlashCommand newStrategyAction;
+    private final CreateTradeStrategyCommand newStrategyAction;
 
     @Test
     public void 슬랙에_블락_킷_보내기() {

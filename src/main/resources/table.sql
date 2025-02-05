@@ -1,4 +1,4 @@
-CREATE TABLE strategy
+CREATE TABLE trade_strategy
 (
     idx               BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     symbol            INT NOT NULL,

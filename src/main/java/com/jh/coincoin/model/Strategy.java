@@ -3,7 +3,7 @@ package com.jh.coincoin.model;
 import com.jh.coincoin.entity.BuyStrategyEntity;
 import com.jh.coincoin.entity.OrderStrategyEntity;
 import com.jh.coincoin.entity.RiskRewardRatioStrategyEntity;
-import com.jh.coincoin.entity.StrategyEntity;
+import com.jh.coincoin.entity.TradeStrategyEntity;
 import com.jh.coincoin.model.type.BinanceType.Order;
 import com.jh.coincoin.model.type.BinanceType.Side;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
@@ -18,21 +18,21 @@ import lombok.Getter;
 public class Strategy {
 
     @Data
-    public static class StrategyDto {
+    public static class TradeStrategyDto {
         private long idx;
         private Symbol symbol;
         private Interval interval;
         private OrderStrategyDto orderStrategy;
         private BuyStrategyDto buyStrategy;
 
-        public static StrategyDto create(StrategyEntity strategyEntity) {
-            StrategyDto strategyDto = new StrategyDto();
-            strategyDto.idx = strategyEntity.getIdx();
-            strategyDto.symbol = strategyEntity.getSymbol();
-            strategyDto.interval = Interval.of(strategyEntity.getInterval());
-            strategyDto.orderStrategy = OrderStrategyDto.create(strategyEntity.getOrderStrategyEntity());
-            strategyDto.buyStrategy = BuyStrategyDto.create(strategyEntity.getBuyStrategyEntity());
-            return strategyDto;
+        public static TradeStrategyDto create(TradeStrategyEntity tradeStrategyEntity) {
+            TradeStrategyDto tradeStrategyDto = new TradeStrategyDto();
+            tradeStrategyDto.idx = tradeStrategyEntity.getIdx();
+            tradeStrategyDto.symbol = tradeStrategyEntity.getSymbol();
+            tradeStrategyDto.interval = Interval.of(tradeStrategyEntity.getInterval());
+            tradeStrategyDto.orderStrategy = OrderStrategyDto.create(tradeStrategyEntity.getOrderStrategyEntity());
+            tradeStrategyDto.buyStrategy = BuyStrategyDto.create(tradeStrategyEntity.getBuyStrategyEntity());
+            return tradeStrategyDto;
         }
     }
 

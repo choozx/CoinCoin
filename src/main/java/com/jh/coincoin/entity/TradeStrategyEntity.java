@@ -10,8 +10,8 @@ import org.springframework.data.domain.Persistable;
 @Entity
 @Getter
 @NoArgsConstructor
-@Table(name = "strategy")
-public class StrategyEntity implements Persistable<Long> {
+@Table(name = "trade_strategy")
+public class TradeStrategyEntity implements Persistable<Long> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
