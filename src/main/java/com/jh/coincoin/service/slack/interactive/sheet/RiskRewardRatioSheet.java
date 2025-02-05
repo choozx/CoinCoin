@@ -14,7 +14,7 @@ public class RiskRewardRatioSheet implements SheetHandler {
     }
 
     @Override
-    public void updateSheet(JsonNode jsonNode) {
+    public void updateSheet(String viewId, JsonNode selectedOption) {
 
     }
 

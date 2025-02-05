@@ -1,5 +1,6 @@
 package com.jh.coincoin.service.strategy.order;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.jh.coincoin.model.type.BinanceType.Interval;
 import com.jh.coincoin.model.type.BinanceType.Side;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
@@ -20,4 +21,6 @@ public interface OrderStrategy {
     List<InputBlock> getInputBlockList();
 
     Pair<Boolean, Side> isHit(Symbol symbol, Interval interval, String targetValue);
+
+    void save(JsonNode decideStrategy);
 }

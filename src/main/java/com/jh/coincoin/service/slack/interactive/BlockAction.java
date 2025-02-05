@@ -37,6 +37,8 @@ public class BlockAction implements InteractiveTypeHandler {
         SheetType sheetType = SheetType.ORDER;
         SheetHandler handler = strategySheetMap.get(sheetType);
 
-        handler.updateSheet(jsonNode);
+        String viewId = "";
+        JsonNode selectedOption = jsonNode.get("view");
+        handler.updateSheet(viewId, selectedOption);
     }
 }

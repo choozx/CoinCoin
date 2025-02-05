@@ -14,8 +14,7 @@ CREATE TABLE order_strategy
 (
     idx BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     type int NOT NULL,
-    target_value varchar(500) NOT NULL,
-    interval int NOT NULL,
+    target_value varchar(500) NOT NULL
 );
 
 CREATE TABLE buy_strategy

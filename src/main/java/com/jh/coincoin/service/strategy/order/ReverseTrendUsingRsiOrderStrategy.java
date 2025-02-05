@@ -1,12 +1,15 @@
 package com.jh.coincoin.service.strategy.order;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jh.coincoin.model.Strategy.RSI;
+import com.jh.coincoin.entity.OrderStrategyEntity;
+import com.jh.coincoin.model.Strategy.RSIValue;
 import com.jh.coincoin.model.type.BinanceType.Interval;
 import com.jh.coincoin.model.type.BinanceType.Side;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.StrategyType.OrderStrategyType;
+import com.jh.coincoin.repo.OrderStrategyRepository;
 import com.jh.coincoin.service.indicator.RSIIndicator;
 import com.slack.api.model.block.InputBlock;
 import com.slack.api.model.block.composition.PlainTextObject;
@@ -30,6 +33,7 @@ import static com.jh.coincoin.model.type.StrategyType.OrderStrategyType.REVERSE_
 public class ReverseTrendUsingRsiOrderStrategy implements OrderStrategy {
 
     private final RSIIndicator rsiIndicator;
+    private final OrderStrategyRepository orderStrategyRepository;
 
     @Override
     public OrderStrategyType getType() {
@@ -38,13 +42,13 @@ public class ReverseTrendUsingRsiOrderStrategy implements OrderStrategy {
 
     @Override
     public Pair<Boolean, Side> isHit(Symbol symbol, Interval interval, String targetValue) {
-        RSI rsi = convertToRSI(targetValue);
+        RSIValue rsiValue = convertToRSI(targetValue);
         Double rsiRatio = rsiIndicator.getLastFigure(symbol, interval);
 
-        if (rsiRatio >= rsi.getOverbought())
+        if (rsiRatio >= rsiValue.getOverbought())
             return Pair.of(true, Side.SELL);
 
-        if (rsiRatio <= rsi.getOversold())
+        if (rsiRatio <= rsiValue.getOversold())
             return Pair.of(true, Side.BUY);
 
         return Pair.of(false, null);
@@ -82,14 +86,30 @@ public class ReverseTrendUsingRsiOrderStrategy implements OrderStrategy {
         return inputBlockList;
     }
 
-    private RSI convertToRSI(String jsonValue) {
+    @Override
+    public void save(JsonNode decideStrategy) {
         ObjectMapper objectMapper = new ObjectMapper();
-        RSI rsi;
+        RSIValue rsiValue = new RSIValue();
+
+        String rsiValueString;
         try {
-            rsi = objectMapper.readValue(jsonValue, RSI.class);
+            rsiValueString = objectMapper.writeValueAsString(rsiValue);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-        return rsi;
+        OrderStrategyEntity orderStrategyEntity = OrderStrategyEntity.create(decideStrategy, rsiValueString);
+
+        orderStrategyRepository.saveAndFlush(orderStrategyEntity);
+    }
+
+    private RSIValue convertToRSI(String jsonValue) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        RSIValue rsiValue;
+        try {
+            rsiValue = objectMapper.readValue(jsonValue, RSIValue.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        return rsiValue;
     }
 }

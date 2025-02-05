@@ -109,7 +109,7 @@ public class Strategy {
     }
 
     @Data
-    public static class RSI {
+    public static class RSIValue {
         private int overbought;
         private int oversold;
     }
