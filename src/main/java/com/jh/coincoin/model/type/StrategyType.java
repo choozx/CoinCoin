@@ -75,15 +75,18 @@ public class StrategyType {
     }
 
     public enum BuyStrategyType implements CodeEnum<Integer> {
-        STOP_AND_LIMIT(1, "stop_and_limit"),
+        STOP_AND_LIMIT(1, "stop_and_limit", "손익절 매수 전략"),
         ;
 
         private final int code;
-        private final String name;
+        private final String key;
+        @Getter
+        private final String description;
 
-        BuyStrategyType(int code, String name) {
+        BuyStrategyType(int code, String key, String description) {
             this.code = code;
-            this.name = name;
+            this.key = key;
+            this.description = description;
         }
 
         @Override
@@ -93,7 +96,12 @@ public class StrategyType {
 
         @Override
         public String getKey() {
-            return name;
+            return key;
+        }
+
+        public static BuyStrategyType of(String key) {
+            return Arrays.stream(values()).filter(type -> type.key.equals(key)).findFirst()
+                    .orElseThrow(() -> new ServerException(ErrorType.WRONG_COMMAND, "찾을 수 없는 전략"));
         }
 
         @Converter
@@ -113,16 +121,19 @@ public class StrategyType {
 
     @Getter
     public enum RiskRewardRatioType implements CodeEnum<Integer> {
-        FIXED_RATIO(1, "fixed_ratio"),
-        PEAK_RATIO(2, "peak_ratio"),
+        FIXED_RATIO(1, "fixed_ratio", "고정 손익절 비율"),
+        PEAK_RATIO(2, "peak_ratio", "저점/고점 대비 손익절 비율"),
         ;
 
         private final int code;
-        private final String name;
+        private final String key;
+        @Getter
+        private final String description;
 
-        RiskRewardRatioType(int code, String name) {
+        RiskRewardRatioType(int code, String key, String description) {
             this.code = code;
-            this.name = name;
+            this.key = key;
+            this.description = description;
         }
 
         @Override
@@ -132,7 +143,7 @@ public class StrategyType {
 
         @Override
         public String getKey() {
-            return "";
+            return key;
         }
 
         @Converter

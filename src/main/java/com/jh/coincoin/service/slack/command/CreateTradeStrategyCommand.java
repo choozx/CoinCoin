@@ -70,7 +70,7 @@ public class CreateTradeStrategyCommand extends SlashCommandHandler {
         for (BuyStrategyDto dto : strategyService.getBuyStrategyList()) {
             OptionObject optionObject = OptionObject.builder()
                     .text(PlainTextObject.builder()
-                            .text(dto.getType().name())
+                            .text(dto.getType().getDescription())
                             .build())
                     .value(String.valueOf(dto.getIdx()))
                     .build();

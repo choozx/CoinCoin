@@ -1,11 +1,9 @@
-package com.jh.coincoin.service.slack.interactive.sheet;
+package com.jh.coincoin.service.slack.command;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.jh.coincoin.model.type.SlackType.SheetType;
+import com.jh.coincoin.model.type.SlackType.SlashCommand;
 import com.jh.coincoin.model.type.StrategyType.BuyStrategyType;
-import com.jh.coincoin.service.slack.interactive.SheetHandler;
-import com.jh.coincoin.service.strategy.buy.BuyStrategy;
-import com.slack.api.Slack;
+import com.jh.coincoin.service.slack.SlashCommandHandler;
 import com.slack.api.methods.SlackApiException;
 import com.slack.api.model.block.InputBlock;
 import com.slack.api.model.block.LayoutBlock;
@@ -15,50 +13,36 @@ import com.slack.api.model.block.element.NumberInputElement;
 import com.slack.api.model.block.element.StaticSelectElement;
 import com.slack.api.model.view.View;
 import com.slack.api.model.view.Views;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
+/**
+ * Created by dale on 2025-01-29.
+ */
+
+@Slf4j
 @Service
-public class BuySheet implements SheetHandler {
+public class CreateBuyStrategyCommand extends SlashCommandHandler {
 
     @Value("${slack.bot-token}")
     private String botToken;
-    private final Slack slackClient = Slack.getInstance();
 
-    private Map<BuyStrategyType, BuyStrategy> buyStrategyMap;
-
-    @Autowired
-    public void setBuyStrategyMap(Set<BuyStrategy> buyStrategySet) {
-        this.buyStrategyMap = buyStrategySet.stream().collect(Collectors.toMap(BuyStrategy::getType, Function.identity()));
+    public CreateBuyStrategyCommand(String webHookURL) {
+        super(webHookURL);
     }
 
     @Override
-    public SheetType getType() {
-        return SheetType.BUY;
+    public SlashCommand getCommand() {
+        return SlashCommand.CREATE_BUY_STRATEGY;
     }
 
     @Override
-    public void updateSheet(String viewId, JsonNode selectedOptionList) {
-        JsonNode selectOption = selectedOptionList.get(0);
-        BuyStrategyType selectedBuyType = BuyStrategyType.of(selectOption.path("selected_option").path("value").asText());
-
-        OptionObject selectedOrderStrategy = OptionObject.builder()
-                .text(PlainTextObject.builder()
-                        .text(selectedBuyType.getDescription())
-                        .build())
-                .value(selectedBuyType.getKey())
-                .build();
-
+    public void doCommand(String triggerId, String parameter) {
         List<OptionObject> buyStrategyOptionList = new ArrayList<>();
         for (BuyStrategyType type : BuyStrategyType.values()) {
             OptionObject optionObject = OptionObject.builder()
@@ -80,12 +64,8 @@ public class BuySheet implements SheetHandler {
                         .actionId("select_buy_strategy")
                         .placeholder(PlainTextObject.builder().text("매수 전략을 선택하세요").build())
                         .options(buyStrategyOptionList)
-                        .initialOption(selectedOrderStrategy)
                         .build())
                 .build();
-
-        BuyStrategy buyStrategy = buyStrategyMap.get(selectedBuyType);
-        List<InputBlock> valueBlockList = buyStrategy.getInputBlockList();
 
         InputBlock leverageBlock = InputBlock.builder()
                 .blockId("leverage")
@@ -112,7 +92,6 @@ public class BuySheet implements SheetHandler {
                 .build();
 
         layoutBlockList.add(buyStrategyBlock);
-        layoutBlockList.addAll(valueBlockList);
         layoutBlockList.add(leverageBlock);
         layoutBlockList.add(balanceRatioBlock);
 
@@ -126,17 +105,12 @@ public class BuySheet implements SheetHandler {
         );
 
         try {
-            slackClient.methods(botToken).viewsUpdate(r -> r
-                    .viewId(viewId)
+            slackClient.methods(botToken).viewsOpen(r -> r
+                    .triggerId(triggerId)
                     .view(modalView)
             );
         } catch (IOException | SlackApiException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public void submitSheet(JsonNode jsonNode) {
-
     }
 }

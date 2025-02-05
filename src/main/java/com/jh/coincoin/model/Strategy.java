@@ -67,21 +67,17 @@ public class Strategy {
     public static class BuyStrategyDto {
         private long idx;
         private BuyStrategyType type;
+        private String targetValue;
         private int leverage;
         private double orderBalanceRatio;
-        private RiskRewardRatioType riskRewardRatioType;
-        private double stop;   // 손절비율
-        private double limit;  // 익절비율
 
         public static BuyStrategyDto create(BuyStrategyEntity buyStrategyEntity) {
             BuyStrategyDto buyStrategyDto = new BuyStrategyDto();
             buyStrategyDto.idx = buyStrategyEntity.getIdx();
             buyStrategyDto.type = buyStrategyEntity.getType();
+            buyStrategyDto.targetValue = buyStrategyDto.getTargetValue();
             buyStrategyDto.leverage = buyStrategyEntity.getLeverage();
             buyStrategyDto.orderBalanceRatio = buyStrategyEntity.getOrderBalanceRatio();
-            buyStrategyDto.riskRewardRatioType = buyStrategyEntity.getRiskRewardRatioType();
-            buyStrategyDto.stop = buyStrategyDto.getStop();
-            buyStrategyDto.limit = buyStrategyDto.getLimit();
 
             return buyStrategyDto;
         }

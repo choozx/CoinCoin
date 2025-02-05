@@ -21,9 +21,7 @@ CREATE TABLE buy_strategy
 (
     idx BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     type int NOT NULL,
+    target_value varchar(500) NOT NULL,
     leverage int NOT NULL,
-    order_balance_ratio double(4,3) NOT NULL,
-    risk_reward_ratio_type int not null,
-    stop double(5,4) not null,
-    limit double(5,4) not null
+    order_balance_ratio double(4,3) NOT NULL
 );

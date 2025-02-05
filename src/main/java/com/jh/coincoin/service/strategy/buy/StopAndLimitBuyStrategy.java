@@ -20,11 +20,18 @@ import com.jh.coincoin.service.external.BinanceFutureAPIService;
 import com.jh.coincoin.service.strategy.buy.calculator.RiskRewardCalculator;
 import com.jh.coincoin.util.CommonUtil;
 import com.jh.coincoin.util.DateTimeUtil;
+import com.slack.api.model.block.InputBlock;
+import com.slack.api.model.block.composition.OptionObject;
+import com.slack.api.model.block.composition.PlainTextObject;
+import com.slack.api.model.block.element.CheckboxesElement;
+import com.slack.api.model.block.element.NumberInputElement;
+import com.slack.api.model.block.element.RadioButtonsElement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -157,5 +164,58 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
                 .timestamp(now)
                 .build();
         binanceFutureAPIService.newOrder(slOrder);
+    }
+
+    @Override
+    public List<InputBlock> getInputBlockList() {
+        List<InputBlock> inputBlockList = new ArrayList<>();
+
+        List<OptionObject> riskRewardTypeList = new ArrayList<>();
+        for (RiskRewardRatioType type : RiskRewardRatioType.values()) {
+            OptionObject optionObject = OptionObject.builder()
+                    .text(PlainTextObject.builder()
+                            .text(type.getDescription())
+                            .build())
+                    .value(type.getKey())
+                    .build();
+            riskRewardTypeList.add(optionObject);
+        }
+
+        InputBlock riskRewardTypeBlock = InputBlock.builder()
+                .blockId("risk_reward_type")
+                .label(PlainTextObject.builder().text("손익절 비율 타입").build())
+                .element(RadioButtonsElement.builder()
+                        .actionId("select_risk_reward_type")
+                        .options(riskRewardTypeList)
+                        .build())
+                .build();
+
+        InputBlock limitBlock = InputBlock.builder()
+                .blockId("limit")
+                .label(PlainTextObject.builder().text("익절 비율").build())
+                .element(NumberInputElement.builder()
+                        .actionId("select_limit")
+                        .minValue("0")
+                        .decimalAllowed(true)
+                        .placeholder(PlainTextObject.builder().text("비율을 선택하세요").build())
+                        .build())
+                .build();
+
+        InputBlock stopBlock = InputBlock.builder()
+                .blockId("stop")
+                .label(PlainTextObject.builder().text("손절 비율").build())
+                .element(NumberInputElement.builder()
+                        .actionId("select_stop")
+                        .minValue("0")
+                        .decimalAllowed(true)
+                        .placeholder(PlainTextObject.builder().text("비율을 선택하세요").build())
+                        .build())
+                .build();
+
+        inputBlockList.add(riskRewardTypeBlock);
+        inputBlockList.add(limitBlock);
+        inputBlockList.add(stopBlock);
+
+        return inputBlockList;
     }
 }
