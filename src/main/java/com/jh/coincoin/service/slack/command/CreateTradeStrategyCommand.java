@@ -3,6 +3,7 @@ package com.jh.coincoin.service.slack.command;
 import com.jh.coincoin.model.Strategy.OrderStrategyDto;
 import com.jh.coincoin.model.Strategy.BuyStrategyDto;
 import com.jh.coincoin.model.consts.GlobalConst;
+import com.jh.coincoin.model.consts.SlackConst;
 import com.jh.coincoin.model.type.BinanceType.Interval;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.SlackType.SheetType;
@@ -103,45 +104,45 @@ public class CreateTradeStrategyCommand extends SlashCommandHandler {
         List<LayoutBlock> layoutBlockList = new ArrayList<>();
 
         HeaderBlock headerBlock = HeaderBlock.builder()
-                .blockId("header")
+                .blockId(SlackConst.HEADER)
                 .text(PlainTextObject.builder().text("자동 매매 전략 시트").build())
                 .build();
 
         InputBlock symbolBlock = InputBlock.builder()
-                .blockId("symbol")
+                .blockId(SlackConst.SYMBOL)
                 .label(PlainTextObject.builder().text("코인 선택").build())
                 .element(StaticSelectElement.builder()
-                        .actionId("select_symbol")
+                        .actionId(SlackConst.SELECT_SYMBOL)
                         .placeholder(PlainTextObject.builder().text("코인을 선택하세요").build())
                         .options(symbolOptionList)
                         .build())
                 .build();
 
         InputBlock intervalBlock = InputBlock.builder()
-                .blockId("interval")
+                .blockId(SlackConst.INTERVAL)
                 .label(PlainTextObject.builder().text("적용 캔들").build())
                 .element(StaticSelectElement.builder()
-                        .actionId("select_interval")
+                        .actionId(SlackConst.SELECT_INTERVAL)
                         .placeholder(PlainTextObject.builder().text("캔들을 선택하세요").build())
                         .options(intervalOptionList)
                         .build())
                 .build();
 
         InputBlock orderStrategyBlock = InputBlock.builder()
-                .blockId("order_strategy")
+                .blockId(SlackConst.ORDER_STRATEGY)
                 .label(PlainTextObject.builder().text("진입 전략").build())
                 .element(StaticSelectElement.builder()
-                        .actionId("select_order_strategy")
+                        .actionId(SlackConst.SELECT_ORDER_STRATEGY)
                         .placeholder(PlainTextObject.builder().text("진입 전략을 선택하세요").build())
                         .options(orderStrategyOptionList)
                         .build())
                 .build();
 
         InputBlock buyStrategyBlock = InputBlock.builder()
-                .blockId("buy_strategy")
+                .blockId(SlackConst.BUY_STRATEGY)
                 .label(PlainTextObject.builder().text("매수 전략").build())
                 .element(StaticSelectElement.builder()
-                        .actionId("select_buy_strategy")
+                        .actionId(SlackConst.SELECT_BUY_STRATEGY)
                         .placeholder(PlainTextObject.builder().text("매수 전략을 선택하세요").build())
                         .options(buyStrategyOptionList)
                         .build())
@@ -154,7 +155,7 @@ public class CreateTradeStrategyCommand extends SlashCommandHandler {
         layoutBlockList.add(buyStrategyBlock);
 
         View modalView = Views.view(v -> v
-                .type("modal")
+                .type(SlackConst.MODAL)
                 .callbackId(SheetType.TRADE.getKey())
                 .title(Views.viewTitle(title -> title.type("plain_text").text("새로운 전략")))
                 .submit(Views.viewSubmit(submit -> submit.type("plain_text").text("Submit")))

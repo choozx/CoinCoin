@@ -1,6 +1,7 @@
 package com.jh.coincoin.service.slack.interactive;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.jh.coincoin.model.consts.SlackConst;
 import com.jh.coincoin.model.type.SlackType.SheetType;
 import com.jh.coincoin.model.type.SlackType.InteractiveType;
 import com.jh.coincoin.service.slack.InteractiveTypeHandler;
@@ -33,10 +34,10 @@ public class Submission implements InteractiveTypeHandler {
 
     @Override
     public void handleInteractiveType(JsonNode jsonNode) {
-        SheetType sheetType = SheetType.of(jsonNode.path("view").path("callback_id").asText());
+        SheetType sheetType = SheetType.of(jsonNode.path(SlackConst.VIEW).path(SlackConst.CALLBACK_ID).asText());
         SheetHandler handler = strategySheetMap.get(sheetType);
 
-        JsonNode decideStrategy = jsonNode.path("view").path("state").path("values");
+        JsonNode decideStrategy = jsonNode.path(SlackConst.VIEW).path(SlackConst.STATE).path(SlackConst.VALUES);
         handler.submitSheet(decideStrategy);
     }
 }

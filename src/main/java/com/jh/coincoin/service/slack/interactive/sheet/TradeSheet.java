@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.jh.coincoin.entity.BuyStrategyEntity;
 import com.jh.coincoin.entity.OrderStrategyEntity;
 import com.jh.coincoin.entity.TradeStrategyEntity;
+import com.jh.coincoin.model.consts.SlackConst;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.BinanceType.Interval;
 import com.jh.coincoin.model.type.ErrorType;
@@ -39,10 +40,10 @@ public class TradeSheet implements SheetHandler {
     @Override
     @Transactional
     public void submitSheet(JsonNode decideStrategy) {
-        Symbol selectedSymbol = Symbol.of(decideStrategy.path("symbol").path("select_symbol").path("selected_option").path("value").asText());
-        Interval selectedInterval = Interval.of(decideStrategy.path("interval").path("select_interval").path("selected_option").path("value").asText());
-        long selectedOrderStrategyIdx = decideStrategy.path("order_strategy").path("select_order_strategy").path("selected_option").path("value").asLong();
-        long selectedBuyStrategyIdx = decideStrategy.path("buy_strategy").path("select_buy_strategy").path("selected_option").path("value").asLong();
+        Symbol selectedSymbol = Symbol.of(decideStrategy.path(SlackConst.SYMBOL).path(SlackConst.SELECT_SYMBOL).path(SlackConst.SELECTED_OPTION).path(SlackConst.VALUE).asText());
+        Interval selectedInterval = Interval.of(decideStrategy.path(SlackConst.INTERVAL).path(SlackConst.SELECT_INTERVAL).path(SlackConst.SELECTED_OPTION).path(SlackConst.VALUE).asText());
+        long selectedOrderStrategyIdx = decideStrategy.path(SlackConst.ORDER_STRATEGY).path(SlackConst.SELECT_ORDER_STRATEGY).path(SlackConst.SELECTED_OPTION).path(SlackConst.VALUE).asLong();
+        long selectedBuyStrategyIdx = decideStrategy.path(SlackConst.BUY_STRATEGY).path(SlackConst.SELECT_BUY_STRATEGY).path(SlackConst.SELECTED_OPTION).path(SlackConst.VALUE).asLong();
 
         OrderStrategyEntity orderStrategy = orderStrategyRepository.findById(selectedOrderStrategyIdx).orElseThrow(() -> new ServerException(ErrorType.NOT_FOUND_STRATEGY, "진입 전략이 존재하지 않습니다."));
         BuyStrategyEntity buyStrategy = buyStrategyRepository.findById(selectedBuyStrategyIdx).orElseThrow(() -> new ServerException(ErrorType.NOT_FOUND_STRATEGY, "진입 전략이 존재하지 않습니다."));

@@ -2,6 +2,7 @@ package com.jh.coincoin.service.slack.interactive.sheet;
 
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.jh.coincoin.model.consts.SlackConst;
 import com.jh.coincoin.model.type.StrategyType.OrderStrategyType;
 import com.jh.coincoin.model.type.SlackType.SheetType;
 import com.jh.coincoin.service.slack.interactive.SheetHandler;
@@ -47,7 +48,7 @@ public class OrderSheet implements SheetHandler {
     @Override
     public void updateSheet(String viewId, JsonNode selectedOptionList) {
         JsonNode selectOption = selectedOptionList.get(0);
-        OrderStrategyType selectedOrderType = OrderStrategyType.of(selectOption.path("selected_option").path("value").asText());
+        OrderStrategyType selectedOrderType = OrderStrategyType.of(selectOption.path(SlackConst.SELECTED_OPTION).path(SlackConst.VALUE).asText());
 
         OptionObject selectedOrderStrategy = OptionObject.builder()
                 .text(PlainTextObject.builder()
@@ -70,11 +71,11 @@ public class OrderSheet implements SheetHandler {
         List<LayoutBlock> layoutBlockList = new ArrayList<>();
 
         InputBlock orderStrategyBlock = InputBlock.builder()
-                .blockId("order_strategy")
+                .blockId(SlackConst.ORDER_STRATEGY)
                 .label(PlainTextObject.builder().text("진입 전략").build())
                 .dispatchAction(true)
                 .element(StaticSelectElement.builder()
-                        .actionId("select_order_strategy")
+                        .actionId(SlackConst.SELECT_ORDER_STRATEGY)
                         .placeholder(PlainTextObject.builder().text("진입 전략을 선택하세요").build())
                         .initialOption(selectedOrderStrategy)
                         .options(orderStrategyOptionList)
@@ -87,7 +88,7 @@ public class OrderSheet implements SheetHandler {
         layoutBlockList.addAll(valueBlockList);
 
         View modalView = Views.view(v -> v
-                .type("modal")
+                .type(SlackConst.MODAL)
                 .callbackId(SheetType.ORDER.getKey())
                 .title(Views.viewTitle(title -> title.type("plain_text").text("새로운 진입 전략")))
                 .submit(Views.viewSubmit(submit -> submit.type("plain_text").text("Submit")))
@@ -107,7 +108,7 @@ public class OrderSheet implements SheetHandler {
 
     @Override
     public void submitSheet(JsonNode decideStrategy) {
-        OrderStrategyType selectedOrderType = OrderStrategyType.of(decideStrategy.path("order_strategy").path("select_order_strategy").path("selected_option").path("value").asText());
+        OrderStrategyType selectedOrderType = OrderStrategyType.of(decideStrategy.path(SlackConst.ORDER_STRATEGY).path(SlackConst.SELECT_ORDER_STRATEGY).path(SlackConst.SELECTED_OPTION).path(SlackConst.VALUE).asText());
         OrderStrategy orderStrategy = orderStrategyMap.get(selectedOrderType);
 
         orderStrategy.save(decideStrategy);

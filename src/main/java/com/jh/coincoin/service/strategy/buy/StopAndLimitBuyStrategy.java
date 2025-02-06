@@ -16,6 +16,7 @@ import com.jh.coincoin.model.Strategy;
 import com.jh.coincoin.model.Strategy.PriceCalculatorDto;
 import com.jh.coincoin.model.Strategy.OrderParamDto;
 import com.jh.coincoin.model.consts.GlobalConst;
+import com.jh.coincoin.model.consts.SlackConst;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.BinanceType.Order;
 import com.jh.coincoin.model.type.BinanceType.Side;
@@ -186,19 +187,19 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
         }
 
         InputBlock riskRewardTypeBlock = InputBlock.builder()
-                .blockId("risk_reward_type")
+                .blockId(SlackConst.RISK_REWARD_TYPE)
                 .label(PlainTextObject.builder().text("손익절 비율 타입").build())
                 .element(RadioButtonsElement.builder()
-                        .actionId("select_risk_reward_type")
+                        .actionId(SlackConst.SELECT_RISK_REWARD_TYPE)
                         .options(riskRewardTypeList)
                         .build())
                 .build();
 
         InputBlock limitBlock = InputBlock.builder()
-                .blockId("limit")
+                .blockId(SlackConst.LIMIT)
                 .label(PlainTextObject.builder().text("익절 비율").build())
                 .element(NumberInputElement.builder()
-                        .actionId("select_limit")
+                        .actionId(SlackConst.SELECT_LIMIT)
                         .minValue("0")
                         .decimalAllowed(true)
                         .placeholder(PlainTextObject.builder().text("비율을 선택하세요").build())
@@ -206,10 +207,10 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
                 .build();
 
         InputBlock stopBlock = InputBlock.builder()
-                .blockId("stop")
+                .blockId(SlackConst.STOP)
                 .label(PlainTextObject.builder().text("손절 비율").build())
                 .element(NumberInputElement.builder()
-                        .actionId("select_stop")
+                        .actionId(SlackConst.SELECT_STOP)
                         .minValue("0")
                         .decimalAllowed(true)
                         .placeholder(PlainTextObject.builder().text("비율을 선택하세요").build())
@@ -225,13 +226,13 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
 
     @Override
     public BuyStrategyEntity newEntity(JsonNode decideStrategyValue) {
-        BuyStrategyType selectedBuyStrategyType = BuyStrategyType.of(decideStrategyValue.path("buy_strategy").path("select_buy_strategy").path("selected_option").path("value").asText());
-        int leverage = Integer.parseInt(decideStrategyValue.path("leverage").path("select_leverage").path("value").asText());
-        double orderBalanceRatio = Double.parseDouble(decideStrategyValue.path("balanceRatio").path("select_balanceRatio").path("value").asText());
+        BuyStrategyType selectedBuyStrategyType = BuyStrategyType.of(decideStrategyValue.path(SlackConst.BUY_STRATEGY).path(SlackConst.SELECT_BUY_STRATEGY).path(SlackConst.SELECTED_OPTION).path(SlackConst.VALUE).asText());
+        int leverage = Integer.parseInt(decideStrategyValue.path(SlackConst.LEVERAGE).path(SlackConst.SELECT_LEVERAGE).path(SlackConst.VALUE).asText());
+        double orderBalanceRatio = Double.parseDouble(decideStrategyValue.path(SlackConst.BALANCE_RATIO).path(SlackConst.SELECT_BALANCE_RATIO).path(SlackConst.VALUE).asText());
 
-        RiskRewardRatioType riskRewardRatioType = RiskRewardRatioType.of(decideStrategyValue.path("risk_reward_type").path("select_risk_reward_type").path("value").asText());
-        double limit = decideStrategyValue.path("limit").path("select_limit").path("value").asDouble();
-        double stop = decideStrategyValue.path("stop").path("select_stop").path("value").asDouble();
+        RiskRewardRatioType riskRewardRatioType = RiskRewardRatioType.of(decideStrategyValue.path(SlackConst.RISK_REWARD_TYPE).path(SlackConst.SELECT_RISK_REWARD_TYPE).path(SlackConst.VALUE).asText());
+        double limit = decideStrategyValue.path(SlackConst.LIMIT).path(SlackConst.SELECT_LIMIT).path(SlackConst.VALUE).asDouble();
+        double stop = decideStrategyValue.path(SlackConst.STOP).path(SlackConst.SELECT_STOP).path(SlackConst.VALUE).asDouble();
         Strategy.RiskRewardStrategy riskRewardStrategy = Strategy.RiskRewardStrategy.builder()
                 .type(riskRewardRatioType)
                 .limit(limit)

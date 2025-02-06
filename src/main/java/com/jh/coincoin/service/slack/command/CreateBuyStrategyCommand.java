@@ -1,6 +1,7 @@
 package com.jh.coincoin.service.slack.command;
 
 import com.jh.coincoin.model.consts.GlobalConst;
+import com.jh.coincoin.model.consts.SlackConst;
 import com.jh.coincoin.model.type.SlackType.SheetType;
 import com.jh.coincoin.model.type.SlackType.SlashCommand;
 import com.jh.coincoin.model.type.StrategyType.BuyStrategyType;
@@ -58,21 +59,21 @@ public class CreateBuyStrategyCommand extends SlashCommandHandler {
         List<LayoutBlock> layoutBlockList = new ArrayList<>();
 
         InputBlock buyStrategyBlock = InputBlock.builder()
-                .blockId("buy_strategy")
+                .blockId(SlackConst.BUY_STRATEGY)
                 .label(PlainTextObject.builder().text("매수 전략").build())
                 .dispatchAction(true)
                 .element(StaticSelectElement.builder()
-                        .actionId("select_buy_strategy")
+                        .actionId(SlackConst.SELECT_BUY_STRATEGY)
                         .placeholder(PlainTextObject.builder().text("매수 전략을 선택하세요").build())
                         .options(buyStrategyOptionList)
                         .build())
                 .build();
 
         InputBlock leverageBlock = InputBlock.builder()
-                .blockId("leverage")
+                .blockId(SlackConst.LEVERAGE)
                 .label(PlainTextObject.builder().text("레버리지 설정").build())
                 .element(NumberInputElement.builder()
-                        .actionId("select_leverage")
+                        .actionId(SlackConst.SELECT_LEVERAGE)
                         .minValue(String.valueOf(GlobalConst.MIN_LEVERAGE))
                         .maxValue(String.valueOf(GlobalConst.MAX_LEVERAGE)) // 이 값도 코인마다 다름으로 동적으로 처치해줘야됨
                         .decimalAllowed(false)
@@ -81,10 +82,10 @@ public class CreateBuyStrategyCommand extends SlashCommandHandler {
                 .build();
 
         InputBlock balanceRatioBlock = InputBlock.builder()
-                .blockId("balanceRatio")
+                .blockId(SlackConst.BALANCE_RATIO)
                 .label(PlainTextObject.builder().text("주문 마진 비율").build())
                 .element(NumberInputElement.builder()
-                        .actionId("select_balanceRatio")
+                        .actionId(SlackConst.SELECT_BALANCE_RATIO)
                         .minValue("0")
                         .maxValue("100")
                         .decimalAllowed(false)
@@ -97,7 +98,7 @@ public class CreateBuyStrategyCommand extends SlashCommandHandler {
         layoutBlockList.add(balanceRatioBlock);
 
         View modalView = Views.view(v -> v
-                .type("modal")
+                .type(SlackConst.MODAL)
                 .callbackId(SheetType.BUY.getKey())
                 .title(Views.viewTitle(title -> title.type("plain_text").text("새로운 전략")))
                 .submit(Views.viewSubmit(submit -> submit.type("plain_text").text("Submit")))

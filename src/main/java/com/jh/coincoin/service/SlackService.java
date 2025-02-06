@@ -1,6 +1,7 @@
 package com.jh.coincoin.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.jh.coincoin.model.consts.SlackConst;
 import com.jh.coincoin.model.type.ErrorType;
 import com.jh.coincoin.model.type.SlackType.InteractiveType;
 import com.jh.coincoin.model.type.SlackType.SlashCommand;
@@ -55,7 +56,7 @@ public class SlackService {
     }
 
     public void handleInteractive(JsonNode jsonNode) {
-        InteractiveType type = InteractiveType.of(jsonNode.path("type").asText());
+        InteractiveType type = InteractiveType.of(jsonNode.path(SlackConst.TYPE).asText());
 
         InteractiveTypeHandler interactiveTypeHandler = interactiveHandlerMap.get(type);
         interactiveTypeHandler.handleInteractiveType(jsonNode);

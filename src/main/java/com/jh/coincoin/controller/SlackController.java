@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jh.coincoin.model.Slack;
+import com.jh.coincoin.model.consts.SlackConst;
 import com.jh.coincoin.model.type.SlackType;
 import com.jh.coincoin.service.SlackService;
 import lombok.RequiredArgsConstructor;
@@ -54,9 +55,9 @@ public class SlackController {
 
     @PostMapping("/slack/command")
     public void newStrategy(@RequestParam Map<String, String> params) {
-        String command = params.get("command"); // Slash Command (/new_strategy)
-        String triggerId = params.get("trigger_id"); // 모달 띄우기 위한 trigger_id
-        String parameter = params.get("text");
+        String command = params.get(SlackConst.COMMAND); // Slash Command (/new_strategy)
+        String triggerId = params.get(SlackConst.TRIGGER_ID); // 모달 띄우기 위한 trigger_id
+        String parameter = params.get(SlackConst.TEXT);
 
         log.info("command {} | triggerId {} | parameter {}", command, triggerId, parameter);
 

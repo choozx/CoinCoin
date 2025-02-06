@@ -1,5 +1,6 @@
 package com.jh.coincoin.service.slack.command;
 
+import com.jh.coincoin.model.consts.SlackConst;
 import com.jh.coincoin.model.type.SlackType.SheetType;
 import com.jh.coincoin.model.type.SlackType.SlashCommand;
 import com.jh.coincoin.model.type.StrategyType.OrderStrategyType;
@@ -54,18 +55,18 @@ public class CreateOrderStrategyCommand extends SlashCommandHandler {
         }
 
         InputBlock orderStrategyBlock = InputBlock.builder()
-                .blockId("order_strategy")
+                .blockId(SlackConst.ORDER_STRATEGY)
                 .label(PlainTextObject.builder().text("진입 전략").build())
                 .dispatchAction(true)
                 .element(StaticSelectElement.builder()
-                        .actionId("select_order_strategy")
+                        .actionId(SlackConst.SELECT_ORDER_STRATEGY)
                         .placeholder(PlainTextObject.builder().text("진입 전략을 선택하세요").build())
                         .options(orderStrategyOptionList)
                         .build())
                 .build();
 
         View modalView = Views.view(v -> v
-                .type("modal")
+                .type(SlackConst.MODAL)
                 .callbackId(SheetType.ORDER.getKey())
                 .title(Views.viewTitle(title -> title.type("plain_text").text("새로운 전략")))
                 .submit(Views.viewSubmit(submit -> submit.type("plain_text").text("Submit")))

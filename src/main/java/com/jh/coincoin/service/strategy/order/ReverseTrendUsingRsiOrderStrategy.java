@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jh.coincoin.entity.OrderStrategyEntity;
 import com.jh.coincoin.model.Strategy.RSIValue;
+import com.jh.coincoin.model.consts.SlackConst;
 import com.jh.coincoin.model.type.BinanceType.Interval;
 import com.jh.coincoin.model.type.BinanceType.Side;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
@@ -59,10 +60,10 @@ public class ReverseTrendUsingRsiOrderStrategy implements OrderStrategy {
     public List<InputBlock> getInputBlockList() {
         List<InputBlock> inputBlockList = new ArrayList<>();
         InputBlock overBoughtValueBlock = InputBlock.builder()
-                .blockId("over_bought_target_value")
+                .blockId(SlackConst.OVER_BOUGHT)
                 .label(PlainTextObject.builder().text("과매수 RSI 타겟 값 설정").build())
                 .element(NumberInputElement.builder()
-                        .actionId("select_over_bought_target_value")
+                        .actionId(SlackConst.SELECT_OVER_BOUGHT)
                         .minValue("0")
                         .maxValue("100")
                         .decimalAllowed(true)
@@ -71,10 +72,10 @@ public class ReverseTrendUsingRsiOrderStrategy implements OrderStrategy {
                 .build();
 
         InputBlock overSellValueBlock = InputBlock.builder()
-                .blockId("over_sell_target_value")
+                .blockId(SlackConst.OVER_SELL)
                 .label(PlainTextObject.builder().text("과매도 RSI 타겟 값 설정").build())
                 .element(NumberInputElement.builder()
-                        .actionId("select_over_sell_target_value")
+                        .actionId(SlackConst.SELECT_OVER_SELL)
                         .minValue("0")
                         .maxValue("100")
                         .decimalAllowed(true)
@@ -90,9 +91,9 @@ public class ReverseTrendUsingRsiOrderStrategy implements OrderStrategy {
     @Override
     @Transactional
     public void save(JsonNode decideStrategy) {
-        OrderStrategyType selectedOrderType = OrderStrategyType.of(decideStrategy.path("order_strategy").path("select_order_strategy").path("selected_option").path("value").asText());
-        int overBought = Integer.parseInt(decideStrategy.path("over_bought_target_value").path("select_over_bought_target_value").path("value").asText());
-        int overSell = Integer.parseInt(decideStrategy.path("over_sell_target_value").path("select_over_sell_target_value").path("value").asText());
+        OrderStrategyType selectedOrderType = OrderStrategyType.of(decideStrategy.path(SlackConst.ORDER_STRATEGY).path(SlackConst.SELECT_ORDER_STRATEGY).path(SlackConst.SELECTED_OPTION).path(SlackConst.VALUE).asText());
+        int overBought = Integer.parseInt(decideStrategy.path(SlackConst.OVER_BOUGHT).path(SlackConst.SELECT_OVER_BOUGHT).path(SlackConst.VALUE).asText());
+        int overSell = Integer.parseInt(decideStrategy.path(SlackConst.OVER_SELL).path(SlackConst.SELECT_OVER_SELL).path(SlackConst.VALUE).asText());
 
         ObjectMapper objectMapper = new ObjectMapper();
         RSIValue rsiValue = RSIValue.builder()
