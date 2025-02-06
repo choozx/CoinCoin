@@ -3,7 +3,6 @@ CREATE TABLE trade_strategy
     idx               BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     symbol            INT NOT NULL,
     interval          INT NOT NULL,
-    leverage          INT NOT NULL,
     order_strategy_id BIGINT NOT NULL,
     buy_strategy_id   BIGINT NOT NULL,
     CONSTRAINT fk_order_strategy FOREIGN KEY (order_strategy_id) REFERENCES order_strategy (idx),

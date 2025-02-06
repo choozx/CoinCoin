@@ -83,7 +83,7 @@ public class CreateTradeStrategyCommand extends SlashCommandHandler {
                     .text(PlainTextObject.builder()
                             .text(interval.getName())
                             .build())
-                    .value(interval.getName())
+                    .value(String.valueOf(interval.getMinute()))
                     .build();
             intervalOptionList.add(optionObject);
         }
@@ -127,19 +127,6 @@ public class CreateTradeStrategyCommand extends SlashCommandHandler {
                         .build())
                 .build();
 
-        InputBlock leverageBlock = InputBlock.builder()
-                .blockId("leverage")
-                .label(PlainTextObject.builder().text("레버리지 선택").build())
-                .element(NumberInputElement.builder()
-                        .actionId("select_leverage")
-                        .minValue(String.valueOf(GlobalConst.MIN_LEVERAGE))
-                        .maxValue(String.valueOf(GlobalConst.MAX_LEVERAGE))
-                        .initialValue("10")
-                        .decimalAllowed(false)
-                        .placeholder(PlainTextObject.builder().text("레버리지를 선택하세요").build())
-                        .build())
-                .build();
-
         InputBlock orderStrategyBlock = InputBlock.builder()
                 .blockId("order_strategy")
                 .label(PlainTextObject.builder().text("진입 전략").build())
@@ -163,7 +150,6 @@ public class CreateTradeStrategyCommand extends SlashCommandHandler {
         layoutBlockList.add(headerBlock);
         layoutBlockList.add(symbolBlock);
         layoutBlockList.add(intervalBlock);
-        layoutBlockList.add(leverageBlock);
         layoutBlockList.add(orderStrategyBlock);
         layoutBlockList.add(buyStrategyBlock);
 

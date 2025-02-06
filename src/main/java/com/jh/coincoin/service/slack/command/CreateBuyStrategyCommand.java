@@ -1,5 +1,6 @@
 package com.jh.coincoin.service.slack.command;
 
+import com.jh.coincoin.model.consts.GlobalConst;
 import com.jh.coincoin.model.type.SlackType.SheetType;
 import com.jh.coincoin.model.type.SlackType.SlashCommand;
 import com.jh.coincoin.model.type.StrategyType.BuyStrategyType;
@@ -72,8 +73,8 @@ public class CreateBuyStrategyCommand extends SlashCommandHandler {
                 .label(PlainTextObject.builder().text("레버리지 설정").build())
                 .element(NumberInputElement.builder()
                         .actionId("select_leverage")
-                        .minValue("0")
-                        .maxValue("50")     // 이 값도 코인마다 다름으로 동적으로 처치해줘야됨
+                        .minValue(String.valueOf(GlobalConst.MIN_LEVERAGE))
+                        .maxValue(String.valueOf(GlobalConst.MAX_LEVERAGE)) // 이 값도 코인마다 다름으로 동적으로 처치해줘야됨
                         .decimalAllowed(false)
                         .placeholder(PlainTextObject.builder().text("레버리지를 설정하세요").build())
                         .build())

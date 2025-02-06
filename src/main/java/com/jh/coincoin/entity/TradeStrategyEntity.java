@@ -1,5 +1,6 @@
 package com.jh.coincoin.entity;
 
+import com.jh.coincoin.model.type.BinanceType;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.BinanceType.Symbol.SymbolConverter;
 import jakarta.persistence.*;
@@ -28,6 +29,15 @@ public class TradeStrategyEntity implements Persistable<Long> {
     @ManyToOne
     @JoinColumn(name = "buy_strategy_idx")
     private BuyStrategyEntity buyStrategyEntity;
+
+    public static TradeStrategyEntity create(Symbol selectedSymbol, BinanceType.Interval selectedInterval, OrderStrategyEntity orderStrategy, BuyStrategyEntity buyStrategy) {
+        TradeStrategyEntity entity = new TradeStrategyEntity();
+        entity.symbol = selectedSymbol;
+        entity.interval = selectedInterval.getMinute();
+        entity.orderStrategyEntity = orderStrategy;
+        entity.buyStrategyEntity = buyStrategy;
+        return entity;
+    }
 
 
     @Override
