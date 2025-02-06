@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 public class IndicatorService {
 
     private final AdminService adminService;
-    private final SlackService slackService;
+    private final SlackMessageService slackMessageService;
     private Map<IndicatorType, Indicator> indicatorServiceMap;
 
     @Autowired
@@ -50,6 +50,6 @@ public class IndicatorService {
         }
 
         if (messages.size() != 0)
-            slackService.sendMessage("지표 감지", messages);
+            slackMessageService.sendMessage("지표 감지", messages);
     }
 }

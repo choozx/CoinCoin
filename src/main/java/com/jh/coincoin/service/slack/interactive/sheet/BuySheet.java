@@ -6,6 +6,7 @@ import com.jh.coincoin.model.consts.SlackConst;
 import com.jh.coincoin.model.type.SlackType.SheetType;
 import com.jh.coincoin.model.type.StrategyType.BuyStrategyType;
 import com.jh.coincoin.repo.BuyStrategyRepository;
+import com.jh.coincoin.service.SlackMessageService;
 import com.jh.coincoin.service.slack.interactive.SheetHandler;
 import com.jh.coincoin.service.strategy.buy.BuyStrategy;
 import com.slack.api.Slack;
@@ -35,11 +36,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class BuySheet implements SheetHandler {
 
-    private final Slack slackClient = Slack.getInstance();
+    private final SlackMessageService slackMessageService;
     private final BuyStrategyRepository buyStrategyRepository;
 
-    @Value("${slack.bot-token}")
-    private String botToken;
     private Map<BuyStrategyType, BuyStrategy> buyStrategyMap;
 
     @Autowired
@@ -130,14 +129,7 @@ public class BuySheet implements SheetHandler {
                 .blocks(layoutBlockList)
         );
 
-        try {
-            slackClient.methods(botToken).viewsUpdate(r -> r
-                    .viewId(viewId)
-                    .view(modalView)
-            );
-        } catch (IOException | SlackApiException e) {
-            throw new RuntimeException(e);
-        }
+        slackMessageService.updateModal(viewId, modalView);
     }
 
     @Override

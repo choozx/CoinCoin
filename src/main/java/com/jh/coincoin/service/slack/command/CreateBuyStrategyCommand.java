@@ -5,8 +5,8 @@ import com.jh.coincoin.model.consts.SlackConst;
 import com.jh.coincoin.model.type.SlackType.SheetType;
 import com.jh.coincoin.model.type.SlackType.SlashCommand;
 import com.jh.coincoin.model.type.StrategyType.BuyStrategyType;
+import com.jh.coincoin.service.SlackMessageService;
 import com.jh.coincoin.service.slack.SlashCommandHandler;
-import com.slack.api.methods.SlackApiException;
 import com.slack.api.model.block.InputBlock;
 import com.slack.api.model.block.LayoutBlock;
 import com.slack.api.model.block.composition.OptionObject;
@@ -16,10 +16,8 @@ import com.slack.api.model.block.element.StaticSelectElement;
 import com.slack.api.model.view.View;
 import com.slack.api.model.view.Views;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,11 +29,8 @@ import java.util.List;
 @Service
 public class CreateBuyStrategyCommand extends SlashCommandHandler {
 
-    @Value("${slack.bot-token}")
-    private String botToken;
-
-    public CreateBuyStrategyCommand(String webHookURL) {
-        super(webHookURL);
+    public CreateBuyStrategyCommand(SlackMessageService slackMessageService) {
+        super(slackMessageService);
     }
 
     @Override
@@ -106,13 +101,6 @@ public class CreateBuyStrategyCommand extends SlashCommandHandler {
                 .blocks(layoutBlockList)
         );
 
-        try {
-            slackClient.methods(botToken).viewsOpen(r -> r
-                    .triggerId(triggerId)
-                    .view(modalView)
-            );
-        } catch (IOException | SlackApiException e) {
-            throw new RuntimeException(e);
-        }
+        slackMessageService.openModal(triggerId, modalView);
     }
 }

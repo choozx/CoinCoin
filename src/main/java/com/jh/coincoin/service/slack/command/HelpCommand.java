@@ -2,6 +2,7 @@ package com.jh.coincoin.service.slack.command;
 
 import com.jh.coincoin.model.type.SlackType.SlashCommand;
 import com.jh.coincoin.service.AdminService;
+import com.jh.coincoin.service.SlackMessageService;
 import com.jh.coincoin.service.slack.SlashCommandHandler;
 import org.springframework.stereotype.Service;
 
@@ -13,14 +14,15 @@ import java.util.Map;
  */
 
 @Service
-public class HelpSlashCommand extends SlashCommandHandler {
+public class HelpCommand extends SlashCommandHandler {
 
     private final AdminService adminService;
 
-    public HelpSlashCommand(String webHookURL, AdminService adminService) {
-        super(webHookURL);
+    public HelpCommand(SlackMessageService slackMessageService, AdminService adminService) {
+        super(slackMessageService);
         this.adminService = adminService;
     }
+
 
     @Override
     public SlashCommand getCommand() {
@@ -34,6 +36,6 @@ public class HelpSlashCommand extends SlashCommandHandler {
         Map<String, String> context = new HashMap<>();
         context.put("HELP", helpContext);
 
-        sendMessage(context);
+        slackMessageService.sendMessage(context);
     }
 }

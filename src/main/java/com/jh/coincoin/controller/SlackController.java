@@ -3,15 +3,13 @@ package com.jh.coincoin.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jh.coincoin.model.Slack;
 import com.jh.coincoin.model.consts.SlackConst;
 import com.jh.coincoin.model.type.SlackType;
-import com.jh.coincoin.service.SlackService;
+import com.jh.coincoin.service.SlackInteractiveService;
+import com.jh.coincoin.service.SlackCommandService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,18 +24,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class SlackController {
 
-    private final SlackService slackService;
+    private final SlackCommandService slackCommandService;
+    private final SlackInteractiveService slackInteractiveService;
 
-    @PostMapping(value = "/slack/actions", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String handleActions(@RequestBody Slack.EventReq req){
-        log.info(req.toString());
-
-//        if (req.getChallenge() == null) {
-//            slackService.handleAction(req.getEvent());
-//        }
-
-        return req.getChallenge();
-    }
 
     @PostMapping("/slack/interactive")
     public void handleInteractive(@RequestParam("payload") String payload) {
@@ -50,7 +39,7 @@ public class SlackController {
             throw new RuntimeException(e);
         }
 
-        slackService.handleInteractive(jsonNode);
+        slackInteractiveService.handleInteractive(jsonNode);
     }
 
     @PostMapping("/slack/command")
@@ -62,7 +51,7 @@ public class SlackController {
         log.info("command {} | triggerId {} | parameter {}", command, triggerId, parameter);
 
         SlackType.SlashCommand slashCommand = SlackType.SlashCommand.of(command);
-        slackService.handleActionV2(slashCommand, triggerId, parameter);
+        slackCommandService.handleActionV2(slashCommand, triggerId, parameter);
     }
 
 }

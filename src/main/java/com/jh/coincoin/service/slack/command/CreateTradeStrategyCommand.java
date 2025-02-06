@@ -2,30 +2,26 @@ package com.jh.coincoin.service.slack.command;
 
 import com.jh.coincoin.model.Strategy.OrderStrategyDto;
 import com.jh.coincoin.model.Strategy.BuyStrategyDto;
-import com.jh.coincoin.model.consts.GlobalConst;
 import com.jh.coincoin.model.consts.SlackConst;
 import com.jh.coincoin.model.type.BinanceType.Interval;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.SlackType.SheetType;
 import com.jh.coincoin.model.type.SlackType.SlashCommand;
 import com.jh.coincoin.service.AdminService;
+import com.jh.coincoin.service.SlackMessageService;
 import com.jh.coincoin.service.slack.SlashCommandHandler;
 import com.jh.coincoin.service.strategy.StrategyService;
-import com.slack.api.methods.SlackApiException;
 import com.slack.api.model.block.HeaderBlock;
 import com.slack.api.model.block.InputBlock;
 import com.slack.api.model.block.LayoutBlock;
 import com.slack.api.model.block.composition.OptionObject;
 import com.slack.api.model.block.composition.PlainTextObject;
-import com.slack.api.model.block.element.NumberInputElement;
 import com.slack.api.model.block.element.StaticSelectElement;
 import com.slack.api.model.view.View;
 import com.slack.api.model.view.Views;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,11 +36,8 @@ public class CreateTradeStrategyCommand extends SlashCommandHandler {
     private final AdminService adminService;
     private final StrategyService strategyService;
 
-    @Value("${slack.bot-token}")
-    private String botToken;
-
-    public CreateTradeStrategyCommand(String webHookURL, AdminService adminService, StrategyService strategyService) {
-        super(webHookURL);
+    public CreateTradeStrategyCommand(SlackMessageService slackMessageService, AdminService adminService, StrategyService strategyService) {
+        super(slackMessageService);
         this.adminService = adminService;
         this.strategyService = strategyService;
     }
@@ -163,13 +156,6 @@ public class CreateTradeStrategyCommand extends SlashCommandHandler {
                 .blocks(layoutBlockList)
         );
 
-        try {
-            slackClient.methods(botToken).viewsOpen(r -> r
-                    .triggerId(triggerId)
-                    .view(modalView)
-            );
-        } catch (IOException | SlackApiException e) {
-            throw new RuntimeException(e);
-        }
+        slackMessageService.openModal(triggerId, modalView);
     }
 }

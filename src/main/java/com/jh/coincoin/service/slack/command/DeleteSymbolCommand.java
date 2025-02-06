@@ -4,6 +4,7 @@ import com.jh.coincoin.model.type.BinanceType;
 import com.jh.coincoin.model.type.SlackType.SlashCommand;
 import com.jh.coincoin.service.AdminService;
 import com.jh.coincoin.service.CandleService;
+import com.jh.coincoin.service.SlackMessageService;
 import com.jh.coincoin.service.slack.SlashCommandHandler;
 import org.springframework.stereotype.Service;
 
@@ -15,16 +16,17 @@ import java.util.Map;
  */
 
 @Service
-public class DeleteSymbolSlashCommand extends SlashCommandHandler {
+public class DeleteSymbolCommand extends SlashCommandHandler {
 
     private final AdminService adminService;
     private final CandleService candleService;
 
-    public DeleteSymbolSlashCommand(String webHookURL, AdminService adminService, CandleService candleService) {
-        super(webHookURL);
+    public DeleteSymbolCommand(SlackMessageService slackMessageService, AdminService adminService, CandleService candleService) {
+        super(slackMessageService);
         this.adminService = adminService;
         this.candleService = candleService;
     }
+
 
     @Override
     public SlashCommand getCommand() {
@@ -41,6 +43,6 @@ public class DeleteSymbolSlashCommand extends SlashCommandHandler {
         Map<String, String> resText = new HashMap<>();
         resText.put("SYMBOL 제거완료", symbol.getKey());
 
-        sendMessage(resText);
+        slackMessageService.sendMessage(resText);
     }
 }

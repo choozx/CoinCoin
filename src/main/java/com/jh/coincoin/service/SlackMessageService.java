@@ -1,25 +1,21 @@
 package com.jh.coincoin.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.jh.coincoin.model.consts.SlackConst;
 import com.jh.coincoin.model.type.ErrorType;
-import com.jh.coincoin.model.type.SlackType.InteractiveType;
 import com.jh.coincoin.model.type.SlackType.SlashCommand;
-import com.jh.coincoin.service.slack.SlashCommandHandler;
-import com.jh.coincoin.service.slack.InteractiveTypeHandler;
 import com.jh.coincoin.support.ServerException;
 import com.slack.api.Slack;
+import com.slack.api.methods.SlackApiException;
 import com.slack.api.model.Attachment;
 import com.slack.api.model.Field;
+import com.slack.api.model.view.View;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.slack.api.webhook.WebhookPayloads.payload;
@@ -31,36 +27,12 @@ import static com.slack.api.webhook.WebhookPayloads.payload;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class SlackService {
+public class SlackMessageService {
 
+    @Value("${slack.bot-token}")
+    private String botToken;
     private final Slack slackClient = Slack.getInstance();
-
-    private Map<SlashCommand, SlashCommandHandler> slashCommandMap;
-    private Map<InteractiveType, InteractiveTypeHandler> interactiveHandlerMap;
-
     private final String webHookURL;
-
-    @Autowired
-    public void setSlashCommandMap(Set<SlashCommandHandler> slashCommandHandlerSet) {
-        this.slashCommandMap = slashCommandHandlerSet.stream().collect(Collectors.toMap(SlashCommandHandler::getCommand, Function.identity()));
-    }
-
-    @Autowired
-    public void setInteractiveHandlerMap(Set<InteractiveTypeHandler> interactiveTypeHandlerSet) {
-        this.interactiveHandlerMap = interactiveTypeHandlerSet.stream().collect(Collectors.toMap(InteractiveTypeHandler::getType, Function.identity()));
-    }
-
-    public void handleActionV2(SlashCommand slashCommand, String triggerId, String parameter) {
-        SlashCommandHandler handler = slashCommandMap.get(slashCommand);
-        handler.doCommand(triggerId, parameter);
-    }
-
-    public void handleInteractive(JsonNode jsonNode) {
-        InteractiveType type = InteractiveType.of(jsonNode.path(SlackConst.TYPE).asText());
-
-        InteractiveTypeHandler interactiveTypeHandler = interactiveHandlerMap.get(type);
-        interactiveTypeHandler.handleInteractiveType(jsonNode);
-    }
 
     public void sendMessage(String title, Map<String, String> data){
         try {
@@ -87,6 +59,44 @@ public class SlackService {
             );
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void sendMessage(Map<String, String> data){
+        try {
+            slackClient.send(webHookURL, payload(p -> p
+                    .attachments(List.of(
+                            Attachment.builder()
+                                    .fields( // 메시지 본문 내용
+                                            data.keySet().stream()
+                                                    .map(key -> generateSlackField(key, data.get(key)))
+                                                    .collect(Collectors.toList())
+                                    ).build())))
+            );
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void openModal(String triggerId, View modalView) {
+        try {
+            slackClient.methods(botToken).viewsOpen(r -> r
+                    .triggerId(triggerId)
+                    .view(modalView)
+            );
+        } catch (IOException | SlackApiException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void updateModal(String viewId, View modalView) {
+        try {
+            slackClient.methods(botToken).viewsUpdate(r -> r
+                    .viewId(viewId)
+                    .view(modalView)
+            );
+        } catch (IOException | SlackApiException e) {
+            throw new RuntimeException(e);
         }
     }
 

@@ -55,9 +55,10 @@ public class AdminService {
         interval = Interval.of(rawAdminMap.get("INTERVAL"));
         alertRsiValuePair = parsePairDouble(rawAdminMap.get("RSI_SETTING"));
         rsiPeriod = Integer.parseInt(rawAdminMap.get("RSI_PERIOD"));
-        onAutoTrade = Boolean.parseBoolean(rawAdminMap.get("ON_AUTO_TRADE"));
 
         helpContext = rawAdminMap.get("HELP_CONTEXT");
+
+        onAutoTrade = false;    // 서버가 가동되면 자동매매 여부는 기본적으로 꺼둠.
     }
 
     public void setSymbol(Symbol symbol) {
@@ -81,6 +82,10 @@ public class AdminService {
         adminEntity.changeValue(symbolCodeList.stream().map(String::valueOf).collect(Collectors.joining("|")));
 
         adminRepository.saveAndFlush(adminEntity);
+    }
+
+    public void switchAutoTrade(boolean onOff) {
+        onAutoTrade = onOff;
     }
 
     private List<Symbol> parseSymbol() {

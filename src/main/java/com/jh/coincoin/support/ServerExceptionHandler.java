@@ -1,6 +1,6 @@
 package com.jh.coincoin.support;
 
-import com.jh.coincoin.service.SlackService;
+import com.jh.coincoin.service.SlackMessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -15,12 +15,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RequiredArgsConstructor
 public class ServerExceptionHandler {
 
-    final SlackService slackService;
+    private final SlackMessageService slackMessageService;
 
     @ExceptionHandler(ServerException.class)
     protected void exceptionHandler(ServerException exception) {
         log.error(ExceptionUtils.getStackTrace(exception));
 
-        slackService.sendMessage(exception.getMsg());
+        slackMessageService.sendMessage(exception.getMsg());
     }
 }

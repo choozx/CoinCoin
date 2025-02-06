@@ -17,7 +17,7 @@ import org.springframework.test.context.TestConstructor;
 @SpringBootTest
 @RequiredArgsConstructor
 @TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
-public class SlackServiceTest {
+public class SlackCommandServiceTest {
 
     private final CreateTradeStrategyCommand newStrategyAction;
 
