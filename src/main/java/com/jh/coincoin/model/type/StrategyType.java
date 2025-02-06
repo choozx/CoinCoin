@@ -136,6 +136,11 @@ public class StrategyType {
             this.description = description;
         }
 
+        public static RiskRewardRatioType of(String key) {
+            return Arrays.stream(values()).filter(type -> type.key.equals(key)).findFirst()
+                    .orElseThrow(() -> new ServerException(ErrorType.WRONG_COMMAND, "찾을 수 없는 전략"));
+        }
+
         @Override
         public Integer getCode() {
             return code;

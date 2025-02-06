@@ -1,5 +1,9 @@
 package com.jh.coincoin.service.strategy.buy;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jh.coincoin.entity.BuyStrategyEntity;
 import com.jh.coincoin.model.Binance.ModifyLeverageReq;
 import com.jh.coincoin.model.Binance.PositionInfoRes;
 import com.jh.coincoin.model.Binance.PositionInfoReq;
@@ -8,6 +12,7 @@ import com.jh.coincoin.model.Binance.TickerPriceReq;
 import com.jh.coincoin.model.Binance.AccountBalanceReq;
 import com.jh.coincoin.model.Binance.AccountBalanceRes;
 import com.jh.coincoin.model.Binance.NewOrderReq;
+import com.jh.coincoin.model.Strategy;
 import com.jh.coincoin.model.Strategy.PriceCalculatorDto;
 import com.jh.coincoin.model.Strategy.OrderParamDto;
 import com.jh.coincoin.model.consts.GlobalConst;
@@ -23,7 +28,6 @@ import com.jh.coincoin.util.DateTimeUtil;
 import com.slack.api.model.block.InputBlock;
 import com.slack.api.model.block.composition.OptionObject;
 import com.slack.api.model.block.composition.PlainTextObject;
-import com.slack.api.model.block.element.CheckboxesElement;
 import com.slack.api.model.block.element.NumberInputElement;
 import com.slack.api.model.block.element.RadioButtonsElement;
 import lombok.RequiredArgsConstructor;
@@ -217,5 +221,31 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
         inputBlockList.add(stopBlock);
 
         return inputBlockList;
+    }
+
+    @Override
+    public BuyStrategyEntity newEntity(JsonNode decideStrategyValue) {
+        BuyStrategyType selectedBuyStrategyType = BuyStrategyType.of(decideStrategyValue.path("buy_strategy").path("select_buy_strategy").path("selected_option").path("value").asText());
+        int leverage = Integer.parseInt(decideStrategyValue.path("leverage").path("select_leverage").path("value").asText());
+        double orderBalanceRatio = Double.parseDouble(decideStrategyValue.path("balanceRatio").path("select_balanceRatio").path("value").asText());
+
+        RiskRewardRatioType riskRewardRatioType = RiskRewardRatioType.of(decideStrategyValue.path("risk_reward_type").path("select_risk_reward_type").path("value").asText());
+        double limit = decideStrategyValue.path("limit").path("select_limit").path("value").asDouble();
+        double stop = decideStrategyValue.path("stop").path("select_stop").path("value").asDouble();
+        Strategy.RiskRewardStrategy riskRewardStrategy = Strategy.RiskRewardStrategy.builder()
+                .type(riskRewardRatioType)
+                .limit(limit)
+                .stop(stop)
+                .build();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String riskRewardStrategyString;
+        try {
+            riskRewardStrategyString = objectMapper.writeValueAsString(riskRewardStrategy);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        return BuyStrategyEntity.create(selectedBuyStrategyType, leverage, orderBalanceRatio, riskRewardStrategyString);
     }
 }

@@ -1,8 +1,10 @@
 package com.jh.coincoin.service.slack.interactive.sheet;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.jh.coincoin.entity.BuyStrategyEntity;
 import com.jh.coincoin.model.type.SlackType.SheetType;
 import com.jh.coincoin.model.type.StrategyType.BuyStrategyType;
+import com.jh.coincoin.repo.BuyStrategyRepository;
 import com.jh.coincoin.service.slack.interactive.SheetHandler;
 import com.jh.coincoin.service.strategy.buy.BuyStrategy;
 import com.slack.api.Slack;
@@ -29,12 +31,14 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class BuySheet implements SheetHandler {
+
+    private final Slack slackClient = Slack.getInstance();
+    private final BuyStrategyRepository buyStrategyRepository;
 
     @Value("${slack.bot-token}")
     private String botToken;
-    private final Slack slackClient = Slack.getInstance();
-
     private Map<BuyStrategyType, BuyStrategy> buyStrategyMap;
 
     @Autowired
@@ -136,7 +140,12 @@ public class BuySheet implements SheetHandler {
     }
 
     @Override
-    public void submitSheet(JsonNode jsonNode) {
+    public void submitSheet(JsonNode decideStrategy) {
+        BuyStrategyType selectedBuyType = BuyStrategyType.of(decideStrategy.path("buy_strategy").path("select_buy_strategy").path("selected_option").path("value").asText());
+        BuyStrategy buyStrategy = buyStrategyMap.get(selectedBuyType);
 
+        BuyStrategyEntity buyStrategyEntity = buyStrategy.newEntity(decideStrategy);
+
+        buyStrategyRepository.saveAndFlush(buyStrategyEntity);
     }
 }

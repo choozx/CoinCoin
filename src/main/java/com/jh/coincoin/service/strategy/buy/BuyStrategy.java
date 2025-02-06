@@ -1,5 +1,7 @@
 package com.jh.coincoin.service.strategy.buy;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.jh.coincoin.entity.BuyStrategyEntity;
 import com.jh.coincoin.model.Strategy.OrderParamDto;
 import com.jh.coincoin.model.type.StrategyType.BuyStrategyType;
 import com.slack.api.model.block.InputBlock;
@@ -16,4 +18,6 @@ public interface BuyStrategy {
     BuyStrategyType getType();
     void order(OrderParamDto orderParamDto);
     List<InputBlock> getInputBlockList();
+
+    BuyStrategyEntity newEntity(JsonNode decideStrategyValue);
 }

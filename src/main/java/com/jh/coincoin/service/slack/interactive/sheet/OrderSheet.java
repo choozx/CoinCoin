@@ -106,10 +106,10 @@ public class OrderSheet implements SheetHandler {
     }
 
     @Override
-    public void submitSheet(JsonNode decideStrategyValue) {
-        OrderStrategyType selectedOrderType = OrderStrategyType.of(decideStrategyValue.path("order_strategy").path("select_order_strategy").path("selected_option").path("value").asText());
+    public void submitSheet(JsonNode decideStrategy) {
+        OrderStrategyType selectedOrderType = OrderStrategyType.of(decideStrategy.path("order_strategy").path("select_order_strategy").path("selected_option").path("value").asText());
         OrderStrategy orderStrategy = orderStrategyMap.get(selectedOrderType);
 
-        orderStrategy.save(decideStrategyValue);
+        orderStrategy.save(decideStrategy);
     }
 }

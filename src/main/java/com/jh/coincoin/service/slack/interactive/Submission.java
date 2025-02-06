@@ -36,7 +36,7 @@ public class Submission implements InteractiveTypeHandler {
         SheetType sheetType = SheetType.of(jsonNode.path("view").path("callback_id").asText());
         SheetHandler handler = strategySheetMap.get(sheetType);
 
-        JsonNode decideStrategyValue = jsonNode.path("view").path("state").path("values");
-        handler.submitSheet(decideStrategyValue);
+        JsonNode decideStrategy = jsonNode.path("view").path("state").path("values");
+        handler.submitSheet(decideStrategy);
     }
 }

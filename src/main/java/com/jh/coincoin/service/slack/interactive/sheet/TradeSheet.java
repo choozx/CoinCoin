@@ -20,7 +20,7 @@ public class TradeSheet implements SheetHandler {
     }
 
     @Override
-    public void submitSheet(JsonNode jsonNode) {
+    public void submitSheet(JsonNode decideStrategy) {
 
     }
 }

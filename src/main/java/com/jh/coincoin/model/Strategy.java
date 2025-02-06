@@ -100,4 +100,11 @@ public class Strategy {
         private int overBought;
         private int overSell;
     }
+
+    @Builder
+    public static class RiskRewardStrategy {
+        private RiskRewardRatioType type;
+        private double stop;
+        private double limit;
+    }
 }

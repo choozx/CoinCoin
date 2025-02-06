@@ -8,5 +8,5 @@ public interface SheetHandler {
 
     SheetType getType();
     void updateSheet(String viewId, JsonNode selectedOptionList);
-    void submitSheet(JsonNode jsonNode);
+    void submitSheet(JsonNode decideStrategy);
 }
