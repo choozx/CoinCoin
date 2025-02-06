@@ -23,7 +23,7 @@ public class SwitchAutoTradeCommand extends SlashCommandHandler {
 
     @Override
     public void doCommand(String triggerId, String parameter) {
-        boolean onOff = Boolean.parseBoolean(parameter);
+        boolean onOff = parameter.equals("on");
         adminService.switchAutoTrade(onOff);
 
         slackMessageService.sendMessage("자동 매매 " + (onOff ? "시작" : "종료"));
