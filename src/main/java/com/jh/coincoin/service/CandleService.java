@@ -49,10 +49,40 @@ public class CandleService {
         Map<Long, Candle> candleMap = allSymbolMap.get(symbol);
 
         Map<Long, Candle> candleMapPerInterval = new TreeMap<>(Comparator.reverseOrder());
-        long lastTime = DateTimeUtil.roundTimestamp(System.currentTimeMillis(), interval.getMinute());
+        long lastTime = DateTimeUtil.floorTimestamp(System.currentTimeMillis(), interval.getMinute());
         for (var candleEntry : candleMap.entrySet()) {
             if (candleEntry.getKey() >= lastTime)
                 continue;
+
+            long timestamp = candleEntry.getKey();
+            Candle candle = candleEntry.getValue();
+
+            long floorTime = DateTimeUtil.floorTimestamp(timestamp, interval.getMinute());
+
+            if (candleMapPerInterval.containsKey(floorTime)) {
+                Candle existingCandle = candleMapPerInterval.get(floorTime);
+                existingCandle.updateCandle(candle);
+            } else {
+                candleMapPerInterval.put(floorTime, new Candle(candle));
+            }
+
+            if (candleMapPerInterval.size() > candleCount)
+                break;
+        }
+
+        return candleMapPerInterval;
+    }
+
+    public Map<Long, Candle> getCandleMap(Symbol symbol, Interval interval, long beginTime) {
+        TreeMap<Long, Candle> candleMap = allSymbolMap.get(symbol);
+
+        beginTime = beginTime == 0 ? candleMap.lastKey() : beginTime;
+        long roundBeginTime = DateTimeUtil.roundTimestamp(beginTime, interval.getMinute());
+        long floorEndTime = DateTimeUtil.floorTimestamp(System.currentTimeMillis(), interval.getMinute());
+        var cuttingCandleMap = candleMap.subMap(roundBeginTime, true, floorEndTime, true);
+
+        Map<Long, Candle> candleMapPerInterval = new TreeMap<>(Comparator.reverseOrder());
+        for (var candleEntry : cuttingCandleMap.entrySet()) {
 
             long timestamp = candleEntry.getKey();
             Candle candle = candleEntry.getValue();
@@ -65,9 +95,6 @@ public class CandleService {
             } else {
                 candleMapPerInterval.put(roundTime, new Candle(candle));
             }
-
-            if (candleMapPerInterval.size() > candleCount)
-                break;
         }
 
         return candleMapPerInterval;

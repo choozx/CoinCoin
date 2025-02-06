@@ -809,6 +809,11 @@ public final class DateTimeUtil {
         return toDateTime(now).minusDays(1).toEpochSecond(ZoneOffset.UTC) * 1000;
     }
 
+    public static Long floorTimestamp(long timestamp, int n) {
+        long nMinutesInMillis = (long) n * 60 * 1000;
+        return (timestamp / nMinutesInMillis) * nMinutesInMillis;
+    }
+
     public static Long roundTimestamp(long timestamp, int n) {
         long nMinutesInMillis = (long) n * 60 * 1000;
         return (timestamp / nMinutesInMillis) * nMinutesInMillis;

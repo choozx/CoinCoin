@@ -52,4 +52,11 @@ public class IndicatorService {
         if (messages.size() != 0)
             slackMessageService.sendMessage("지표 감지", messages);
     }
+
+    public void update() {
+        List<Symbol> symbolList = adminService.getTrackingSymbolList();
+
+        for (Indicator indicator : indicatorServiceMap.values())
+            indicator.update(symbolList);
+    }
 }

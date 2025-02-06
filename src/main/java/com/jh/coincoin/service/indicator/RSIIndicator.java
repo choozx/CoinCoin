@@ -11,10 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by dale on 2024-09-11.
@@ -28,6 +25,11 @@ public class RSIIndicator implements Indicator {
     private final CandleService candleService;
     private final AdminService adminService;
 
+    record RSIKey(Symbol symbol, Interval interval) {}
+
+    Map<RSIKey, TreeMap<Long, Double>> rsiMap = new HashMap<>();
+    private static final int CANDLE_COUNT = 200;
+
     @Override
     public IndicatorType getName() {
         return IndicatorType.RSI;
@@ -35,7 +37,7 @@ public class RSIIndicator implements Indicator {
 
     @Override
     public Double getLastFigure(Symbol symbol, Interval interval) {
-        Map<Long, Candle> candleMap = candleService.getCandleMap(symbol, interval, 200);
+        Map<Long, Candle> candleMap = candleService.getCandleMap(symbol, interval, CANDLE_COUNT);
 
         List<Candle> candles = candleMap.values().stream()
                 .sorted(Comparator.comparing(Candle::getOpenTime))
@@ -88,4 +90,20 @@ public class RSIIndicator implements Indicator {
         return result <= rsiValuePair.getLeft() || result >= rsiValuePair.getRight();
     }
 
+    @Override
+    public void update(List<Symbol> symbolList) {
+        for (Symbol symbol : symbolList) {
+            for (Interval interval : Interval.values()) {
+                RSIKey rsiKey = new RSIKey(symbol, interval);
+                TreeMap<Long, Double> rsiValueMap = rsiMap.getOrDefault(rsiKey, new TreeMap<>(Comparator.reverseOrder()));
+
+                long lastOpenTime = 0;
+                if (!rsiValueMap.isEmpty()) {
+                    lastOpenTime = rsiValueMap.firstKey();
+                }
+
+                Map<Long, Candle> candleMap = candleService.getCandleMap(symbol, interval, lastOpenTime);
+            }
+        }
+    }
 }
