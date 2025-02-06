@@ -12,7 +12,7 @@ import com.jh.coincoin.model.Binance.TickerPriceReq;
 import com.jh.coincoin.model.Binance.AccountBalanceReq;
 import com.jh.coincoin.model.Binance.AccountBalanceRes;
 import com.jh.coincoin.model.Binance.NewOrderReq;
-import com.jh.coincoin.model.Strategy;
+import com.jh.coincoin.model.Strategy.RiskRewardStrategy;
 import com.jh.coincoin.model.Strategy.PriceCalculatorDto;
 import com.jh.coincoin.model.Strategy.OrderParamDto;
 import com.jh.coincoin.model.consts.GlobalConst;
@@ -228,12 +228,12 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
     public BuyStrategyEntity newEntity(JsonNode decideStrategyValue) {
         BuyStrategyType selectedBuyStrategyType = BuyStrategyType.of(decideStrategyValue.path(SlackConst.BUY_STRATEGY).path(SlackConst.SELECT_BUY_STRATEGY).path(SlackConst.SELECTED_OPTION).path(SlackConst.VALUE).asText());
         int leverage = Integer.parseInt(decideStrategyValue.path(SlackConst.LEVERAGE).path(SlackConst.SELECT_LEVERAGE).path(SlackConst.VALUE).asText());
-        double orderBalanceRatio = Double.parseDouble(decideStrategyValue.path(SlackConst.BALANCE_RATIO).path(SlackConst.SELECT_BALANCE_RATIO).path(SlackConst.VALUE).asText());
+        double orderBalanceRatio = Double.parseDouble(decideStrategyValue.path(SlackConst.BALANCE_RATIO).path(SlackConst.SELECT_BALANCE_RATIO).path(SlackConst.VALUE).asText()) / 100.0;
 
-        RiskRewardRatioType riskRewardRatioType = RiskRewardRatioType.of(decideStrategyValue.path(SlackConst.RISK_REWARD_TYPE).path(SlackConst.SELECT_RISK_REWARD_TYPE).path(SlackConst.VALUE).asText());
+        RiskRewardRatioType riskRewardRatioType = RiskRewardRatioType.of(decideStrategyValue.path(SlackConst.RISK_REWARD_TYPE).path(SlackConst.SELECT_RISK_REWARD_TYPE).path(SlackConst.SELECTED_OPTION).path(SlackConst.VALUE).asText());
         double limit = decideStrategyValue.path(SlackConst.LIMIT).path(SlackConst.SELECT_LIMIT).path(SlackConst.VALUE).asDouble();
         double stop = decideStrategyValue.path(SlackConst.STOP).path(SlackConst.SELECT_STOP).path(SlackConst.VALUE).asDouble();
-        Strategy.RiskRewardStrategy riskRewardStrategy = Strategy.RiskRewardStrategy.builder()
+        RiskRewardStrategy riskRewardStrategy = RiskRewardStrategy.builder()
                 .type(riskRewardRatioType)
                 .limit(limit)
                 .stop(stop)

@@ -21,7 +21,7 @@ public class TradeStrategyEntity implements Persistable<Long> {
     @Column(name = "symbol")
     @Convert(converter = SymbolConverter.class)
     private Symbol symbol;
-    @Column(name = "interval")
+    @Column(name = "`interval`")
     private int interval;
     @ManyToOne
     @JoinColumn(name = "order_strategy_idx")

@@ -56,6 +56,9 @@ public class CreateTradeStrategyCommand extends SlashCommandHandler {
                             .text(dto.getType().getDescription())
                             .build())
                     .value(String.valueOf(dto.getIdx()))
+                    .description(PlainTextObject.builder()
+                            .text(dto.toDescription())
+                            .build())
                     .build();
             orderStrategyOptionList.add(optionObject);
         }
@@ -67,6 +70,9 @@ public class CreateTradeStrategyCommand extends SlashCommandHandler {
                             .text(dto.getType().getDescription())
                             .build())
                     .value(String.valueOf(dto.getIdx()))
+                    .description(PlainTextObject.builder()
+                            .text(dto.toDescription())
+                            .build())
                     .build();
             buyStrategyOptionList.add(optionObject);
         }

@@ -48,6 +48,10 @@ public class Strategy {
             orderStrategyDto.targetValue = orderStrategyEntity.getTargetValue();
             return orderStrategyDto;
         }
+
+        public String toDescription() {
+            return targetValue;
+        }
     }
 
     @Getter
@@ -75,11 +79,15 @@ public class Strategy {
             BuyStrategyDto buyStrategyDto = new BuyStrategyDto();
             buyStrategyDto.idx = buyStrategyEntity.getIdx();
             buyStrategyDto.type = buyStrategyEntity.getType();
-            buyStrategyDto.targetValue = buyStrategyDto.getTargetValue();
+            buyStrategyDto.targetValue = buyStrategyEntity.getTargetValue();
             buyStrategyDto.leverage = buyStrategyEntity.getLeverage();
             buyStrategyDto.orderBalanceRatio = buyStrategyEntity.getOrderBalanceRatio();
 
             return buyStrategyDto;
+        }
+
+        public String toDescription() {
+            return targetValue + " | x" + leverage + " | " + orderBalanceRatio;
         }
     }
 
@@ -101,6 +109,7 @@ public class Strategy {
         private int overSell;
     }
 
+    @Data
     @Builder
     public static class RiskRewardStrategy {
         private RiskRewardRatioType type;

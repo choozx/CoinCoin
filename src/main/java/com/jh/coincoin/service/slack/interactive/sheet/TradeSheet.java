@@ -41,7 +41,7 @@ public class TradeSheet implements SheetHandler {
     @Transactional
     public void submitSheet(JsonNode decideStrategy) {
         Symbol selectedSymbol = Symbol.of(decideStrategy.path(SlackConst.SYMBOL).path(SlackConst.SELECT_SYMBOL).path(SlackConst.SELECTED_OPTION).path(SlackConst.VALUE).asText());
-        Interval selectedInterval = Interval.of(decideStrategy.path(SlackConst.INTERVAL).path(SlackConst.SELECT_INTERVAL).path(SlackConst.SELECTED_OPTION).path(SlackConst.VALUE).asText());
+        Interval selectedInterval = Interval.of(decideStrategy.path(SlackConst.INTERVAL).path(SlackConst.SELECT_INTERVAL).path(SlackConst.SELECTED_OPTION).path(SlackConst.VALUE).asInt());
         long selectedOrderStrategyIdx = decideStrategy.path(SlackConst.ORDER_STRATEGY).path(SlackConst.SELECT_ORDER_STRATEGY).path(SlackConst.SELECTED_OPTION).path(SlackConst.VALUE).asLong();
         long selectedBuyStrategyIdx = decideStrategy.path(SlackConst.BUY_STRATEGY).path(SlackConst.SELECT_BUY_STRATEGY).path(SlackConst.SELECTED_OPTION).path(SlackConst.VALUE).asLong();
 
