@@ -46,6 +46,11 @@ public class CandleService {
     }
 
     public Map<Long, Candle> getCandleMap(Symbol symbol, Interval interval, int candleCount) {
+
+        // todo 집에서 ㄱㄱ
+        long endTime = DateTimeUtil.getCurrentTimeMillis();
+        long beginTime = DateTimeUtil.getPastTime(endTime, interval.getMinute(), candleCount);
+
         Map<Long, Candle> candleMap = allSymbolMap.get(symbol);
 
         Map<Long, Candle> candleMapPerInterval = new TreeMap<>(Comparator.reverseOrder());
@@ -74,26 +79,30 @@ public class CandleService {
     }
 
     public Map<Long, Candle> getCandleMap(Symbol symbol, Interval interval, long beginTime) {
+        return getCandleMap(symbol, interval, beginTime, DateTimeUtil.getCurrentTimeMillis());
+    }
+
+    public Map<Long, Candle> getCandleMap(Symbol symbol, Interval interval, long beginTime, long endTime) {
         TreeMap<Long, Candle> candleMap = allSymbolMap.get(symbol);
 
         beginTime = beginTime == 0 ? candleMap.lastKey() : beginTime;
         long roundBeginTime = DateTimeUtil.roundTimestamp(beginTime, interval.getMinute());
-        long floorEndTime = DateTimeUtil.floorTimestamp(System.currentTimeMillis(), interval.getMinute());
-        var cuttingCandleMap = candleMap.subMap(roundBeginTime, true, floorEndTime, true);
+        long floorEndTime = DateTimeUtil.floorTimestamp(endTime, interval.getMinute());
+        var subCandleMap = candleMap.subMap(roundBeginTime, true, floorEndTime, true);
 
         Map<Long, Candle> candleMapPerInterval = new TreeMap<>(Comparator.reverseOrder());
-        for (var candleEntry : cuttingCandleMap.entrySet()) {
+        for (var candleEntry : subCandleMap.entrySet()) {
 
             long timestamp = candleEntry.getKey();
             Candle candle = candleEntry.getValue();
 
-            long roundTime = DateTimeUtil.roundTimestamp(timestamp, interval.getMinute());
+            long floorTime = DateTimeUtil.floorTimestamp(timestamp, interval.getMinute());
 
-            if (candleMapPerInterval.containsKey(roundTime)) {
-                Candle existingCandle = candleMapPerInterval.get(roundTime);
+            if (candleMapPerInterval.containsKey(floorTime)) {
+                Candle existingCandle = candleMapPerInterval.get(floorTime);
                 existingCandle.updateCandle(candle);
             } else {
-                candleMapPerInterval.put(roundTime, new Candle(candle));
+                candleMapPerInterval.put(floorTime, new Candle(candle));
             }
         }
 
