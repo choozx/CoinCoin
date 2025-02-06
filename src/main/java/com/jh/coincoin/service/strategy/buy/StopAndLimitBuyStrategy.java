@@ -22,6 +22,7 @@ import com.jh.coincoin.model.type.BinanceType.Order;
 import com.jh.coincoin.model.type.BinanceType.Side;
 import com.jh.coincoin.model.type.StrategyType.RiskRewardRatioType;
 import com.jh.coincoin.model.type.StrategyType.BuyStrategyType;
+import com.jh.coincoin.service.SlackMessageService;
 import com.jh.coincoin.service.external.BinanceFutureAPIService;
 import com.jh.coincoin.service.strategy.buy.calculator.RiskRewardCalculator;
 import com.jh.coincoin.util.CommonUtil;
@@ -54,6 +55,7 @@ import java.util.stream.Collectors;
 public class StopAndLimitBuyStrategy implements BuyStrategy {
 
     private final BinanceFutureAPIService binanceFutureAPIService;
+    private final SlackMessageService slackMessageService;
     private Map<RiskRewardRatioType, RiskRewardCalculator> riskRewardCalculatorMap;
 
     @Autowired
@@ -112,6 +114,7 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
                 .quantity(CommonUtil.formatDecimal(quantity, 3))
                 .timestamp(now)
                 .build();
+        log.info("최초 주문 :{}", order);
         binanceFutureAPIService.newOrder(order);
 
         // 주문 확인
@@ -123,9 +126,15 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
         PositionInfoRes positionInfoRes = positionInfoResList.get(0);   // 이 전략의 경우에는 포지션을 하나만 잡을것이기 인덱스 0에서 가져온다
         log.info("주문 정보 확인 : {}", positionInfoRes);
 
-        // TODO 주문 내용 슬랙에 전송
+        RiskRewardStrategy riskRewardStrategy;
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            riskRewardStrategy = objectMapper.readValue(orderParamDto.getTargetValue(), RiskRewardStrategy.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
 
-        RiskRewardCalculator calculator = riskRewardCalculatorMap.get(orderParamDto.getRiskRewardRatioType());
+        RiskRewardCalculator calculator = riskRewardCalculatorMap.get(riskRewardStrategy.getType());
 
         // 익절가 주문
         double entryPrice = positionInfoRes.getEntryPrice();
@@ -135,7 +144,7 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
                 .side(side)
                 .order(Order.TAKE_PROFIT_MARKET)
                 .entryPrice(entryPrice)
-                .riskRewardRatio(orderParamDto.getLimit())
+                .riskRewardRatio(riskRewardStrategy.getLimit())
                 .build();
         double tkPrice = calculator.calcPrice(tkPriceDto);
         NewOrderReq tkOrder = NewOrderReq.builder()
@@ -156,7 +165,7 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
                 .side(side)
                 .order(Order.STOP_MARKET)
                 .entryPrice(entryPrice)
-                .riskRewardRatio(orderParamDto.getStop())
+                .riskRewardRatio(riskRewardStrategy.getStop())
                 .build();
         double slPrice = calculator.calcPrice(slPriceDto);
         NewOrderReq slOrder = NewOrderReq.builder()
@@ -169,6 +178,9 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
                 .timestamp(now)
                 .build();
         binanceFutureAPIService.newOrder(slOrder);
+
+        // 주문 내용 슬랙에 전송
+        slackMessageService.sendMessage(positionInfoRes.toDescription());
     }
 
     @Override

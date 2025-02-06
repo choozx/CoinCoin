@@ -85,6 +85,10 @@ public class Binance {
             this.notional = Float.parseFloat((String) rawData.get("notional"));
             this.updateTime = (long) rawData.get("updateTime");
         }
+
+        public String toDescription() {
+            return String.format("[%s] %s 수량:%-10.3f | 진입가격:%-10.3f | 청산가격:%-10.3f", symbol, positionSide.getName(), positionAmount, entryPrice, liquidationPrice);
+        }
     }
 
     @Getter

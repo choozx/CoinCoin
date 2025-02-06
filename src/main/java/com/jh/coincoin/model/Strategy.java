@@ -10,9 +10,11 @@ import com.jh.coincoin.model.type.BinanceType.Interval;
 import com.jh.coincoin.model.type.StrategyType.RiskRewardRatioType;
 import com.jh.coincoin.model.type.StrategyType.BuyStrategyType;
 import com.jh.coincoin.model.type.StrategyType.OrderStrategyType;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 public class Strategy {
 
@@ -62,9 +64,7 @@ public class Strategy {
         private Interval interval;
         private int leverage;
         private double orderBalanceRatio;
-        private RiskRewardRatioType riskRewardRatioType;
-        private double stop;   // 손절비율
-        private double limit;  // 익절비율
+        private String targetValue;
     }
 
     @Data
@@ -104,6 +104,8 @@ public class Strategy {
 
     @Data
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class RSIValue {
         private int overBought;
         private int overSell;
@@ -111,6 +113,8 @@ public class Strategy {
 
     @Data
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class RiskRewardStrategy {
         private RiskRewardRatioType type;
         private double stop;

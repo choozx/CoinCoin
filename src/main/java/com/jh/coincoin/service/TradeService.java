@@ -68,6 +68,7 @@ public class TradeService {
                         .interval(tradeStrategyDto.getInterval())
                         .leverage(buyStrategyDto.getLeverage())
                         .orderBalanceRatio(buyStrategyDto.getOrderBalanceRatio())
+                        .targetValue(buyStrategyDto.getTargetValue())
                         .build();
                 buyStrategy.order(orderParamDto);
             }
@@ -78,7 +79,6 @@ public class TradeService {
         int minute = LocalDateTime.now().getMinute();
 
         List<Integer> targetIntervalList = new ArrayList<>();
-        targetIntervalList.add(1);  // 인터벌이 1분은 항상 포함되니까
 
         for (BinanceType.Interval interval : BinanceType.Interval.values()) {
             if (minute % interval.getMinute() == 0) {

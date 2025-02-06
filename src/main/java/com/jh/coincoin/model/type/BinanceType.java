@@ -118,6 +118,10 @@ public class BinanceType {
             this.name = name;
         }
 
+        public String getName() {
+            return name;
+        }
+
         public static PositionSide of(String name) {
             return Arrays.stream(values()).filter(positionSide -> positionSide.name.equals(name)).findFirst()
                     .orElseThrow(() -> new ServerException(ErrorType.COMMON_FAIL, "지원하지 않는 positionSide"));
