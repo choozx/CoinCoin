@@ -128,16 +128,48 @@ public class BinanceType {
         }
     }
 
-    public enum Side {
-        BUY,
-        SELL,
+    public enum Side implements CodeEnum<Integer>{
+        BUY(1, "buy"),
+        SELL(2, "sell"),
         ;
+
+        private final int code;
+        private final String key;
+
+        Side(int code, String key) {
+            this.code = code;
+            this.key = key;
+        }
+
+        @Override
+        public Integer getCode() {
+            return code;
+        }
+
+        @Override
+        public String getKey() {
+            return key;
+        }
 
         public static Side reverse(Side side) {
             if (side.equals(BUY))
                 return SELL;
             else
                 return BUY;
+        }
+
+        @Converter
+        public static class SideConverter implements AttributeConverter<Side, Integer> {
+
+            @Override
+            public Integer convertToDatabaseColumn(Side side) {
+                return side.code;
+            }
+
+            @Override
+            public Side convertToEntityAttribute(Integer code) {
+                return CodeEnumFinder.findByCode(Side.class, code);
+            }
         }
     }
 
@@ -193,14 +225,45 @@ public class BinanceType {
         ;
     }
 
-    public enum OrderState {
-        NEW,
-        PARTIALLY_FILLED,
-        FILLED,
-        CANCELED,
-        REJECTED,
-        EXPIRED,
+    public enum OrderState implements CodeEnum<Integer> {
+        NEW(1, "new"),
+        PARTIALLY_FILLED(2, "partially_filled"),
+        FILLED(3, "filled"),
+        CANCELED(4, "canceled"),
+        REJECTED(5, "rejected"),
+        EXPIRED(6, "expired"),
         ;
+
+        private final int code;
+        private final String key;
+
+        OrderState(int code, String key) {
+            this.code = code;
+            this.key = key;
+        }
+
+        @Override
+        public Integer getCode() {
+            return code;
+        }
+
+        @Override
+        public String getKey() {
+            return key;
+        }
+
+        @Converter
+        public static class OrderStateConverter implements AttributeConverter<OrderState, Integer> {
+            @Override
+            public Integer convertToDatabaseColumn(OrderState orderState) {
+                return orderState.code;
+            }
+
+            @Override
+            public OrderState convertToEntityAttribute(Integer code) {
+                return CodeEnumFinder.findByCode(OrderState.class, code);
+            }
+        }
     }
 
     @Getter

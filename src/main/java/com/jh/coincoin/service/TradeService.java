@@ -70,7 +70,8 @@ public class TradeService {
                         .orderBalanceRatio(buyStrategyDto.getOrderBalanceRatio())
                         .targetValue(buyStrategyDto.getTargetValue())
                         .build();
-                buyStrategy.order(orderParamDto);
+                buyStrategy.order(orderParamDto);   // 새로운 주문 return
+                // todo 주문 로깅
             }
         }
     }
