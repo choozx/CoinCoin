@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jh.coincoin.entity.BuyStrategyEntity;
+import com.jh.coincoin.model.Binance.CancelOpenOrderReq;
+import com.jh.coincoin.model.Binance.OrderDetails;
 import com.jh.coincoin.model.Binance.ModifyLeverageReq;
 import com.jh.coincoin.model.Binance.PositionInfoRes;
 import com.jh.coincoin.model.Binance.PositionInfoReq;
@@ -262,5 +264,15 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
         }
 
         return BuyStrategyEntity.create(selectedBuyStrategyType, leverage, orderBalanceRatio, riskRewardStrategyString);
+    }
+
+    @Override
+    public void afterFilled(OrderDetails orderDetails) {
+        long now = DateTimeUtil.getCurrentTimeMillis();
+        CancelOpenOrderReq closeOrder = CancelOpenOrderReq.builder()
+                .symbol(orderDetails.getSymbol())
+                .timestamp(now)
+                .build();
+        binanceAPIService.closeOpenOrder(closeOrder);
     }
 }

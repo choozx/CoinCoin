@@ -4,11 +4,18 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jh.coincoin.model.Binance.Event;
 import com.jh.coincoin.model.type.BinanceType.EventType;
+import com.jh.coincoin.service.websocket.EventHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
+
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 /**
@@ -20,6 +27,13 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 public class ListenerService extends TextWebSocketHandler {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    private Map<EventType, EventHandler> eventHandlerMap;
+
+    @Autowired
+    public void setEventHandlerMap(Set<EventHandler> eventHandlerSet) {
+        this.eventHandlerMap = eventHandlerSet.stream().collect(Collectors.toMap(EventHandler::getType, Function.identity()));
+    }
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) {
@@ -36,6 +50,7 @@ public class ListenerService extends TextWebSocketHandler {
         if (type == null)
             return;
 
-        log.info("occur event : {}", type);
+        EventHandler eventHandler = eventHandlerMap.get(type);
+        eventHandler.process(event.getObjects());
     }
 }

@@ -2,6 +2,7 @@ package com.jh.coincoin.service.strategy.buy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.jh.coincoin.entity.BuyStrategyEntity;
+import com.jh.coincoin.model.Binance.OrderDetails;
 import com.jh.coincoin.model.Binance.PositionInfoRes;
 import com.jh.coincoin.model.Strategy.BuyParamDto;
 import com.jh.coincoin.model.type.StrategyType.BuyStrategyType;
@@ -21,4 +22,6 @@ public interface BuyStrategy {
     List<InputBlock> getInputBlockList();
 
     BuyStrategyEntity newEntity(JsonNode decideStrategyValue);
+
+    void afterFilled(OrderDetails orderDetails);
 }

@@ -2,6 +2,7 @@ package com.jh.coincoin.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.jh.coincoin.entity.TradeLogEntity;
 import com.jh.coincoin.model.type.BinanceType.OrderState;
 import com.jh.coincoin.model.type.BinanceType.NewOrderResp;
 import com.jh.coincoin.model.type.BinanceType.Order;
@@ -12,6 +13,7 @@ import com.jh.coincoin.model.type.BinanceType.Side;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.BinanceType.TimeInForce;
 import com.jh.coincoin.model.type.BinanceType.TriggerSource;
+import com.jh.coincoin.model.type.StrategyType.BuyStrategyType;
 import lombok.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -260,7 +262,7 @@ public class Binance {
     @AllArgsConstructor
     public static class OrderDetails {
         @JsonProperty("s")
-        private String symbol; // 거래쌍 (예: BTCUSDT)
+        private Symbol symbol; // 거래쌍 (예: BTCUSDT)
         @JsonProperty("c")
         private String clientOrderId; // 주문 아이디
         @JsonProperty("S")
@@ -278,7 +280,7 @@ public class Binance {
         @JsonProperty("sp")
         private double stopPrice; // Stop Price
         @JsonProperty("X")
-        private OrderState X; // 주문 상태 (FILLED, CANCELED, PENDING 등)
+        private OrderState orderState; // 주문 상태 (FILLED, CANCELED, PENDING 등)
         @JsonProperty("t")
         private long orderTime; // 주문 발생 시간
         @JsonProperty("T")
@@ -294,5 +296,40 @@ public class Binance {
     @Getter
     public static class ListenKeyRes {
         private String listenKey;
+    }
+
+    @Builder
+    public static class CancelOpenOrderReq extends BaseReq {
+        private Symbol symbol;
+        private Long recvWindow;
+        private Long timestamp;
+    }
+
+    @Data
+    public static class TradeLogDto {
+        private long idx;
+        private Symbol symbol;
+        private Side side;
+        private BuyStrategyType buyStrategyType;
+        private OrderState orderState;
+        private double avgPrice;
+        private double positionQuantity;
+        private Double closePrice;
+        private Double pnl;
+        private String option;  // 매수 전략에 사용될 값 ex) 물타기 전략-> 물탄 횟수 저장
+
+        public static TradeLogDto to(TradeLogEntity entity) {
+            TradeLogDto dto = new TradeLogDto();
+            dto.idx = entity.getIdx();
+            dto.symbol = entity.getSymbol();
+            dto.buyStrategyType = entity.getBuyStrategyType();
+            dto.orderState = entity.getOrderState();
+            dto.avgPrice = entity.getAvgPrice();
+            dto.positionQuantity = entity.getPositionQuantity();
+            dto.closePrice = entity.getClosePrice();
+            dto.pnl = entity.getPnl();
+            dto.option = entity.getOption();
+            return dto;
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.jh.coincoin.service.external;
 
+import com.jh.coincoin.model.Binance.CancelOpenOrderReq;
 import com.jh.coincoin.model.Binance.ListenKeyRes;
 import com.jh.coincoin.model.Binance.ModifyLeverageReq;
 import com.jh.coincoin.model.Binance.PositionInfoReq;
@@ -164,6 +165,23 @@ public class BinanceAPIService {
             throw new ServerException(ErrorType.COMMON_FAIL, "주문 오류!");
 
         return new NewOrderRes(rawData);
+    }
+
+    public void closeOpenOrder(CancelOpenOrderReq req) {
+        String queryString = req.toQueryString();
+        String signature = makeSignature(queryString);
+
+        restClient.delete()
+                .uri(uriBuilder -> uriBuilder
+                        .path(BinanceURL.CANCEL_ALL_ORDER.getUrl())
+                        .query(queryString)
+                        .queryParam("signature", signature)
+                        .build())
+                .headers(httpHeaders -> httpHeaders
+                        .add("X-MBX-APIKEY", apiKey))
+                .retrieve()
+                .body(Map.class);
+
     }
 
     public void newTestOrder(NewOrderReq req) {

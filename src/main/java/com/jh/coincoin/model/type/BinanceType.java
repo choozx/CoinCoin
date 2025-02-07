@@ -284,6 +284,7 @@ public class BinanceType {
         NEW_ORDER("/v1/order"),
         GET_OPEN_ORDER("/v1/openOrder"),
         GET_ALL_ORDER("/v1/allOrders"),
+        CANCEL_ALL_ORDER("/v1/allOpenOrders"),
         MODIFY_LEVERAGE("/v1/leverage"),
         POST_LISTEN_KEY("/v1/listenKey"),
         UPDATE_LISTEN_KEY("/v1/listenKey"),
