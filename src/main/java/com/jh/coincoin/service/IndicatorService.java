@@ -29,7 +29,7 @@ public class IndicatorService {
 
     @Autowired
     public void setIndicatorServiceMap(Set<Indicator> indicatorSet) {
-        this.indicatorServiceMap = indicatorSet.stream().collect(Collectors.toMap(Indicator::getName, Function.identity()));
+        this.indicatorServiceMap = indicatorSet.stream().collect(Collectors.toMap(Indicator::getType, Function.identity()));
     }
 
     public void detectIndicator(Interval interval) {
@@ -44,7 +44,7 @@ public class IndicatorService {
 
                 if (indicator.isDetect(result)) {
                     String message = indicator.wrappingMessage(symbol, result);
-                    messages.put(indicatorType.getKey(), message);
+                    messages.put(indicatorType.getKey(), message);  // FIXME symbol이 여러개 걸린다면 Key값이 겹치겠네
                 }
             }
         }
@@ -53,10 +53,17 @@ public class IndicatorService {
             slackMessageService.sendMessage("지표 감지", messages);
     }
 
+    /**
+     *  여기도 IndicatorSheet라는걸 만들어서 관리할까?
+     *  ex) indicator table
+     *  | id | type | symbol | interval |
+     */
     public void update() {
         List<Symbol> symbolList = adminService.getTrackingSymbolList();
 
         for (Indicator indicator : indicatorServiceMap.values())
-            indicator.update(symbolList);
+            for (Symbol symbol : symbolList)
+                for (Interval interval : Interval.getMatchingIntervalList())
+                    indicator.update(symbol, interval);
     }
 }

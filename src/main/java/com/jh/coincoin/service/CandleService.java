@@ -40,57 +40,34 @@ public class CandleService {
         allSymbolLoad2DB();
     }
 
-    public Map<Long, Candle> getCandleMap(Symbol symbol, Interval interval) {
+    public TreeMap<Long, Candle> getCandleMap(Symbol symbol, Interval interval) {
         var candleMap = allSymbolMap.get(symbol);
-        return getCandleMap(symbol, interval, candleMap.size());
+        return getCandleMap(symbol, interval, candleMap.lastKey(), candleMap.firstKey());
     }
 
-    public Map<Long, Candle> getCandleMap(Symbol symbol, Interval interval, int candleCount) {
+    public TreeMap<Long, Candle> getCandleMap(Symbol symbol, Interval interval, int candleCount) {
+        long beginTime = DateTimeUtil.getCurrentTimeMillis();
+        LocalDateTime endDateTime = DateTimeUtil.toDateTime(beginTime);
 
-        // todo 집에서 ㄱㄱ
-        long endTime = DateTimeUtil.getCurrentTimeMillis();
-        long beginTime = DateTimeUtil.getPastTime(endTime, interval.getMinute(), candleCount);
+        long minusMinute = (long) interval.getMinute() * candleCount;
+        endDateTime.minusMinutes(minusMinute);
+        long endTime = DateTimeUtil.toEpochMilli(endDateTime);
 
-        Map<Long, Candle> candleMap = allSymbolMap.get(symbol);
-
-        Map<Long, Candle> candleMapPerInterval = new TreeMap<>(Comparator.reverseOrder());
-        long lastTime = DateTimeUtil.floorTimestamp(System.currentTimeMillis(), interval.getMinute());
-        for (var candleEntry : candleMap.entrySet()) {
-            if (candleEntry.getKey() >= lastTime)
-                continue;
-
-            long timestamp = candleEntry.getKey();
-            Candle candle = candleEntry.getValue();
-
-            long floorTime = DateTimeUtil.floorTimestamp(timestamp, interval.getMinute());
-
-            if (candleMapPerInterval.containsKey(floorTime)) {
-                Candle existingCandle = candleMapPerInterval.get(floorTime);
-                existingCandle.updateCandle(candle);
-            } else {
-                candleMapPerInterval.put(floorTime, new Candle(candle));
-            }
-
-            if (candleMapPerInterval.size() > candleCount)
-                break;
-        }
-
-        return candleMapPerInterval;
+        return getCandleMap(symbol, interval, beginTime, endTime);
     }
 
-    public Map<Long, Candle> getCandleMap(Symbol symbol, Interval interval, long beginTime) {
+    public TreeMap<Long, Candle> getCandleMap(Symbol symbol, Interval interval, long beginTime) {
         return getCandleMap(symbol, interval, beginTime, DateTimeUtil.getCurrentTimeMillis());
     }
 
-    public Map<Long, Candle> getCandleMap(Symbol symbol, Interval interval, long beginTime, long endTime) {
+    public TreeMap<Long, Candle> getCandleMap(Symbol symbol, Interval interval, long beginTime, long endTime) {
         TreeMap<Long, Candle> candleMap = allSymbolMap.get(symbol);
 
-        beginTime = beginTime == 0 ? candleMap.lastKey() : beginTime;
         long roundBeginTime = DateTimeUtil.roundTimestamp(beginTime, interval.getMinute());
         long floorEndTime = DateTimeUtil.floorTimestamp(endTime, interval.getMinute());
-        var subCandleMap = candleMap.subMap(roundBeginTime, true, floorEndTime, true);
+        var subCandleMap = candleMap.subMap(floorEndTime, roundBeginTime);
 
-        Map<Long, Candle> candleMapPerInterval = new TreeMap<>(Comparator.reverseOrder());
+        TreeMap<Long, Candle> candleMapPerInterval = new TreeMap<>(Comparator.reverseOrder());
         for (var candleEntry : subCandleMap.entrySet()) {
 
             long timestamp = candleEntry.getKey();
@@ -110,8 +87,8 @@ public class CandleService {
     }
 
     public Candle getLastCandle(Symbol symbol, Interval interval) {
-        Map<Long, Candle> lastCandleMap = getCandleMap(symbol, interval, 1);
-        return lastCandleMap.values().stream().toList().get(0);
+        TreeMap<Long, Candle> lastCandleMap = getCandleMap(symbol, interval);
+        return lastCandleMap.firstEntry().getValue();
     }
 
     public void update() {

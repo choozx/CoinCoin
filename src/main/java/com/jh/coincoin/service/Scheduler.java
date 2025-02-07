@@ -24,7 +24,7 @@ public class Scheduler {
     @Scheduled(cron = "5 * * * * *")
     public void update(){
         candleService.update();
-//        indicatorService.update();
+        indicatorService.update();
 
         Interval interval = adminService.getInterval();
         if (timeChecker(interval))

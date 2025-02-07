@@ -37,8 +37,6 @@ public class AdminService {
     private List<Symbol> trackingSymbolList;  // 공유자원이라 동시성 이슈가 있긴하지만, 일단 나만 쓰는거라 나중에 생각...
     private List<IndicatorType> trackingIndicatorList;
     private Interval interval;
-    private Pair<Double, Double> alertRsiValuePair; // 슬랙 알람을 위한 rsi값
-    private int rsiPeriod;
     private String helpContext;
     private boolean onAutoTrade;
 
@@ -53,8 +51,6 @@ public class AdminService {
         trackingIndicatorList = parseList(rawAdminMap.get("TRACKING_INDICATOR_NAME"));
 
         interval = Interval.of(rawAdminMap.get("INTERVAL"));
-        alertRsiValuePair = parsePairDouble(rawAdminMap.get("RSI_SETTING"));
-        rsiPeriod = Integer.parseInt(rawAdminMap.get("RSI_PERIOD"));
 
         helpContext = rawAdminMap.get("HELP_CONTEXT");
 

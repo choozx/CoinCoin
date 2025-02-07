@@ -8,7 +8,10 @@ import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by dale on 2024-09-11.
@@ -91,6 +94,19 @@ public class BinanceType {
         Interval(String name, int minute) {
             this.name = name;
             this.minute = minute;
+        }
+
+        public static List<Interval> getMatchingIntervalList() {
+            int minute = LocalDateTime.now().getMinute();
+
+            List<Interval> targetIntervalList = new ArrayList<>();
+
+            for (Interval interval : values()) {
+                if (minute % interval.getMinute() == 0) {
+                    targetIntervalList.add(interval);
+                }
+            }
+            return targetIntervalList;
         }
 
         public static Interval of(String name) {
