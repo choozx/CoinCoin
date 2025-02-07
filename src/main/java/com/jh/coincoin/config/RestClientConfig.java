@@ -11,7 +11,7 @@ import org.springframework.web.client.RestClient;
 @Configuration
 public class RestClientConfig {
 
-    private final String baseUrl = BinanceURL.BASE_URL.getUrl();
+    private final String baseUrl = BinanceURL.HTTPS_BASE_URL.getUrl();
 
     @Bean
     public RestClient restClient(){

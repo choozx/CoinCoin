@@ -37,7 +37,7 @@ public class BinanceAPIServiceTest {
     @Test
     public void ping(){
         Long serverTime = restClient.get()
-                .uri(BinanceURL.BASE_URL + "/v1/ping")
+                .uri(BinanceURL.HTTPS_BASE_URL + "/v1/ping")
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body(Long.class);

@@ -195,7 +195,8 @@ public class BinanceType {
 
     @Getter
     public enum BinanceURL {
-        BASE_URL("https://fapi.binance.com/fapi"),
+        HTTPS_BASE_URL("https://fapi.binance.com/fapi"),
+        WEB_SOCKET_BASE_URL("wss://fstream.binance.com/ws/"),
         GET_POSITION_INFO("/v3/positionRisk"),
         GET_ACCOUNT_BALANCE("/v3/balance"),
         GET_TICKER_PRICE("/v2/ticker/price"),
