@@ -1,5 +1,6 @@
 package com.jh.coincoin.service;
 
+import com.jh.coincoin.component.WebSocketListener;
 import com.jh.coincoin.model.type.BinanceType.Interval;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -19,6 +20,7 @@ public class Scheduler {
     private final AdminService adminService;
     private final IndicatorService indicatorService;
     private final TradeService tradeService;
+    private final WebSocketListener webSocketListener;
 
     // 매분 5초 때마다 실행
     @Scheduled(cron = "5 * * * * *")
@@ -32,6 +34,11 @@ public class Scheduler {
 
         if (adminService.isOnAutoTrade())
             tradeService.tradeV2();
+    }
+
+    @Scheduled(cron = "0 0,30 * * * *")
+    public void updateSocket(){
+        webSocketListener.init();
     }
 
     private boolean timeChecker(Interval interval) {

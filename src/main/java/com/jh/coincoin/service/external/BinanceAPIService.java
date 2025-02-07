@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class BinanceFutureAPIService {
+public class BinanceAPIService {
 
     @Value("${binance.api-key}")
     private final String apiKey;
@@ -216,6 +216,10 @@ public class BinanceFutureAPIService {
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body(TickerPriceRes.class);
+    }
+
+    public String getListenKey() {
+        return "";
     }
 
     private String buildQueryString(Map<String, String> paramMap) {

@@ -23,7 +23,7 @@ import com.jh.coincoin.model.type.BinanceType.Side;
 import com.jh.coincoin.model.type.StrategyType.RiskRewardRatioType;
 import com.jh.coincoin.model.type.StrategyType.BuyStrategyType;
 import com.jh.coincoin.service.SlackMessageService;
-import com.jh.coincoin.service.external.BinanceFutureAPIService;
+import com.jh.coincoin.service.external.BinanceAPIService;
 import com.jh.coincoin.service.strategy.buy.calculator.RiskRewardCalculator;
 import com.jh.coincoin.util.CommonUtil;
 import com.jh.coincoin.util.DateTimeUtil;
@@ -54,7 +54,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class StopAndLimitBuyStrategy implements BuyStrategy {
 
-    private final BinanceFutureAPIService binanceFutureAPIService;
+    private final BinanceAPIService binanceAPIService;
     private final SlackMessageService slackMessageService;
     private Map<RiskRewardRatioType, RiskRewardCalculator> riskRewardCalculatorMap;
 
@@ -82,8 +82,8 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
                 .symbol(symbol)
                 .build();
 
-        AccountBalanceRes accountBalance = binanceFutureAPIService.getAccountBalance(accountBalanceReq);
-        TickerPriceRes tickerPrice = binanceFutureAPIService.getTickerPrice(tickerPriceReq);
+        AccountBalanceRes accountBalance = binanceAPIService.getAccountBalance(accountBalanceReq);
+        TickerPriceRes tickerPrice = binanceAPIService.getTickerPrice(tickerPriceReq);
 
         double availableBalance = accountBalance.getAvailableBalance();
 
@@ -94,7 +94,7 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
                 .leverage(leverage)
                 .timestamp(now)
                 .build();
-        binanceFutureAPIService.modifyLeverage(modifyLeverageReq);
+        binanceAPIService.modifyLeverage(modifyLeverageReq);
         log.info("레버리지 조정 : x{}", leverage);
 
         // FIXME 추후 MIN_ORDER_AMOUNT는 fapi/v1/exchangeInfo의 min_national 필드값을 참조해서 써야됨
@@ -115,14 +115,14 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
                 .timestamp(now)
                 .build();
         log.info("최초 주문 :{}", order);
-        binanceFutureAPIService.newOrder(order);
+        binanceAPIService.newOrder(order);
 
         // 주문 확인
         PositionInfoReq positionInfoReq = PositionInfoReq.builder()
                 .symbol(symbol)
                 .timestamp(now)
                 .build();
-        List<PositionInfoRes> positionInfoResList = binanceFutureAPIService.getPositionInfo(positionInfoReq);
+        List<PositionInfoRes> positionInfoResList = binanceAPIService.getPositionInfo(positionInfoReq);
         PositionInfoRes positionInfoRes = positionInfoResList.get(0);   // 이 전략의 경우에는 포지션을 하나만 잡을것이기 인덱스 0에서 가져온다
         log.info("주문 정보 확인 : {}", positionInfoRes);
 
@@ -156,7 +156,7 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
                 .closePosition(true)
                 .timestamp(now)
                 .build();
-        binanceFutureAPIService.newOrder(tkOrder);
+        binanceAPIService.newOrder(tkOrder);
 
         // 손절가 주문
         PriceCalculatorDto slPriceDto = PriceCalculatorDto.builder()
@@ -177,7 +177,7 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
                 .closePosition(true)
                 .timestamp(now)
                 .build();
-        binanceFutureAPIService.newOrder(slOrder);
+        binanceAPIService.newOrder(slOrder);
 
         // 주문 내용 슬랙에 전송
         slackMessageService.sendMessage(positionInfoRes.toDescription());

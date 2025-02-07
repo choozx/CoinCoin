@@ -8,7 +8,7 @@ import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.BinanceType.Side;
 import com.jh.coincoin.model.type.BinanceType.BinanceURL;
 import com.jh.coincoin.service.TradeService;
-import com.jh.coincoin.service.external.BinanceFutureAPIService;
+import com.jh.coincoin.service.external.BinanceAPIService;
 import com.jh.coincoin.util.DateTimeUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +31,7 @@ import org.springframework.web.client.RestClient;
 public class BinanceAPIServiceTest {
 
     private final RestClient restClient = RestClient.create();
-    private final BinanceFutureAPIService apiService;
+    private final BinanceAPIService apiService;
     private final TradeService tradeService;
 
     @Test
