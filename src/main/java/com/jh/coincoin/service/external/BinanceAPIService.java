@@ -1,5 +1,6 @@
 package com.jh.coincoin.service.external;
 
+import com.jh.coincoin.model.Binance.ListenKeyRes;
 import com.jh.coincoin.model.Binance.ModifyLeverageReq;
 import com.jh.coincoin.model.Binance.PositionInfoReq;
 import com.jh.coincoin.model.Binance.CheckOrderReq;
@@ -218,8 +219,16 @@ public class BinanceAPIService {
                 .body(TickerPriceRes.class);
     }
 
-    public String getListenKey() {
-        return "";
+    public ListenKeyRes getListenKey() {
+        return restClient.post()
+                .uri(uriBuilder -> uriBuilder
+                        .path(BinanceURL.POST_LISTEN_KEY.getUrl())
+                        .build())
+                .headers(httpHeaders -> httpHeaders
+                        .add("X-MBX-APIKEY", apiKey))
+                .contentType(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .body(ListenKeyRes.class);
     }
 
     private String buildQueryString(Map<String, String> paramMap) {

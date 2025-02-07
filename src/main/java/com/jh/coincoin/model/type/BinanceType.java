@@ -215,12 +215,32 @@ public class BinanceType {
         GET_OPEN_ORDER("/v1/openOrder"),
         GET_ALL_ORDER("/v1/allOrders"),
         MODIFY_LEVERAGE("/v1/leverage"),
+        POST_LISTEN_KEY("/v1/listenKey"),
+        UPDATE_LISTEN_KEY("/v1/listenKey"),
         ;
 
         private final String url;
 
         BinanceURL(String url) {
             this.url = url;
+        }
+    }
+
+    @Getter
+    public enum EventType {
+        TRADE_LITE("TRADE_LITE"),
+        ORDER_TRADE_UPDATE("ORDER_TRADE_UPDATE"),
+        ;
+
+        private final String key;
+
+        EventType(String key) {
+            this.key = key;
+        }
+
+        public static EventType of(String key) {
+            return Arrays.stream(values()).filter(type -> type.getKey().equals(key)).findFirst()
+                    .orElse(null);
         }
     }
 }

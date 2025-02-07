@@ -1,6 +1,7 @@
 package com.jh.coincoin.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.jh.coincoin.model.type.BinanceType.OrderState;
 import com.jh.coincoin.model.type.BinanceType.NewOrderResp;
 import com.jh.coincoin.model.type.BinanceType.Order;
@@ -242,10 +243,15 @@ public class Binance {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class WebSocketEvent {
-        private String e; // 이벤트 타입 (ORDER_TRADE_UPDATE)
-        private long E;   // 이벤트 발생 시간
-        private long T;   // 클라이언트 요청 시간
+    public static class Event {
+        @JsonProperty("e")
+        private String eventType; // 이벤트 타입 (ORDER_TRADE_UPDATE)
+        @JsonProperty("E")
+        private long eventTime;   // 이벤트 발생 시간
+        @JsonProperty("T")
+        private long requestTime;   // 클라이언트 요청 시간
+        @JsonProperty("o")
+        private JsonNode objects;
     }
 
     @Data
@@ -283,5 +289,10 @@ public class Binance {
         private double executedQty; // 체결된 수량
         @JsonProperty("z")
         private String cumQty; // 체결된 수량 총합
+    }
+
+    @Getter
+    public static class ListenKeyRes {
+        private String listenKey;
     }
 }
