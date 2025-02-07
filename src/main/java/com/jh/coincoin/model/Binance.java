@@ -1,5 +1,7 @@
 package com.jh.coincoin.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.jh.coincoin.model.type.BinanceType.OrderState;
 import com.jh.coincoin.model.type.BinanceType.NewOrderResp;
 import com.jh.coincoin.model.type.BinanceType.Order;
 import com.jh.coincoin.model.type.BinanceType.PositionSide;
@@ -9,10 +11,7 @@ import com.jh.coincoin.model.type.BinanceType.Side;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.BinanceType.TimeInForce;
 import com.jh.coincoin.model.type.BinanceType.TriggerSource;
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
@@ -94,7 +93,7 @@ public class Binance {
     @Getter
     @Setter
     @Builder
-    public static class NewOrderReq extends BaseReq{
+    public static class NewOrderReq extends BaseReq {
         @NotNull
         private Symbol symbol;
         @NotNull
@@ -197,15 +196,15 @@ public class Binance {
 
     @Getter
     public static class AccountBalanceRes {
-       private String accountAlias;
-       private String asset;
-       private float balance;
-       private float crossWalletBalance;
-       private float crossUnPnl;
-       private float availableBalance;
-       private float maxWithdrawAmount;
-       private boolean marginAvailable;
-       private long updateTime;
+        private String accountAlias;
+        private String asset;
+        private float balance;
+        private float crossWalletBalance;
+        private float crossUnPnl;
+        private float availableBalance;
+        private float maxWithdrawAmount;
+        private boolean marginAvailable;
+        private long updateTime;
 
         public AccountBalanceRes(Map<String, Object> rawData) {
             this.accountAlias = (String) rawData.get("accountAlias");
@@ -237,5 +236,52 @@ public class Binance {
         private Symbol symbol;
         private int leverage;
         private long timestamp;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class WebSocketEvent {
+        private String e; // 이벤트 타입 (ORDER_TRADE_UPDATE)
+        private long E;   // 이벤트 발생 시간
+        private long T;   // 클라이언트 요청 시간
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class OrderDetails {
+        @JsonProperty("s")
+        private String symbol; // 거래쌍 (예: BTCUSDT)
+        @JsonProperty("c")
+        private String clientOrderId; // 주문 아이디
+        @JsonProperty("S")
+        private Side side; // 주문 종류 (SELL, BUY)
+        @JsonProperty("o")
+        private Order order; // 주문 유형 (TAKE_PROFIT_MARKET, STOP_MARKET 등)
+        @JsonProperty("f")
+        private TimeInForce timeInForce; // 주문의 유효 기간 (Good Till Cancelled)
+        @JsonProperty("q")
+        private double origQty; // 주문 수량
+        @JsonProperty("p")
+        private double price; // 주문 가격
+        @JsonProperty("ap")
+        private double avgPrice; // 실제 체결 가격
+        @JsonProperty("sp")
+        private double stopPrice; // Stop Price
+        @JsonProperty("X")
+        private OrderState X; // 주문 상태 (FILLED, CANCELED, PENDING 등)
+        @JsonProperty("t")
+        private long orderTime; // 주문 발생 시간
+        @JsonProperty("T")
+        private long timestamp; // 클라이언트 타임스탬프
+        @JsonProperty("i")
+        private long orderId; // 주문 아이디
+        @JsonProperty("l")
+        private double executedQty; // 체결된 수량
+        @JsonProperty("z")
+        private String cumQty; // 체결된 수량 총합
     }
 }

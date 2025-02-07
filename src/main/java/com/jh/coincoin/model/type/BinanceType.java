@@ -193,6 +193,16 @@ public class BinanceType {
         ;
     }
 
+    public enum OrderState {
+        NEW,
+        PARTIALLY_FILLED,
+        FILLED,
+        CANCELED,
+        REJECTED,
+        EXPIRED,
+        ;
+    }
+
     @Getter
     public enum BinanceURL {
         HTTPS_BASE_URL("https://fapi.binance.com/fapi"),

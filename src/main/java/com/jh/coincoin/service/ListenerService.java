@@ -17,6 +17,6 @@ public class ListenerService extends TextWebSocketHandler {
 
     @Override
     protected void handleBinaryMessage(WebSocketSession session, BinaryMessage message) {
-        log.info("message: {}", message);
+        log.info("message: {}", message.getPayload());
     }
 }
