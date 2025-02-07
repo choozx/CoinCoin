@@ -174,15 +174,22 @@ public class BinanceType {
     }
 
     // 여러 주문 타입이 있지만, 손절/익절 주문은 왠만하면 STOP_MARKET, TAKE_PROFIT_MARKET을 사용한다.
+    @Getter
     public enum Order {
-        LIMIT,
-        MARKET,
-        STOP,
-        TAKE_PROFIT,
-        STOP_MARKET,
-        TAKE_PROFIT_MARKET,
-        TRAILING_STOP_MARKET,
+        LIMIT(0.02),
+        MARKET(0.05),
+        STOP(0.02),
+        TAKE_PROFIT(0.02),
+        STOP_MARKET(0.05),
+        TAKE_PROFIT_MARKET(0.05),
+        TRAILING_STOP_MARKET(0.05),
         ;
+
+        private final double fee;
+
+        Order(double fee) {
+            this.fee = fee;
+        }
     }
 
     public enum TimeInForce {

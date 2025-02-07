@@ -1,5 +1,6 @@
 package com.jh.coincoin.entity;
 
+import com.jh.coincoin.model.Binance.PositionInfoRes;
 import com.jh.coincoin.model.type.BinanceType.Side;
 import com.jh.coincoin.model.type.BinanceType.Side.SideConverter;
 import com.jh.coincoin.model.type.BinanceType.OrderState;
@@ -47,13 +48,25 @@ public class TradeLogEntity implements Persistable<Long> {
     private OrderState orderState;
     @Column(name = "avg_price")
     private double avgPrice;
+    @Column(name = "position_quantity")
+    private double positionQuantity;
     @Column(name = "close_price")
-    private double closePrice;
+    private Double closePrice;
     @Column(name = "pnl")
-    private double pnl;
+    private Double pnl;
     @Column(name = "`option`")
     private String option;  // 매수 전략에 사용될 값 ex) 물타기 전략-> 물탄 횟수 저장
 
+    public static TradeLogEntity create(PositionInfoRes positionInfoRes, Side side, BuyStrategyType buyStrategyType) {
+        TradeLogEntity entity = new TradeLogEntity();
+        entity.symbol = positionInfoRes.getSymbol();
+        entity.side = side;
+        entity.buyStrategyType = buyStrategyType;
+        entity.orderState = OrderState.NEW;
+        entity.avgPrice = positionInfoRes.getEntryPrice();
+        entity.positionQuantity = Math.abs(positionInfoRes.getPositionAmount());
+        return entity;
+    }
 
     @Override
     public Long getId() {

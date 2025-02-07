@@ -1,28 +1,35 @@
 package com.jh.coincoin;
+
 import com.jh.coincoin.model.Binance.NewOrderReq;
+import com.jh.coincoin.model.Candle;
 import com.jh.coincoin.model.Strategy;
+import com.jh.coincoin.model.type.BinanceType.Interval;
 import com.jh.coincoin.model.type.BinanceType.Order;
 import com.jh.coincoin.model.type.BinanceType.PositionSide;
 import com.jh.coincoin.model.type.BinanceType.Side;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
-import com.jh.coincoin.model.type.BinanceType.Interval;
+import com.jh.coincoin.model.type.StrategyType;
 import com.jh.coincoin.service.AdminService;
 import com.jh.coincoin.service.CandleService;
 import com.jh.coincoin.service.IndicatorService;
 import com.jh.coincoin.service.external.CandleCollectorAPIService;
 import com.jh.coincoin.service.indicator.RSIIndicator;
-import com.jh.coincoin.service.strategy.buy.calculator.FixedRatio;
+import com.jh.coincoin.service.strategy.buy.calculator.RiskRewardCalculator;
 import com.jh.coincoin.util.DateTimeUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestConstructor;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Created by dale on 2024-09-07.
@@ -40,6 +47,12 @@ public class ApiTest {
     private final IndicatorService indicatorService;
     private final AdminService adminService;
     private final CandleCollectorAPIService candleCollectorAPIService;
+    private Map<StrategyType.RiskRewardRatioType, RiskRewardCalculator> riskRewardCalculatorMap;
+
+    @Autowired
+    public void setRiskRewardCalculatorMap(Set<RiskRewardCalculator> riskRewardCalculatorSet) {
+        this.riskRewardCalculatorMap = riskRewardCalculatorSet.stream().collect(Collectors.toMap(RiskRewardCalculator::getType, Function.identity()));
+    }
 
 
     @Test
@@ -141,12 +154,20 @@ public class ApiTest {
 
     @Test
     public void 손익_가격_계산() {
-        FixedRatio fixedRatio = new FixedRatio();
-        double price = fixedRatio.calcPrice(Strategy.PriceCalculatorDto.builder()
-                .entryPrice(100)
-                .riskRewardRatio(1)
-                .order(Order.TAKE_PROFIT_MARKET)
-                .side(Side.BUY)
+        StrategyType.RiskRewardRatioType type = StrategyType.RiskRewardRatioType.PEAK_RATIO;
+        Symbol symbol = Symbol.ETHUSDT;
+        Interval interval = Interval.ONE_MINUTE;
+
+        Candle candle = candleService.getLastCandle(symbol, interval);
+        log.info("캔들 : {}", candle);
+
+        double price = riskRewardCalculatorMap.get(type).calcPrice(Strategy.PriceCalculatorDto.builder()
+                .entryPrice(candle.getClosePrice())
+                .riskRewardRatio(2)
+                .interval(interval)
+                .order(Order.STOP_MARKET)
+                .symbol(symbol)
+                .side(Side.SELL)
                 .build());
 
         log.info("계산된 가격: {}", price);

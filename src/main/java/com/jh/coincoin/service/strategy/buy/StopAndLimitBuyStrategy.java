@@ -14,7 +14,7 @@ import com.jh.coincoin.model.Binance.AccountBalanceRes;
 import com.jh.coincoin.model.Binance.NewOrderReq;
 import com.jh.coincoin.model.Strategy.RiskRewardStrategy;
 import com.jh.coincoin.model.Strategy.PriceCalculatorDto;
-import com.jh.coincoin.model.Strategy.OrderParamDto;
+import com.jh.coincoin.model.Strategy.BuyParamDto;
 import com.jh.coincoin.model.consts.GlobalConst;
 import com.jh.coincoin.model.consts.SlackConst;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
@@ -69,10 +69,10 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
     }
 
     @Override
-    public void order(OrderParamDto orderParamDto) {
+    public PositionInfoRes order(BuyParamDto buyParamDto) {
         // 1.주문된 상태 체크 redis에서 주문정보 get-> 주문된 상태면 return
         long now = DateTimeUtil.getCurrentTimeMillis();
-        Symbol symbol = orderParamDto.getSymbol();
+        Symbol symbol = buyParamDto.getSymbol();
 
         AccountBalanceReq accountBalanceReq = AccountBalanceReq.builder()
                 .timestamp(now)
@@ -88,7 +88,7 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
         double availableBalance = accountBalance.getAvailableBalance();
 
         // 레버리지 조정
-        int leverage = orderParamDto.getLeverage();
+        int leverage = buyParamDto.getLeverage();
         ModifyLeverageReq modifyLeverageReq = ModifyLeverageReq.builder()
                 .symbol(symbol)
                 .leverage(leverage)
@@ -98,7 +98,7 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
         log.info("레버리지 조정 : x{}", leverage);
 
         // FIXME 추후 MIN_ORDER_AMOUNT는 fapi/v1/exchangeInfo의 min_national 필드값을 참조해서 써야됨
-        double orderBalanceRatio = orderParamDto.getOrderBalanceRatio();
+        double orderBalanceRatio = buyParamDto.getOrderBalanceRatio();
         double orderBalance = Math.max(leverage * (orderBalanceRatio * availableBalance), GlobalConst.MIN_ORDER_AMOUNT);
 
         double quantity = orderBalance / tickerPrice.getPrice();
@@ -106,7 +106,7 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
         // TODO 여기서 quantity가 최소 주문 갯수를 넘지 못하면 slack 알림후 return
 
         // 최초 주문
-        Side side = orderParamDto.getSide();
+        Side side = buyParamDto.getSide();
         NewOrderReq order = NewOrderReq.builder()
                 .symbol(symbol)
                 .side(side)
@@ -129,7 +129,7 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
         RiskRewardStrategy riskRewardStrategy;
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            riskRewardStrategy = objectMapper.readValue(orderParamDto.getTargetValue(), RiskRewardStrategy.class);
+            riskRewardStrategy = objectMapper.readValue(buyParamDto.getTargetValue(), RiskRewardStrategy.class);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
@@ -140,7 +140,7 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
         double entryPrice = positionInfoRes.getEntryPrice();
         PriceCalculatorDto tkPriceDto = PriceCalculatorDto.builder()
                 .symbol(symbol)
-                .interval(orderParamDto.getInterval())
+                .interval(buyParamDto.getInterval())
                 .side(side)
                 .order(Order.TAKE_PROFIT_MARKET)
                 .entryPrice(entryPrice)
@@ -161,7 +161,7 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
         // 손절가 주문
         PriceCalculatorDto slPriceDto = PriceCalculatorDto.builder()
                 .symbol(symbol)
-                .interval(orderParamDto.getInterval())
+                .interval(buyParamDto.getInterval())
                 .side(side)
                 .order(Order.STOP_MARKET)
                 .entryPrice(entryPrice)
@@ -181,6 +181,8 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
 
         // 주문 내용 슬랙에 전송
         slackMessageService.sendMessage(positionInfoRes.toDescription());
+
+        return positionInfoRes;
     }
 
     @Override

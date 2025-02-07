@@ -124,7 +124,6 @@ public class BinanceAPIServiceTest {
 
     @Test
     public void 자동매매_테스트() {
-        // 돌리기 전에 테이블 만들고 데이터 넣어야함
         tradeService.tradeV2();
     }
 }

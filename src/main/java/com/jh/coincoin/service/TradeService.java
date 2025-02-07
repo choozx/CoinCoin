@@ -1,6 +1,8 @@
 package com.jh.coincoin.service;
 
-import com.jh.coincoin.model.Strategy.OrderParamDto;
+import com.jh.coincoin.entity.TradeLogEntity;
+import com.jh.coincoin.model.Binance.PositionInfoRes;
+import com.jh.coincoin.model.Strategy.BuyParamDto;
 import com.jh.coincoin.model.Strategy.OrderStrategyDto;
 import com.jh.coincoin.model.Strategy.BuyStrategyDto;
 import com.jh.coincoin.model.Strategy.TradeStrategyDto;
@@ -8,6 +10,7 @@ import com.jh.coincoin.model.type.BinanceType;
 import com.jh.coincoin.model.type.BinanceType.Side;
 import com.jh.coincoin.model.type.StrategyType.BuyStrategyType;
 import com.jh.coincoin.model.type.StrategyType.OrderStrategyType;
+import com.jh.coincoin.repo.TradeLogRepository;
 import com.jh.coincoin.service.strategy.StrategyService;
 import com.jh.coincoin.service.strategy.buy.BuyStrategy;
 import com.jh.coincoin.service.strategy.order.OrderStrategy;
@@ -34,6 +37,7 @@ public class TradeService {
 
     // 매수를 위한 전략 서버스
     private final StrategyService strategyService;
+    private final TradeLogRepository tradeLogRepository;
 
     private Map<OrderStrategyType, OrderStrategy> orderStrategyMap;
     private Map<BuyStrategyType, BuyStrategy> buyStrategyMap;
@@ -60,18 +64,22 @@ public class TradeService {
 
             if (hit.getLeft()) {
                 BuyStrategyDto buyStrategyDto = tradeStrategyDto.getBuyStrategy();
+                BuyStrategyType buyStrategyType = buyStrategyDto.getType();
                 BuyStrategy buyStrategy = buyStrategyMap.get(buyStrategyDto.getType());
 
-                OrderParamDto orderParamDto = OrderParamDto.builder()
+                Side side = hit.getRight();
+                BuyParamDto buyParamDto = BuyParamDto.builder()
                         .symbol(tradeStrategyDto.getSymbol())
-                        .side(hit.getRight())
+                        .side(side)
                         .interval(tradeStrategyDto.getInterval())
                         .leverage(buyStrategyDto.getLeverage())
                         .orderBalanceRatio(buyStrategyDto.getOrderBalanceRatio())
                         .targetValue(buyStrategyDto.getTargetValue())
                         .build();
-                buyStrategy.order(orderParamDto);   // 새로운 주문 return
-                // todo 주문 로깅
+                PositionInfoRes positionInfoRes = buyStrategy.order(buyParamDto);   // 새로운 주문 return
+
+                TradeLogEntity logEntity = TradeLogEntity.create(positionInfoRes, side, buyStrategyType);
+                tradeLogRepository.saveAndFlush(logEntity);
             }
         }
     }

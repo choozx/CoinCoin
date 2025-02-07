@@ -26,17 +26,20 @@ CREATE TABLE buy_strategy
 ) NOT NULL
 );
 
-CREATE TABLE trade_log
+create table trade_log
 (
-    idx               BIGINT                              NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    symbol            INT                                 NOT NULL,
+    idx               bigint auto_increment
+        primary key,
+    symbol            int                                 not null,
     side              int                                 not null,
     buy_strategy_type int                                 not null,
-    order_state       INT                                 NOT NULL,
-    avg_price         double                              not null,
-    close_price       double null,
-    pnl               double null,
-    `option` varchar(500) null,
+    order_state       int                                 not null,
+    avg_price         double(15, 7)                       not null,
+    position_quantity double(15, 7)                       not null,
+    close_price       double(15, 7)                       null,
+    pnl               double(15, 7)                       null,
+    `option`          varchar(500)                        null,
     update_date       timestamp default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP,
     created_date      timestamp default CURRENT_TIMESTAMP not null
-)
+);
+

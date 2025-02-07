@@ -58,7 +58,7 @@ public class Strategy {
 
     @Getter
     @Builder
-    public static class OrderParamDto {
+    public static class BuyParamDto {
         private Symbol symbol;
         private Side side;
         private Interval interval;
