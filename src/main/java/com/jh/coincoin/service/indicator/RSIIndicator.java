@@ -48,8 +48,10 @@ public class RSIIndicator implements Indicator {
     }
 
     @Override
-    public String wrappingMessage(Symbol symbol, Double result) {
-        return String.format("[%s] : %.2f", symbol, result);
+    public TextObject wrappingMessage(Symbol symbol, Double result) {
+        return MarkdownTextObject.builder()
+                .text(String.format("*[%s]* : %.2f", symbol, result))
+                .build();
     }
 
     @Override
