@@ -6,6 +6,8 @@ import com.jh.coincoin.model.type.BinanceType.Interval;
 import com.jh.coincoin.model.type.IndicatorType;
 import com.jh.coincoin.service.AdminService;
 import com.jh.coincoin.service.CandleService;
+import com.slack.api.model.block.composition.MarkdownTextObject;
+import com.slack.api.model.block.composition.TextObject;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -80,8 +82,10 @@ public class RSIIndicator implements Indicator {
     }
 
     @Override
-    public String wrappingMessage(Symbol symbol, Double result) {
-        return symbol + " : " + String.format("%.2f", result);
+    public TextObject wrappingMessage(Symbol symbol, Double result) {
+        return MarkdownTextObject.builder()
+                .text(String.format("*[%s]* : %.2f", symbol, result))
+                .build();
     }
 
     @Override

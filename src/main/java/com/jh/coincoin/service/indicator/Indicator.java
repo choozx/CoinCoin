@@ -4,6 +4,7 @@ package com.jh.coincoin.service.indicator;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.BinanceType.Interval;
 import com.jh.coincoin.model.type.IndicatorType;
+import com.slack.api.model.block.composition.TextObject;
 
 import java.util.List;
 
@@ -14,7 +15,7 @@ import java.util.List;
 public interface Indicator {
     IndicatorType getName();
     Double getLastFigure(Symbol symbol, Interval interval);
-    String wrappingMessage(Symbol symbol, Double result);
+    TextObject wrappingMessage(Symbol symbol, Double result);
     boolean isDetect(Double result);
     void update(List<Symbol> symbolList);
 
