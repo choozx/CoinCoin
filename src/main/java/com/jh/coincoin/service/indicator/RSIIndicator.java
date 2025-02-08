@@ -1,6 +1,7 @@
 package com.jh.coincoin.service.indicator;
 
 import com.jh.coincoin.model.Candle;
+import com.jh.coincoin.model.consts.GlobalConst;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.BinanceType.Interval;
 import com.jh.coincoin.model.type.IndicatorType;
@@ -44,7 +45,9 @@ public class RSIIndicator implements Indicator {
         RSIKey rsiKey = new RSIKey(symbol, interval);
 
         TreeMap<Long, Double> map = rsiMap.get(rsiKey);
-        return map.firstEntry().getValue();
+        var entry = map.lastEntry();
+        log.info("[{}]::rsi : {} | 시간 : {}",symbol, entry.getValue(), DateTimeUtil.toDateTime(entry.getKey()));
+        return map.lastEntry().getValue();
     }
 
     @Override
@@ -62,30 +65,35 @@ public class RSIIndicator implements Indicator {
     @Override
     public void update(Symbol symbol, Interval interval) {
         RSIKey rsiKey = new RSIKey(symbol, interval);
-        TreeMap<Long, Double> rsiValueMap = rsiMap.computeIfAbsent(rsiKey, k -> new TreeMap<>(Comparator.reverseOrder()));
-
+        TreeMap<Long, Double> rsiValueMap = rsiMap.computeIfAbsent(rsiKey, k -> new TreeMap<>());
 
         TreeMap<Long, Candle> candleMap;
+        // interval 만큼 한번 빼줘야됨 ex) 4:04분에 5분봉을 가져와야 한다면, 4:00 봉이 아닌 3:55 봉이여함. 4:00봉은 아직 완성이 안됬으니까
+        long endTime = DateTimeUtil.getCurrentTimeMillis();
         if (rsiValueMap.isEmpty()) {
-            candleMap = candleService.getCandleMap(symbol, interval);
+            candleMap = candleService.getCandleMap(symbol, interval, 0,endTime);
         } else {
             long lastOpenTime = rsiValueMap.firstKey();
             LocalDateTime nextOpenTime = DateTimeUtil.toDateTime(lastOpenTime).plusMinutes(interval.getMinute());
-            long targetTime = DateTimeUtil.toEpochMilli(nextOpenTime.minusMinutes((long) interval.getMinute() * CANDLE_COUNT)); // rsi값을 구하기 위해서는 200개의 캔들이 필요
+            long beginTime = DateTimeUtil.toEpochMilli(nextOpenTime.minusMinutes((long) interval.getMinute() * CANDLE_COUNT)); // rsi값을 구하기 위해서는 200개의 캔들이 필요
 
-            candleMap = candleService.getCandleMap(symbol, interval, targetTime);
-
-            while (candleMap.size() >= 50000)
-                candleMap.pollLastEntry();
+            candleMap = candleService.getCandleMap(symbol, interval, beginTime, endTime);
         }
 
-        for (var candleEntry : candleMap.entrySet()) {
-            List<Double> closePriceList = candleMap.tailMap(candleEntry.getKey()).values().stream().map(Candle::getClosePrice).limit(CANDLE_COUNT).toList();
-            if (closePriceList.size() < CANDLE_COUNT)
-                break;
+        Deque<Candle> deque = new ArrayDeque<>();
+        for (var entry : candleMap.entrySet()) {
+            deque.offer(entry.getValue());
 
-            double rsi = formula(closePriceList);
-            rsiValueMap.put(candleEntry.getKey(), rsi);
+            if (deque.size() != 200)
+                continue;
+
+            double rsi = formula(deque);
+            rsiValueMap.put(entry.getKey(), rsi);
+
+            if (rsiValueMap.size() > GlobalConst.MAX_STORAGE_INDICATOR_COUNT)
+                rsiValueMap.pollFirstEntry();
+
+            deque.poll();
         }
     }
 
@@ -93,11 +101,16 @@ public class RSIIndicator implements Indicator {
         rsiValuePair = Pair.of(low, high);
     }
 
-    private double formula(List<Double> closePriceList) {
+    private double formula(Deque<Candle> closePriceList) {
         List<Double> upList = new ArrayList<>();
         List<Double> downList = new ArrayList<>();
-        for (int i = 0; i < closePriceList.size() - 1; i++) {
-            double priceChange = closePriceList.get(i + 1) - closePriceList.get(i);
+
+        // Deque의 요소를 Iterator를 이용해 순차적으로 접근
+        Iterator<Candle> iterator = closePriceList.iterator();
+        Candle previousCandle = iterator.next();  // 첫 번째 캔들
+        while (iterator.hasNext()) {
+            Candle currentCandle = iterator.next();
+            double priceChange = currentCandle.getClosePrice() - previousCandle.getClosePrice();
             if (priceChange > 0) {
                 upList.add(priceChange);
                 downList.add(0d);
@@ -108,6 +121,7 @@ public class RSIIndicator implements Indicator {
                 upList.add(0d);
                 downList.add(0d);
             }
+            previousCandle = currentCandle; // 이전 캔들을 갱신
         }
 
         double ema = (double) 1 / (1 + (PERIOD - 1));

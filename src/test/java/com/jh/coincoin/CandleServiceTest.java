@@ -31,11 +31,40 @@ public class CandleServiceTest {
         Interval interval = Interval.FIVE_MINUTE;
 
         long lastOpenTime = DateTimeUtil.getCurrentTimeMillis();
-        LocalDateTime nextOpenTime = DateTimeUtil.toDateTime(lastOpenTime).plusMinutes(interval.getMinute());
-        long targetTime = DateTimeUtil.toEpochMilli(nextOpenTime.minusMinutes((long) interval.getMinute() * 200)); // rsi값을 구하기 위해서는 200개의 캔들이 필요
+        LocalDateTime now = DateTimeUtil.toDateTime(lastOpenTime);
+        log.info("지금 시간 : {}", now);
+        LocalDateTime nextOpenTime = now.plusMinutes(interval.getMinute());
 
-        var candleMap = candleService.getCandleMap(symbol, interval, targetTime);
+        log.info("다음 분봉 : {}", nextOpenTime);
+        LocalDateTime targetLocaltime = nextOpenTime.minusMinutes((long) interval.getMinute() * 200);
+        log.info("타겟 시간 : {}", targetLocaltime);
+
+        long beginTime = DateTimeUtil.toEpochMilli(targetLocaltime); // rsi값을 구하기 위해서는 200개의 캔들이 필요
+        var candleMap = candleService.getCandleMap(symbol, interval, beginTime);
 
         log.info("candleMap.size() : {}", candleMap.size());
+        log.info("처음 캔들 시작 시간:{}", DateTimeUtil.toDateTime(candleMap.lastKey()));
+        log.info("마지막 캔들 시작 시간:{}", DateTimeUtil.toDateTime(candleMap.firstKey()));
+    }
+
+    @Test
+    public void 시간_올림_내림() {
+        Interval interval = Interval.FIVE_MINUTE;
+
+        long nowLong = DateTimeUtil.getCurrentTimeMillis();
+        LocalDateTime now = DateTimeUtil.toDateTime(nowLong);
+        log.info("현재:{}", now);
+
+        long ceil = DateTimeUtil.ceilToInterval(nowLong, interval.getMinute());
+        long floor = DateTimeUtil.floorToInterval(nowLong, interval.getMinute());
+
+        log.info("올림 : {}", DateTimeUtil.toDateTime(ceil));
+        log.info("내림 : {}", DateTimeUtil.toDateTime(floor));
+
+        // 정시를 올림 내림
+        long tmp1 = DateTimeUtil.ceilToInterval(ceil, interval.getMinute());
+        long tmp2 = DateTimeUtil.floorToInterval(ceil, interval.getMinute());
+        log.info("정시 올림 :{}", DateTimeUtil.toDateTime(tmp1));
+        log.info("정시 내림 :{}", DateTimeUtil.toDateTime(tmp2));
     }
 }

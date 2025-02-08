@@ -819,6 +819,18 @@ public final class DateTimeUtil {
         return (timestamp / nMinutesInMillis) * nMinutesInMillis;
     }
 
+    // 올림
+    public static long ceilToInterval(long timestamp, int n) {
+        long millisPerInterval = n * 60 * 1000L;
+        return ((timestamp + millisPerInterval - 1) / millisPerInterval) * millisPerInterval;
+    }
+
+    // 내림
+    public static long floorToInterval(long timestamp, int n) {
+        long millisPerInterval = n * 60 * 1000L;
+        return (timestamp / millisPerInterval) * millisPerInterval;
+    }
+
     /**
      * apache-common, spring.util 을 비롯하여 많은 라이브러리에서 Pair 클래스를 제공한다.
      * 다만 DateTimeUtil 클래스는 JDK 를 제외한 어떤 라이브러리에도 종속된 코드가 들어가는것을 지양하므로..

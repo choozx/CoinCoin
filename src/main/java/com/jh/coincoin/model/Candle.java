@@ -71,26 +71,18 @@ public class Candle {
     }
 
     public void updateCandle(Candle candle) {
-        setOpenTime(candle.getOpenTime());
+        this.closeTime = candle.getCloseTime();
+        this.closePrice = candle.getClosePrice();
+        this.volume += candle.getVolume();
+        this.quoteAssetVolume += candle.getQuoteAssetVolume();
+        this.numberOfTrades += candle.getNumberOfTrades();
+        this.takerBuyBaseAssetVolume += candle.getTakerBuyBaseAssetVolume();
+        this.takerBuyQuoteAssetVolume += candle.getTakerBuyQuoteAssetVolume();
 
-        setOpenPrice(candle.getOpenPrice());
+        if (candle.getHighPrice() > getHighPrice())
+            this.highPrice = candle.getHighPrice();
 
-        if (candle.getHighPrice() > getHighPrice()) {
-            setHighPrice(candle.getHighPrice());
-        }
-
-        if (candle.getLowPrice() < getLowPrice()) {
-            setLowPrice(candle.getLowPrice());
-        }
-
-        setVolume(getVolume() + candle.getVolume());
-
-        setQuoteAssetVolume(getQuoteAssetVolume() + candle.getQuoteAssetVolume());
-
-        setNumberOfTrades(getNumberOfTrades() + candle.getNumberOfTrades());
-
-        setTakerBuyBaseAssetVolume(getTakerBuyBaseAssetVolume() + candle.getTakerBuyBaseAssetVolume());
-
-        setTakerBuyQuoteAssetVolume(getTakerBuyQuoteAssetVolume() + candle.getTakerBuyQuoteAssetVolume());
+        if (candle.getLowPrice() < getLowPrice())
+            this.lowPrice = candle.getLowPrice();
     }
 }
