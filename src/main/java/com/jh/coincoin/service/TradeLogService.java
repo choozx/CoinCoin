@@ -10,6 +10,8 @@ import com.jh.coincoin.support.ServerException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 /**
  * Created by dale on 2025-02-08.
  */
@@ -21,26 +23,28 @@ public class TradeLogService {
     private final TradeLogRepository tradeLogRepository;
 
     public TradeLogDto getActivePosition(Symbol symbol) {
-        TradeLogEntity entity = getEntity(symbol, OrderState.NEW);
-        if (entity == null)
+        Optional<TradeLogEntity> optionalActivePosition = getEntity(symbol, OrderState.NEW);
+        if (optionalActivePosition.isEmpty())
             throw new ServerException(ErrorType.COMMON_FAIL, "활동중인 포지션을 찾을 수 없습니다.");
 
-        return TradeLogDto.to(entity);
-    }
-
-    private TradeLogEntity getEntity(Symbol symbol, OrderState orderState) {
-        return tradeLogRepository.findFirstBySymbolAndOrderState(symbol, orderState);
+        return TradeLogDto.to(optionalActivePosition.get());
     }
 
     public void closePosition(Symbol symbol, double closePrice, double pnl) {
-        TradeLogEntity activePosition = getEntity(symbol, OrderState.NEW);
+        Optional<TradeLogEntity> optionalActivePosition = getEntity(symbol, OrderState.NEW);
+
+        TradeLogEntity activePosition = optionalActivePosition.get();
 
         activePosition.close(closePrice, pnl);
         tradeLogRepository.saveAndFlush(activePosition);
     }
 
     public boolean isExistActivePosition(Symbol symbol) {
-        TradeLogEntity activePosition = getEntity(symbol, OrderState.NEW);
-        return activePosition != null;
+        Optional<TradeLogEntity> optionalActivePosition = getEntity(symbol, OrderState.NEW);
+        return optionalActivePosition.isPresent();
+    }
+
+    private Optional<TradeLogEntity> getEntity(Symbol symbol, OrderState orderState) {
+        return tradeLogRepository.findFirstBySymbolAndOrderState(symbol, orderState);
     }
 }
