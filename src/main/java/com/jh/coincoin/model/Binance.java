@@ -1,7 +1,11 @@
 package com.jh.coincoin.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.jh.coincoin.entity.TradeLogEntity;
 import com.jh.coincoin.model.type.BinanceType.NewOrderResp;
 import com.jh.coincoin.model.type.BinanceType.Order;
+import com.jh.coincoin.model.type.BinanceType.OrderState;
 import com.jh.coincoin.model.type.BinanceType.PositionSide;
 import com.jh.coincoin.model.type.BinanceType.PriceMatch;
 import com.jh.coincoin.model.type.BinanceType.SelfTradePreventionMode;
@@ -9,9 +13,12 @@ import com.jh.coincoin.model.type.BinanceType.Side;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.BinanceType.TimeInForce;
 import com.jh.coincoin.model.type.BinanceType.TriggerSource;
+import com.jh.coincoin.model.type.StrategyType.BuyStrategyType;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
@@ -86,15 +93,16 @@ public class Binance {
             this.updateTime = (long) rawData.get("updateTime");
         }
 
-        public String toDescription() {
-            return String.format("[%s] %s 수량:%-10.3f | 진입가격:%-10.3f | 청산가격:%-10.3f", symbol, positionSide.getName(), positionAmount, entryPrice, liquidationPrice);
+        public String toDescription(Side side) {
+            String ps = positionSide.equals(PositionSide.BOTH) ? (side.equals(Side.BUY) ? "LONG" : "SHORT") : positionSide.getName();
+            return String.format("[%s] %s 수량:%10.3f | 진입가격:%10.3f | 청산가격:%10.3f", symbol, ps, positionAmount, entryPrice, liquidationPrice);
         }
     }
 
     @Getter
     @Setter
     @Builder
-    public static class NewOrderReq extends BaseReq{
+    public static class NewOrderReq extends BaseReq {
         @NotNull
         private Symbol symbol;
         @NotNull
@@ -197,15 +205,15 @@ public class Binance {
 
     @Getter
     public static class AccountBalanceRes {
-       private String accountAlias;
-       private String asset;
-       private float balance;
-       private float crossWalletBalance;
-       private float crossUnPnl;
-       private float availableBalance;
-       private float maxWithdrawAmount;
-       private boolean marginAvailable;
-       private long updateTime;
+        private String accountAlias;
+        private String asset;
+        private float balance;
+        private float crossWalletBalance;
+        private float crossUnPnl;
+        private float availableBalance;
+        private float maxWithdrawAmount;
+        private boolean marginAvailable;
+        private long updateTime;
 
         public AccountBalanceRes(Map<String, Object> rawData) {
             this.accountAlias = (String) rawData.get("accountAlias");
@@ -237,5 +245,60 @@ public class Binance {
         private Symbol symbol;
         private int leverage;
         private long timestamp;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Event {
+        @JsonProperty("e")
+        private String eventType; // 이벤트 타입 (ORDER_TRADE_UPDATE)
+        @JsonProperty("E")
+        private long eventTime;   // 이벤트 발생 시간
+        @JsonProperty("T")
+        private long requestTime;   // 클라이언트 요청 시간
+        @JsonProperty("o")
+        private JsonNode objects;
+    }
+
+    @Getter
+    public static class ListenKeyRes {
+        private String listenKey;
+    }
+
+    @Builder
+    public static class CancelOpenOrderReq extends BaseReq {
+        private Symbol symbol;
+        private Long recvWindow;
+        private Long timestamp;
+    }
+
+    @Data
+    public static class TradeLogDto {
+        private long idx;
+        private Symbol symbol;
+        private Side side;
+        private BuyStrategyType buyStrategyType;
+        private OrderState orderState;
+        private double avgPrice;
+        private double positionQuantity;
+        private Double closePrice;
+        private Double pnl;
+        private String option;  // 매수 전략에 사용될 값 ex) 물타기 전략-> 물탄 횟수 저장
+
+        public static TradeLogDto to(TradeLogEntity entity) {
+            TradeLogDto dto = new TradeLogDto();
+            dto.idx = entity.getIdx();
+            dto.symbol = entity.getSymbol();
+            dto.buyStrategyType = entity.getBuyStrategyType();
+            dto.orderState = entity.getOrderState();
+            dto.avgPrice = entity.getAvgPrice();
+            dto.positionQuantity = entity.getPositionQuantity();
+            dto.closePrice = entity.getClosePrice();
+            dto.pnl = entity.getPnl();
+            dto.option = entity.getOption();
+            return dto;
+        }
     }
 }

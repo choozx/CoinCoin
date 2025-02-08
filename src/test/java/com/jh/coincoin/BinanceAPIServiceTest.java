@@ -1,6 +1,7 @@
 package com.jh.coincoin;
 
 import com.jh.coincoin.model.Binance;
+import com.jh.coincoin.model.Binance.CancelOpenOrderReq;
 import com.jh.coincoin.model.Binance.NewOrderReq;
 import com.jh.coincoin.model.Binance.PositionInfoRes;
 import com.jh.coincoin.model.type.BinanceType.Order;
@@ -8,7 +9,7 @@ import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.BinanceType.Side;
 import com.jh.coincoin.model.type.BinanceType.BinanceURL;
 import com.jh.coincoin.service.TradeService;
-import com.jh.coincoin.service.external.BinanceFutureAPIService;
+import com.jh.coincoin.service.external.BinanceAPIService;
 import com.jh.coincoin.util.DateTimeUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,13 +32,13 @@ import org.springframework.web.client.RestClient;
 public class BinanceAPIServiceTest {
 
     private final RestClient restClient = RestClient.create();
-    private final BinanceFutureAPIService apiService;
+    private final BinanceAPIService binanceAPIService;
     private final TradeService tradeService;
 
     @Test
     public void ping(){
         Long serverTime = restClient.get()
-                .uri(BinanceURL.BASE_URL + "/v1/ping")
+                .uri(BinanceURL.HTTPS_BASE_URL + "/v1/ping")
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body(Long.class);
@@ -52,7 +53,7 @@ public class BinanceAPIServiceTest {
                 .symbol(Symbol.ETHUSDT)
                 .timestamp(now)
                 .build();
-        var res = apiService.getPositionInfo(req);
+        var res = binanceAPIService.getPositionInfo(req);
 
         for (PositionInfoRes positionInfoRes: res) {
             log.info("{}", positionInfoRes);
@@ -69,7 +70,7 @@ public class BinanceAPIServiceTest {
                 .timestamp(DateTimeUtil.getCurrentTimeMillis())
                 .build();
 
-        apiService.newTestOrder(req);
+        binanceAPIService.newTestOrder(req);
     }
 
     @Test
@@ -82,7 +83,7 @@ public class BinanceAPIServiceTest {
                 .timestamp(DateTimeUtil.getCurrentTimeMillis())
                 .build();
 
-        var res = apiService.newOrder(req);
+        var res = binanceAPIService.newOrder(req);
 
         log.info("주문 정보:{}", res);
     }
@@ -93,7 +94,7 @@ public class BinanceAPIServiceTest {
                 .timestamp(DateTimeUtil.getCurrentTimeMillis())
                 .build();
 
-        var res = apiService.getAccountBalance(req);
+        var res = binanceAPIService.getAccountBalance(req);
 
         log.info("통장 잔고 : {}", res.toString());
     }
@@ -104,7 +105,7 @@ public class BinanceAPIServiceTest {
                 .symbol(Symbol.BTCUSDT)
                 .build();
 
-        var res = apiService.getTickerPrice(tickerPriceReq);
+        var res = binanceAPIService.getTickerPrice(tickerPriceReq);
 
         log.info("실시간 가격 : {}", res);
     }
@@ -115,7 +116,7 @@ public class BinanceAPIServiceTest {
                 .symbol(Symbol.ETHUSDT)
                 .timestamp(DateTimeUtil.getCurrentTimeMillis())
                 .build();
-        var allOrderList = apiService.getAllOrder(checkOrderReq);
+        var allOrderList = binanceAPIService.getAllOrder(checkOrderReq);
 
         for (var orderInfo: allOrderList) {
             log.info("order info: {}", orderInfo);
@@ -124,7 +125,15 @@ public class BinanceAPIServiceTest {
 
     @Test
     public void 자동매매_테스트() {
-        // 돌리기 전에 테이블 만들고 데이터 넣어야함
         tradeService.tradeV2();
+    }
+
+    @Test
+    public void 주문_닫기() {
+        CancelOpenOrderReq req = CancelOpenOrderReq.builder()
+                .symbol(Symbol.ETHUSDT)
+                .timestamp(DateTimeUtil.getCurrentTimeMillis())
+                .build();
+        binanceAPIService.closeOpenOrder(req);
     }
 }

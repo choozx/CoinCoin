@@ -7,6 +7,7 @@ import com.slack.api.Slack;
 import com.slack.api.methods.SlackApiException;
 import com.slack.api.model.Attachment;
 import com.slack.api.model.Field;
+import com.slack.api.model.block.LayoutBlock;
 import com.slack.api.model.view.View;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -73,6 +74,14 @@ public class SlackMessageService {
                                                     .collect(Collectors.toList())
                                     ).build())))
             );
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendMessage(List<LayoutBlock> layoutBlockList) {
+        try {
+            slackClient.send(webHookURL, payload(p -> p.blocks(layoutBlockList)));
         } catch (IOException e) {
             e.printStackTrace();
         }

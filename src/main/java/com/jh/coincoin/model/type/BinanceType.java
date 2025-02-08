@@ -144,10 +144,28 @@ public class BinanceType {
         }
     }
 
-    public enum Side {
-        BUY,
-        SELL,
+    public enum Side implements CodeEnum<Integer>{
+        BUY(1, "buy"),
+        SELL(2, "sell"),
         ;
+
+        private final int code;
+        private final String key;
+
+        Side(int code, String key) {
+            this.code = code;
+            this.key = key;
+        }
+
+        @Override
+        public Integer getCode() {
+            return code;
+        }
+
+        @Override
+        public String getKey() {
+            return key;
+        }
 
         public static Side reverse(Side side) {
             if (side.equals(BUY))
@@ -155,18 +173,43 @@ public class BinanceType {
             else
                 return BUY;
         }
+
+        @Converter
+        public static class SideConverter implements AttributeConverter<Side, Integer> {
+
+            @Override
+            public Integer convertToDatabaseColumn(Side side) {
+                return side.code;
+            }
+
+            @Override
+            public Side convertToEntityAttribute(Integer code) {
+                return CodeEnumFinder.findByCode(Side.class, code);
+            }
+        }
     }
 
     // 여러 주문 타입이 있지만, 손절/익절 주문은 왠만하면 STOP_MARKET, TAKE_PROFIT_MARKET을 사용한다.
+    @Getter
     public enum Order {
-        LIMIT,
-        MARKET,
-        STOP,
-        TAKE_PROFIT,
-        STOP_MARKET,
-        TAKE_PROFIT_MARKET,
-        TRAILING_STOP_MARKET,
+        LIMIT(0.02),
+        MARKET(0.05),
+        STOP(0.02),
+        TAKE_PROFIT(0.02),
+        STOP_MARKET(0.05),
+        TAKE_PROFIT_MARKET(0.05),
+        TRAILING_STOP_MARKET(0.05),
         ;
+
+        private final double fee;
+
+        Order(double fee) {
+            this.fee = fee;
+        }
+
+        public boolean isCloseOrder() {
+            return this == TAKE_PROFIT_MARKET || this == STOP_MARKET;
+        }
     }
 
     public enum TimeInForce {
@@ -209,9 +252,51 @@ public class BinanceType {
         ;
     }
 
+    public enum OrderState implements CodeEnum<Integer> {
+        NEW(1, "new"),
+        PARTIALLY_FILLED(2, "partially_filled"),
+        FILLED(3, "filled"),
+        CANCELED(4, "canceled"),
+        REJECTED(5, "rejected"),
+        EXPIRED(6, "expired"),
+        ;
+
+        private final int code;
+        private final String key;
+
+        OrderState(int code, String key) {
+            this.code = code;
+            this.key = key;
+        }
+
+        @Override
+        public Integer getCode() {
+            return code;
+        }
+
+        @Override
+        public String getKey() {
+            return key;
+        }
+
+        @Converter
+        public static class OrderStateConverter implements AttributeConverter<OrderState, Integer> {
+            @Override
+            public Integer convertToDatabaseColumn(OrderState orderState) {
+                return orderState.code;
+            }
+
+            @Override
+            public OrderState convertToEntityAttribute(Integer code) {
+                return CodeEnumFinder.findByCode(OrderState.class, code);
+            }
+        }
+    }
+
     @Getter
     public enum BinanceURL {
-        BASE_URL("https://fapi.binance.com/fapi"),
+        HTTPS_BASE_URL("https://fapi.binance.com/fapi"),
+        WEB_SOCKET_BASE_URL("wss://fstream.binance.com/ws/"),
         GET_POSITION_INFO("/v3/positionRisk"),
         GET_ACCOUNT_BALANCE("/v3/balance"),
         GET_TICKER_PRICE("/v2/ticker/price"),
@@ -219,13 +304,33 @@ public class BinanceType {
         NEW_ORDER("/v1/order"),
         GET_OPEN_ORDER("/v1/openOrder"),
         GET_ALL_ORDER("/v1/allOrders"),
+        CANCEL_ALL_ORDER("/v1/allOpenOrders"),
         MODIFY_LEVERAGE("/v1/leverage"),
+        LISTEN_KEY("/v1/listenKey"),
         ;
 
         private final String url;
 
         BinanceURL(String url) {
             this.url = url;
+        }
+    }
+
+    @Getter
+    public enum EventType {
+        TRADE_LITE("TRADE_LITE"),
+        ORDER_TRADE_UPDATE("ORDER_TRADE_UPDATE"),
+        ;
+
+        private final String key;
+
+        EventType(String key) {
+            this.key = key;
+        }
+
+        public static EventType of(String key) {
+            return Arrays.stream(values()).filter(type -> type.getKey().equals(key)).findFirst()
+                    .orElse(null);
         }
     }
 }

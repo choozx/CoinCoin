@@ -14,4 +14,7 @@ public class GlobalConst {
 
     public static final double MIN_MARGIN_RATIO = 0.01;
     public static final double MAX_MARGIN_RATIO = 1.00;
+
+    public static final double MIN_ORDER_PRICE_GAP_PER = 0.001;
+
 }

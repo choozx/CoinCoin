@@ -1,5 +1,7 @@
 package com.jh.coincoin.service.external;
 
+import com.jh.coincoin.model.Binance.CancelOpenOrderReq;
+import com.jh.coincoin.model.Binance.ListenKeyRes;
 import com.jh.coincoin.model.Binance.ModifyLeverageReq;
 import com.jh.coincoin.model.Binance.PositionInfoReq;
 import com.jh.coincoin.model.Binance.CheckOrderReq;
@@ -40,7 +42,7 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class BinanceFutureAPIService {
+public class BinanceAPIService {
 
     @Value("${binance.api-key}")
     private final String apiKey;
@@ -165,6 +167,23 @@ public class BinanceFutureAPIService {
         return new NewOrderRes(rawData);
     }
 
+    public void closeOpenOrder(CancelOpenOrderReq req) {
+        String queryString = req.toQueryString();
+        String signature = makeSignature(queryString);
+
+        restClient.delete()
+                .uri(uriBuilder -> uriBuilder
+                        .path(BinanceURL.CANCEL_ALL_ORDER.getUrl())
+                        .query(queryString)
+                        .queryParam("signature", signature)
+                        .build())
+                .headers(httpHeaders -> httpHeaders
+                        .add("X-MBX-APIKEY", apiKey))
+                .retrieve()
+                .body(Map.class);
+
+    }
+
     public void newTestOrder(NewOrderReq req) {
         String queryString = req.toQueryString();
         String signature = makeSignature(queryString);
@@ -218,11 +237,28 @@ public class BinanceFutureAPIService {
                 .body(TickerPriceRes.class);
     }
 
-    private String buildQueryString(Map<String, String> paramMap) {
-        return paramMap.entrySet().stream()
-                .map(entry -> URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8) + "=" +
-                        URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8))
-                .collect(Collectors.joining("&"));
+    public ListenKeyRes getListenKey() {
+        return restClient.post()
+                .uri(uriBuilder -> uriBuilder
+                        .path(BinanceURL.LISTEN_KEY.getUrl())
+                        .build())
+                .headers(httpHeaders -> httpHeaders
+                        .add("X-MBX-APIKEY", apiKey))
+                .contentType(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .body(ListenKeyRes.class);
+    }
+
+    public void updateListenKey() {
+        restClient.put()
+                .uri(uriBuilder -> uriBuilder
+                        .path(BinanceURL.LISTEN_KEY.getUrl())
+                        .build())
+                .headers(httpHeaders -> httpHeaders
+                        .add("X-MBX-APIKEY", apiKey))
+                .contentType(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .toBodilessEntity();
     }
 
     private String makeSignature(String data) {
