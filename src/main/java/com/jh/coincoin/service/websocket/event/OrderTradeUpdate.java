@@ -1,10 +1,8 @@
 package com.jh.coincoin.service.websocket.event;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jh.coincoin.model.Binance.TradeLogDto;
-import com.jh.coincoin.model.Binance.OrderDetails;
+import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.BinanceType.OrderState;
 import com.jh.coincoin.model.type.BinanceType.EventType;
 import com.jh.coincoin.model.type.StrategyType.BuyStrategyType;
@@ -14,6 +12,7 @@ import com.jh.coincoin.service.websocket.EventHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
 import java.util.Set;
@@ -31,7 +30,6 @@ public class OrderTradeUpdate implements EventHandler {
     private final TradeLogService tradeLogService;
 
     private Map<BuyStrategyType, BuyStrategy> buyStrategyMap;
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
     public void setBuyStrategyMap(Set<BuyStrategy> buyStrategySet) {
@@ -44,20 +42,18 @@ public class OrderTradeUpdate implements EventHandler {
     }
 
     @Override
+    @Transactional
     public void process(JsonNode jsonNode) {
-        OrderDetails orderDetails;
+        JsonNode objectJsonNode = jsonNode.path("o");
+        Symbol symbol = Symbol.of(objectJsonNode.path("s").asText());
 
-        try {
-            orderDetails = objectMapper.treeToValue(jsonNode, OrderDetails.class);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+        OrderState orderState = OrderState.valueOf(objectJsonNode.path("X").asText());
+
+        if (orderState.equals(OrderState.FILLED)) {
+            TradeLogDto activePosition = tradeLogService.getActivePosition(symbol);
+            BuyStrategy buyStrategy = buyStrategyMap.get(activePosition.getBuyStrategyType());
+
+            buyStrategy.afterFilled(objectJsonNode);
         }
-
-        TradeLogDto activePosition = tradeLogService.getActivePosition(orderDetails.getSymbol());
-
-        BuyStrategy buyStrategy = buyStrategyMap.get(activePosition.getBuyStrategyType());
-
-        if (orderDetails.getOrderState().equals(OrderState.FILLED))
-            buyStrategy.afterFilled(orderDetails);
     }
 }

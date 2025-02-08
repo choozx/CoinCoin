@@ -3,9 +3,9 @@ package com.jh.coincoin.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.jh.coincoin.entity.TradeLogEntity;
-import com.jh.coincoin.model.type.BinanceType.OrderState;
 import com.jh.coincoin.model.type.BinanceType.NewOrderResp;
 import com.jh.coincoin.model.type.BinanceType.Order;
+import com.jh.coincoin.model.type.BinanceType.OrderState;
 import com.jh.coincoin.model.type.BinanceType.PositionSide;
 import com.jh.coincoin.model.type.BinanceType.PriceMatch;
 import com.jh.coincoin.model.type.BinanceType.SelfTradePreventionMode;
@@ -14,7 +14,12 @@ import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.BinanceType.TimeInForce;
 import com.jh.coincoin.model.type.BinanceType.TriggerSource;
 import com.jh.coincoin.model.type.StrategyType.BuyStrategyType;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
@@ -88,8 +93,9 @@ public class Binance {
             this.updateTime = (long) rawData.get("updateTime");
         }
 
-        public String toDescription() {
-            return String.format("[%s] %s 수량:%-10.3f | 진입가격:%-10.3f | 청산가격:%-10.3f", symbol, positionSide.getName(), positionAmount, entryPrice, liquidationPrice);
+        public String toDescription(Side side) {
+            String ps = positionSide.equals(PositionSide.BOTH) ? (side.equals(Side.BUY) ? "LONG" : "SHORT") : positionSide.getName();
+            return String.format("[%s] %s 수량:%10.3f | 진입가격:%10.3f | 청산가격:%10.3f", symbol, ps, positionAmount, entryPrice, liquidationPrice);
         }
     }
 
@@ -254,43 +260,6 @@ public class Binance {
         private long requestTime;   // 클라이언트 요청 시간
         @JsonProperty("o")
         private JsonNode objects;
-    }
-
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class OrderDetails {
-        @JsonProperty("s")
-        private Symbol symbol; // 거래쌍 (예: BTCUSDT)
-        @JsonProperty("c")
-        private String clientOrderId; // 주문 아이디
-        @JsonProperty("S")
-        private Side side; // 주문 종류 (SELL, BUY)
-        @JsonProperty("o")
-        private Order order; // 주문 유형 (TAKE_PROFIT_MARKET, STOP_MARKET 등)
-        @JsonProperty("f")
-        private TimeInForce timeInForce; // 주문의 유효 기간 (Good Till Cancelled)
-        @JsonProperty("q")
-        private double origQty; // 주문 수량
-        @JsonProperty("p")
-        private double price; // 주문 가격
-        @JsonProperty("ap")
-        private double avgPrice; // 실제 체결 가격
-        @JsonProperty("sp")
-        private double stopPrice; // Stop Price
-        @JsonProperty("X")
-        private OrderState orderState; // 주문 상태 (FILLED, CANCELED, PENDING 등)
-        @JsonProperty("t")
-        private long orderTime; // 주문 발생 시간
-        @JsonProperty("T")
-        private long timestamp; // 클라이언트 타임스탬프
-        @JsonProperty("i")
-        private long orderId; // 주문 아이디
-        @JsonProperty("l")
-        private double executedQty; // 체결된 수량
-        @JsonProperty("z")
-        private String cumQty; // 체결된 수량 총합
     }
 
     @Getter

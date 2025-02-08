@@ -190,6 +190,10 @@ public class BinanceType {
         Order(double fee) {
             this.fee = fee;
         }
+
+        public boolean isCloseOrder() {
+            return this == TAKE_PROFIT_MARKET || this == STOP_MARKET;
+        }
     }
 
     public enum TimeInForce {
@@ -286,8 +290,7 @@ public class BinanceType {
         GET_ALL_ORDER("/v1/allOrders"),
         CANCEL_ALL_ORDER("/v1/allOpenOrders"),
         MODIFY_LEVERAGE("/v1/leverage"),
-        POST_LISTEN_KEY("/v1/listenKey"),
-        UPDATE_LISTEN_KEY("/v1/listenKey"),
+        LISTEN_KEY("/v1/listenKey"),
         ;
 
         private final String url;

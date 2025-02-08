@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jh.coincoin.entity.BuyStrategyEntity;
 import com.jh.coincoin.model.Binance.CancelOpenOrderReq;
-import com.jh.coincoin.model.Binance.OrderDetails;
 import com.jh.coincoin.model.Binance.ModifyLeverageReq;
 import com.jh.coincoin.model.Binance.PositionInfoRes;
 import com.jh.coincoin.model.Binance.PositionInfoReq;
@@ -25,6 +24,7 @@ import com.jh.coincoin.model.type.BinanceType.Side;
 import com.jh.coincoin.model.type.StrategyType.RiskRewardRatioType;
 import com.jh.coincoin.model.type.StrategyType.BuyStrategyType;
 import com.jh.coincoin.service.SlackMessageService;
+import com.jh.coincoin.service.TradeLogService;
 import com.jh.coincoin.service.external.BinanceAPIService;
 import com.jh.coincoin.service.strategy.buy.calculator.RiskRewardCalculator;
 import com.jh.coincoin.util.CommonUtil;
@@ -57,6 +57,7 @@ import java.util.stream.Collectors;
 public class StopAndLimitBuyStrategy implements BuyStrategy {
 
     private final BinanceAPIService binanceAPIService;
+    private final TradeLogService tradeLogService;
     private final SlackMessageService slackMessageService;
     private Map<RiskRewardRatioType, RiskRewardCalculator> riskRewardCalculatorMap;
 
@@ -182,7 +183,7 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
         binanceAPIService.newOrder(slOrder);
 
         // 주문 내용 슬랙에 전송
-        slackMessageService.sendMessage(positionInfoRes.toDescription());
+        slackMessageService.sendMessage(positionInfoRes.toDescription(side));
 
         return positionInfoRes;
     }
@@ -267,12 +268,27 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
     }
 
     @Override
-    public void afterFilled(OrderDetails orderDetails) {
+    public void afterFilled(JsonNode jsonNode) {
+        double pnl = jsonNode.path("rp").asDouble();
+        if (pnl == 0)   // 단방향 모드이때는 PositionSide가 BOTH로 나와서 주문이 매수인지 매도인지 모름
+            return;
+
+        Order order = Order.valueOf(jsonNode.path("ot").asText());
+        if (!order.isCloseOrder())
+            return;
+
+        Symbol symbol = Symbol.of(jsonNode.path("s").asText());
+        double avgPrice = jsonNode.path("ap").asDouble();
+
         long now = DateTimeUtil.getCurrentTimeMillis();
         CancelOpenOrderReq closeOrder = CancelOpenOrderReq.builder()
-                .symbol(orderDetails.getSymbol())
+                .symbol(symbol)
                 .timestamp(now)
                 .build();
         binanceAPIService.closeOpenOrder(closeOrder);
+
+        tradeLogService.closePosition(symbol, avgPrice, pnl);
+
+        slackMessageService.sendMessage(String.format("포시션 종료! [%s] pnl:%.3f", symbol, pnl));
     }
 }

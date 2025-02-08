@@ -31,4 +31,11 @@ public class TradeLogService {
     private TradeLogEntity getEntity(Symbol symbol, OrderState orderState) {
         return tradeLogRepository.findFirstBySymbolAndOrderState(symbol, orderState);
     }
+
+    public void closePosition(Symbol symbol, double closePrice, double pnl) {
+        TradeLogEntity activePosition = getEntity(symbol, OrderState.NEW);
+
+        activePosition.close(closePrice, pnl);
+        tradeLogRepository.saveAndFlush(activePosition);
+    }
 }

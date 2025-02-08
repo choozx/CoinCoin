@@ -240,7 +240,7 @@ public class BinanceAPIService {
     public ListenKeyRes getListenKey() {
         return restClient.post()
                 .uri(uriBuilder -> uriBuilder
-                        .path(BinanceURL.POST_LISTEN_KEY.getUrl())
+                        .path(BinanceURL.LISTEN_KEY.getUrl())
                         .build())
                 .headers(httpHeaders -> httpHeaders
                         .add("X-MBX-APIKEY", apiKey))
@@ -249,11 +249,16 @@ public class BinanceAPIService {
                 .body(ListenKeyRes.class);
     }
 
-    private String buildQueryString(Map<String, String> paramMap) {
-        return paramMap.entrySet().stream()
-                .map(entry -> URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8) + "=" +
-                        URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8))
-                .collect(Collectors.joining("&"));
+    public void updateListenKey() {
+        restClient.put()
+                .uri(uriBuilder -> uriBuilder
+                        .path(BinanceURL.LISTEN_KEY.getUrl())
+                        .build())
+                .headers(httpHeaders -> httpHeaders
+                        .add("X-MBX-APIKEY", apiKey))
+                .contentType(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .toBodilessEntity();
     }
 
     private String makeSignature(String data) {

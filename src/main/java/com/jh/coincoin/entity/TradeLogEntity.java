@@ -77,4 +77,9 @@ public class TradeLogEntity implements Persistable<Long> {
     public boolean isNew() {
         return false;
     }
+
+    public void close(double closePrice, double pnl) {
+        this.closePrice = closePrice;
+        this.pnl = pnl;
+    }
 }

@@ -1,8 +1,8 @@
 package com.jh.coincoin.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jh.coincoin.model.Binance.Event;
 import com.jh.coincoin.model.type.BinanceType.EventType;
 import com.jh.coincoin.service.websocket.EventHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -39,18 +39,18 @@ public class ListenerService extends TextWebSocketHandler {
     protected void handleTextMessage(WebSocketSession session, TextMessage message) {
         log.info("message: {}", message.getPayload());
 
-        Event event;
+        JsonNode jsonNode;
         try {
-            event = objectMapper.readValue(message.getPayload(), Event.class);
+            jsonNode = objectMapper.readTree(message.getPayload());
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
 
-        EventType type = EventType.of(event.getEventType());
-        if (type == null)
+        EventType eventType = EventType.of(jsonNode.path("e").asText());
+        if (eventType == null)
             return;
 
-        EventHandler eventHandler = eventHandlerMap.get(type);
-        eventHandler.process(event.getObjects());
+        EventHandler eventHandler = eventHandlerMap.get(eventType);
+        eventHandler.process(jsonNode);
     }
 }
