@@ -6,7 +6,8 @@ import com.jh.coincoin.model.Strategy.BuyParamDto;
 import com.jh.coincoin.model.Strategy.OrderStrategyDto;
 import com.jh.coincoin.model.Strategy.BuyStrategyDto;
 import com.jh.coincoin.model.Strategy.TradeStrategyDto;
-import com.jh.coincoin.model.type.BinanceType;
+import com.jh.coincoin.model.type.BinanceType.Symbol;
+import com.jh.coincoin.model.type.BinanceType.Interval;
 import com.jh.coincoin.model.type.BinanceType.Side;
 import com.jh.coincoin.model.type.StrategyType.BuyStrategyType;
 import com.jh.coincoin.model.type.StrategyType.OrderStrategyType;
@@ -37,6 +38,7 @@ public class TradeService {
 
     // 매수를 위한 전략 서버스
     private final StrategyService strategyService;
+    private final TradeLogService tradeLogService;
     private final TradeLogRepository tradeLogRepository;
 
     private Map<OrderStrategyType, OrderStrategy> orderStrategyMap;
@@ -58,6 +60,11 @@ public class TradeService {
 
         for (TradeStrategyDto tradeStrategyDto : tradeStrategyDtoList) {
             OrderStrategyDto orderStrategyDto = tradeStrategyDto.getOrderStrategy();
+            Symbol symbol = tradeStrategyDto.getSymbol();
+
+            // 이미 포지션을 잡고있으면 패스
+            if (tradeLogService.isExistActivePosition(symbol))
+                continue;
 
             OrderStrategy orderStrategy = orderStrategyMap.get(orderStrategyDto.getType());
             Pair<Boolean, Side> hit = orderStrategy.isHit(tradeStrategyDto.getSymbol(), tradeStrategyDto.getInterval(), orderStrategyDto.getTargetValue());
@@ -89,7 +96,7 @@ public class TradeService {
 
         List<Integer> targetIntervalList = new ArrayList<>();
 
-        for (BinanceType.Interval interval : BinanceType.Interval.values()) {
+        for (Interval interval : Interval.values()) {
             if (minute % interval.getMinute() == 0) {
                 targetIntervalList.add(interval.getMinute());
             }

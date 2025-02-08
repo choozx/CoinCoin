@@ -38,4 +38,9 @@ public class TradeLogService {
         activePosition.close(closePrice, pnl);
         tradeLogRepository.saveAndFlush(activePosition);
     }
+
+    public boolean isExistActivePosition(Symbol symbol) {
+        TradeLogEntity activePosition = getEntity(symbol, OrderState.NEW);
+        return activePosition != null;
+    }
 }
