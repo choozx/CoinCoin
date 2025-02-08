@@ -32,6 +32,8 @@ public class TradeLogService {
 
     public void closePosition(Symbol symbol, double closePrice, double pnl) {
         Optional<TradeLogEntity> optionalActivePosition = getEntity(symbol, OrderState.NEW);
+        if (optionalActivePosition.isEmpty())
+            throw new ServerException(ErrorType.COMMON_FAIL, "활동중인 포지션을 찾을 수 없습니다.");
 
         TradeLogEntity activePosition = optionalActivePosition.get();
 
