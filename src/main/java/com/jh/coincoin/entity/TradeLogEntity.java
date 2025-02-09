@@ -7,6 +7,8 @@ import com.jh.coincoin.model.type.BinanceType.OrderState;
 import com.jh.coincoin.model.type.BinanceType.OrderState.OrderStateConverter;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.BinanceType.Symbol.SymbolConverter;
+import com.jh.coincoin.model.type.StrategyType.OrderStrategyType;
+import com.jh.coincoin.model.type.StrategyType.OrderStrategyType.OrderStrategyConverter;
 import com.jh.coincoin.model.type.StrategyType.BuyStrategyType;
 import com.jh.coincoin.model.type.StrategyType.BuyStrategyType.BuyStrategyConverter;
 import jakarta.persistence.Column;
@@ -40,6 +42,9 @@ public class TradeLogEntity implements Persistable<Long> {
     @Column(name = "side")
     @Convert(converter = SideConverter.class)
     private Side side;
+    @Column(name = "order_strategy_type")
+    @Convert(converter = OrderStrategyConverter.class)
+    private OrderStrategyType orderStrategyType;
     @Column(name = "buy_strategy_type")
     @Convert(converter = BuyStrategyConverter.class)
     private BuyStrategyType buyStrategyType;
@@ -57,10 +62,11 @@ public class TradeLogEntity implements Persistable<Long> {
     @Column(name = "`option`")
     private String option;  // 매수 전략에 사용될 값 ex) 물타기 전략-> 물탄 횟수 저장
 
-    public static TradeLogEntity create(PositionInfoRes positionInfoRes, Side side, BuyStrategyType buyStrategyType) {
+    public static TradeLogEntity create(PositionInfoRes positionInfoRes, Side side, OrderStrategyType orderStrategyType, BuyStrategyType buyStrategyType) {
         TradeLogEntity entity = new TradeLogEntity();
         entity.symbol = positionInfoRes.getSymbol();
         entity.side = side;
+        entity.orderStrategyType = orderStrategyType;
         entity.buyStrategyType = buyStrategyType;
         entity.orderState = OrderState.NEW;
         entity.avgPrice = positionInfoRes.getEntryPrice();

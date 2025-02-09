@@ -66,7 +66,8 @@ public class TradeService {
             if (tradeLogService.isExistActivePosition(symbol))
                 continue;
 
-            OrderStrategy orderStrategy = orderStrategyMap.get(orderStrategyDto.getType());
+            OrderStrategyType orderStrategyType = orderStrategyDto.getType();
+            OrderStrategy orderStrategy = orderStrategyMap.get(orderStrategyType);
             Pair<Boolean, Side> hit = orderStrategy.isHit(tradeStrategyDto.getSymbol(), tradeStrategyDto.getInterval(), orderStrategyDto.getTargetValue());
 
             if (hit.getLeft()) {
@@ -85,7 +86,7 @@ public class TradeService {
                         .build();
                 PositionInfoRes positionInfoRes = buyStrategy.order(buyParamDto);   // 새로운 주문 return
 
-                TradeLogEntity logEntity = TradeLogEntity.create(positionInfoRes, side, buyStrategyType);
+                TradeLogEntity logEntity = TradeLogEntity.create(positionInfoRes, side, orderStrategyType, buyStrategyType);
                 tradeLogRepository.saveAndFlush(logEntity);
             }
         }

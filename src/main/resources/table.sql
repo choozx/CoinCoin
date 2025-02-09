@@ -32,6 +32,7 @@ create table trade_log
         primary key,
     symbol            int                                 not null,
     side              int                                 not null,
+    order_strategy_type int                                 not null,
     buy_strategy_type int                                 not null,
     order_state       int                                 not null,
     avg_price         double(15, 7)                       not null,
