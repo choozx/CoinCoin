@@ -45,8 +45,6 @@ public class RSIIndicator implements Indicator {
         RSIKey rsiKey = new RSIKey(symbol, interval);
 
         TreeMap<Long, Double> map = rsiMap.get(rsiKey);
-        var entry = map.lastEntry();
-        log.info("[{}]::rsi : {} | 시간 : {}",symbol, entry.getValue(), DateTimeUtil.toDateTime(entry.getKey()));
         return map.lastEntry().getValue();
     }
 
@@ -68,7 +66,6 @@ public class RSIIndicator implements Indicator {
         TreeMap<Long, Double> rsiValueMap = rsiMap.computeIfAbsent(rsiKey, k -> new TreeMap<>());
 
         TreeMap<Long, Candle> candleMap;
-        // interval 만큼 한번 빼줘야됨 ex) 4:04분에 5분봉을 가져와야 한다면, 4:00 봉이 아닌 3:55 봉이여함. 4:00봉은 아직 완성이 안됬으니까
         long endTime = DateTimeUtil.getCurrentTimeMillis();
         if (rsiValueMap.isEmpty()) {
             candleMap = candleService.getCandleMap(symbol, interval, 0,endTime);
@@ -95,6 +92,9 @@ public class RSIIndicator implements Indicator {
 
             deque.poll();
         }
+
+        var lastEntry = rsiMap.get(rsiKey).lastEntry();
+        log.info("RSI 업데이트 :: symbol:{}, time:{}, value:{}", symbol, DateTimeUtil.toDateTime(lastEntry.getKey()), lastEntry.getValue());
     }
 
     public void changeRSIValue(double low, double high) {
