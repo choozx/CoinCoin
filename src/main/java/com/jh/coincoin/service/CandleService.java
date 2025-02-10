@@ -40,6 +40,12 @@ public class CandleService {
         allSymbolLoad2DB();
     }
 
+    public TreeMap<Long, Candle> getCandleMapByBeginAndCount(Symbol symbol, Interval interval, long begin, int candleCount) {
+        long plusMinute = (long) interval.getMinute() * candleCount;
+        long end = DateTimeUtil.toEpochMilli(DateTimeUtil.toDateTime(begin).plusMinutes(plusMinute));
+        return getCandleMap(symbol, interval, begin, end);
+    }
+
     public TreeMap<Long, Candle> getCandleMap(Symbol symbol, Interval interval) {
         var candleMap = allSymbolMap.get(symbol);
         return getCandleMap(symbol, interval, candleMap.lastKey(), candleMap.firstKey());

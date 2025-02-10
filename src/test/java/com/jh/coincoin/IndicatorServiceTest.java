@@ -29,6 +29,6 @@ public class IndicatorServiceTest {
         Interval interval = Interval.FIVE_MINUTE;
         rsiIndicator.update(symbol, interval);
 
-        double value = rsiIndicator.getLastFigure(symbol, interval);
+        double value = rsiIndicator.getLastValue(symbol, interval);
     }
 }

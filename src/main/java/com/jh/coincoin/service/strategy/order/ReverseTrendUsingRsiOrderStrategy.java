@@ -45,7 +45,7 @@ public class ReverseTrendUsingRsiOrderStrategy implements OrderStrategy {
     @Override
     public Pair<Boolean, Side> isHit(Symbol symbol, Interval interval, String targetValue) {
         RSIValue rsiValue = convertToRSI(targetValue);
-        Double rsiRatio = rsiIndicator.getLastFigure(symbol, interval);
+        Double rsiRatio = rsiIndicator.getLastValue(symbol, interval);
 
         if (rsiRatio >= rsiValue.getOverBought())
             return Pair.of(true, Side.SELL);
@@ -54,6 +54,25 @@ public class ReverseTrendUsingRsiOrderStrategy implements OrderStrategy {
             return Pair.of(true, Side.BUY);
 
         return Pair.of(false, null);
+    }
+
+    @Override
+    public List<Pair<Long, Side>> getHitList(Symbol symbol, Interval interval, String targetValue, long begin, long end) {
+        RSIValue rsiValue = convertToRSI(targetValue);
+        var rsiValueList = rsiIndicator.getValueList(symbol, interval, begin, end);
+
+        List<Pair<Long, Side>> hitList = new ArrayList<>();
+        for (var pair : rsiValueList) {
+            long timestamp = pair.getKey();
+            double rsi = pair.getValue();
+            if (rsi >= rsiValue.getOverBought())
+                hitList.add(Pair.of(timestamp, Side.SELL));
+
+            if (rsi <= rsiValue.getOverSell())
+                hitList.add(Pair.of(timestamp, Side.BUY));
+        }
+
+        return hitList;
     }
 
     @Override

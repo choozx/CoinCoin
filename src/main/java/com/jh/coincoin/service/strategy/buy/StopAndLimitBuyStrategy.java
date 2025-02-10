@@ -13,6 +13,7 @@ import com.jh.coincoin.model.Binance.TickerPriceReq;
 import com.jh.coincoin.model.Binance.AccountBalanceReq;
 import com.jh.coincoin.model.Binance.AccountBalanceRes;
 import com.jh.coincoin.model.Binance.NewOrderReq;
+import com.jh.coincoin.model.Strategy.BackTestBuyDto;
 import com.jh.coincoin.model.Strategy.RiskRewardStrategy;
 import com.jh.coincoin.model.Strategy.PriceCalculatorDto;
 import com.jh.coincoin.model.Strategy.BuyParamDto;
@@ -72,7 +73,7 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
     }
 
     @Override
-    public PositionInfoRes order(BuyParamDto buyParamDto) {
+    public PositionInfoRes buy(BuyParamDto buyParamDto) {
         // 1.주문된 상태 체크 redis에서 주문정보 get-> 주문된 상태면 return
         long now = DateTimeUtil.getCurrentTimeMillis();
         Symbol symbol = buyParamDto.getSymbol();
@@ -186,6 +187,12 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
         slackMessageService.sendMessage(positionInfoRes.toDescription(side));
 
         return positionInfoRes;
+    }
+
+    @Override
+    public BackTestBuyDto backTestBuy(BuyParamDto buyParamDto, double initialBalance) {
+
+        return null;
     }
 
     @Override

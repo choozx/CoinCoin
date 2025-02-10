@@ -41,7 +41,7 @@ public class RSIIndicator implements Indicator {
     }
 
     @Override
-    public Double getLastFigure(Symbol symbol, Interval interval) {
+    public Double getLastValue(Symbol symbol, Interval interval) {
         RSIKey rsiKey = new RSIKey(symbol, interval);
 
         TreeMap<Long, Double> map = rsiMap.get(rsiKey);
@@ -56,7 +56,7 @@ public class RSIIndicator implements Indicator {
     }
 
     @Override
-    public boolean isDetect(Double result) {
+    public boolean isDetectLastValue(Double result) {
         return result <= rsiValuePair.getLeft() || result >= rsiValuePair.getRight();
     }
 
@@ -95,6 +95,11 @@ public class RSIIndicator implements Indicator {
 
         var lastEntry = rsiMap.get(rsiKey).lastEntry();
         log.info("RSI 업데이트 :: symbol:{}, time:{}, value:{}", symbol, DateTimeUtil.toDateTime(lastEntry.getKey()), lastEntry.getValue());
+    }
+
+    public List<Pair<Long, Double>> getValueList(Symbol symbol, Interval interval, long begin, long end) {
+        // TODO candle update 및 지표값 update
+        return List.of();
     }
 
     public void changeRSIValue(double low, double high) {

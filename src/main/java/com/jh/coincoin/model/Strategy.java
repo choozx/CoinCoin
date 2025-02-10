@@ -102,6 +102,16 @@ public class Strategy {
         private double riskRewardRatio;
     }
 
+    @Getter
+    @Builder
+    public static class BackTestBuyDto {
+        private double size;
+        private double avgPrice;
+        private double stopPrice;
+        private double limitPrice;
+        private double liquidationPrice;
+    }
+
     @Data
     @Builder
     @NoArgsConstructor
