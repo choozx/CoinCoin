@@ -44,3 +44,16 @@ create table trade_log
     created_date      timestamp default CURRENT_TIMESTAMP not null
 );
 
+create table indicator
+(
+    idx          bigint                              not null auto_increment primary key,
+    type         int                                 not null,
+    symbol       int                                 not null,
+    `interval`   int                                 not null,
+    open_time    bigint                              not null,
+    `value`      varchar(300)                        not null,
+    created_date timestamp default CURRENT_TIMESTAMP not null comment '등록 날짜'
+);
+
+create index a on indicator (type, symbol, `interval`, open_time);
+

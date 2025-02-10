@@ -67,4 +67,33 @@ public class CandleServiceTest {
         log.info("정시 올림 :{}", DateTimeUtil.toDateTime(tmp1));
         log.info("정시 내림 :{}", DateTimeUtil.toDateTime(tmp2));
     }
+
+    @Test
+    public void 캔들_가져오기() {
+        Symbol symbol = Symbol.ETHUSDT;
+        Interval interval = Interval.FIVE_MINUTE;
+        var candleMap = candleService.getCandleMap(symbol, interval);
+
+        var candle = candleMap.lastEntry();
+        log.info("시간 : {} | last candle : {}", DateTimeUtil.toDateTime(candle.getKey()), candle);
+    }
+
+    @Test
+    public void 캔들_DB에서_가져오기() {
+        Symbol symbol = Symbol.ETHUSDT;
+        Interval interval = Interval.FIVE_MINUTE;
+        int candleCount = 100;
+        long now = DateTimeUtil.getCurrentTimeMillis();
+        LocalDateTime beginDateTime = DateTimeUtil.toDateTime(now).minusMinutes(1000);
+
+        long begin = DateTimeUtil.toEpochMilli(beginDateTime);
+        log.info("시작 시간:{}", beginDateTime);
+        var candleMap = candleService.getCandleMapByBeginOnDB(symbol, interval, begin, candleCount);
+
+        log.info("캔들 사이즈 {}", candleMap.size());
+        var firstCandle = candleMap.firstEntry();
+        var lastCandle = candleMap.lastEntry();
+        log.info("시간 : {} | first candle : {}", DateTimeUtil.toDateTime(firstCandle.getKey()), firstCandle);
+        log.info("시간 : {} | last candle : {}", DateTimeUtil.toDateTime(lastCandle.getKey()), lastCandle);
+    }
 }
