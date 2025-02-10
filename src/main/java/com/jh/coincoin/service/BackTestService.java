@@ -99,7 +99,7 @@ public class BackTestService {
 
             // 위에 리턴값으로 candle 돌려가면서 익절/손절 계산
             // 비교는 무조건 1분봉으로 해야겠다. N분봉이면 그 사이에 손익 둘다 찍어 버릴 수 있을것 같음
-            TreeMap<Long, Candle> candleMap = candleService.getCandleMapByBeginOnDB(symbol, Interval.ONE_MINUTE, entryTime, 100);
+            TreeMap<Long, Candle> candleMap = candleService.getCandleMapByBeginToDB(symbol, Interval.ONE_MINUTE, entryTime, 100);
             boolean isActivePotion = true;
             double size = backTestBuyDto.getSize();
             double avgPrice = backTestBuyDto.getAvgPrice();
@@ -123,7 +123,7 @@ public class BackTestService {
 
                 // 조건을 충족하지 못하면 다음 캔들로
                 entryTime = DateTimeUtil.toEpochMilli(DateTimeUtil.toDateTime(candleMap.lastKey()).plusMinutes(Interval.ONE_MINUTE.getMinute()));
-                candleMap = candleService.getCandleMapByBeginOnDB(symbol, Interval.ONE_MINUTE, entryTime, 100);
+                candleMap = candleService.getCandleMapByBeginToDB(symbol, Interval.ONE_MINUTE, entryTime, 100);
             }
 //            while (isActivePotion) {
 //                // 캔들 돌려보면서 익절/손절 체크

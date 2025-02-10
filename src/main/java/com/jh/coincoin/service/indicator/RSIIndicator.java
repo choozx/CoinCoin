@@ -1,15 +1,16 @@
 package com.jh.coincoin.service.indicator;
 
+import com.jh.coincoin.entity.IndicatorEntity;
 import com.jh.coincoin.model.Candle;
 import com.jh.coincoin.model.consts.GlobalConst;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.BinanceType.Interval;
 import com.jh.coincoin.model.type.IndicatorType;
+import com.jh.coincoin.repo.IndicatorRepository;
 import com.jh.coincoin.service.CandleService;
 import com.jh.coincoin.util.DateTimeUtil;
 import com.slack.api.model.block.composition.MarkdownTextObject;
 import com.slack.api.model.block.composition.TextObject;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
@@ -23,12 +24,13 @@ import java.util.*;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
-public class RSIIndicator implements Indicator {
+public class RSIIndicator extends Indicator {
+
+    public RSIIndicator(CandleService candleService, IndicatorRepository indicatorRepository) {
+        super(candleService, indicatorRepository);
+    }
 
     record RSIKey(Symbol symbol, Interval interval) { }
-
-    private final CandleService candleService;
     Map<RSIKey, TreeMap<Long, Double>> rsiMap = new HashMap<>();
 
     private Pair<Double, Double> rsiValuePair = Pair.of(30d, 70d);
@@ -98,7 +100,9 @@ public class RSIIndicator implements Indicator {
     }
 
     public List<Pair<Long, Double>> getValueList(Symbol symbol, Interval interval, long begin, long end) {
-        // TODO candle update 및 지표값 update
+        List<IndicatorEntity> indicatorEntityList = getIndicatorList(IndicatorType.RSI, symbol, interval, begin, end);
+
+        TreeMap<Long, Candle> candleMap = candleService.getCandleMapToDB(symbol, interval, begin, end);
 
         return List.of();
     }

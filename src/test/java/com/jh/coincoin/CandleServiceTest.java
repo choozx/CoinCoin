@@ -88,7 +88,7 @@ public class CandleServiceTest {
 
         long begin = DateTimeUtil.toEpochMilli(beginDateTime);
         log.info("시작 시간:{}", beginDateTime);
-        var candleMap = candleService.getCandleMapByBeginOnDB(symbol, interval, begin, candleCount);
+        var candleMap = candleService.getCandleMapByBeginToDB(symbol, interval, begin, candleCount);
 
         log.info("캔들 사이즈 {}", candleMap.size());
         var firstCandle = candleMap.firstEntry();

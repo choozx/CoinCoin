@@ -14,8 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -69,11 +67,17 @@ public class CandleService {
         return mergeCandle(candleMap, interval, beginTime, endTime);
     }
 
-    public TreeMap<Long, Candle> getCandleMapByBeginOnDB(Symbol symbol, Interval interval, long beginTime, int candleCount) {
+    public TreeMap<Long, Candle> getCandleMapByBeginToDB(Symbol symbol, Interval interval, long beginTime, int candleCount) {
         long endTime = DateTimeUtil.toEpochMilli(DateTimeUtil.toDateTime(beginTime).plusMinutes(((long) candleCount *interval.getMinute()) + interval.getMinute()));
         TreeMap<Long, Candle> loadCandleMap = load2DBV2(symbol, beginTime, endTime);
 
         return mergeCandle(loadCandleMap, interval, beginTime, endTime);
+    }
+
+    public TreeMap<Long, Candle> getCandleMapToDB(Symbol symbol, Interval interval, long beginTime, long end) {
+        TreeMap<Long, Candle> loadCandleMap = load2DBV2(symbol, beginTime, end);
+
+        return mergeCandle(loadCandleMap, interval, beginTime, end);
     }
 
     public Candle getLastCandle(Symbol symbol, Interval interval) {
