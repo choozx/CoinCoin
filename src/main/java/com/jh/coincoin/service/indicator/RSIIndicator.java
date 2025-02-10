@@ -99,6 +99,7 @@ public class RSIIndicator implements Indicator {
 
     public List<Pair<Long, Double>> getValueList(Symbol symbol, Interval interval, long begin, long end) {
         // TODO candle update 및 지표값 update
+
         return List.of();
     }
 

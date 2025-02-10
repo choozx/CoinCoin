@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,12 +37,6 @@ public class CandleService {
     @PostConstruct
     public void init() {
         allSymbolLoad2DB();
-    }
-
-    public TreeMap<Long, Candle> getCandleMapByBeginAndCount(Symbol symbol, Interval interval, long begin, int candleCount) {
-        long plusMinute = (long) interval.getMinute() * candleCount;
-        long end = DateTimeUtil.toEpochMilli(DateTimeUtil.toDateTime(begin).plusMinutes(plusMinute));
-        return getCandleMap(symbol, interval, begin, end);
     }
 
     public TreeMap<Long, Candle> getCandleMap(Symbol symbol, Interval interval) {
@@ -72,10 +65,23 @@ public class CandleService {
 
         long roundBeginTime = DateTimeUtil.ceilToInterval(beginTime, interval.getMinute());
         long floorEndTime = DateTimeUtil.floorToInterval(endTime, interval.getMinute());
-        var subCandleMap = candleMap.subMap(roundBeginTime, floorEndTime);
+        var subCandleMap = new TreeMap<>(candleMap.subMap(roundBeginTime, floorEndTime));
 
+        return mergeCandle(subCandleMap, interval);
+    }
+
+    public TreeMap<Long, Candle> getCandleMapByBeginOnDB(Symbol symbol, Interval interval, long begin, int candleCount) {
+        long plusMinute = (long) interval.getMinute() * candleCount;
+        long end = DateTimeUtil.toEpochMilli(DateTimeUtil.toDateTime(begin).plusMinutes(plusMinute));
+
+
+
+        return null;
+    }
+
+    private TreeMap<Long, Candle> mergeCandle(TreeMap<Long, Candle> map, Interval interval) {
         TreeMap<Long, Candle> candleMapPerInterval = new TreeMap<>();
-        for (var candleEntry : subCandleMap.entrySet()) {
+        for (var candleEntry : map.entrySet()) {
             long timestamp = candleEntry.getKey();
             Candle candle = candleEntry.getValue();
 
@@ -88,7 +94,6 @@ public class CandleService {
                 candleMapPerInterval.put(floorTime, new Candle(candle));
             }
         }
-
         return candleMapPerInterval;
     }
 
@@ -108,7 +113,7 @@ public class CandleService {
             if (candleMap != null && candleMap.size() != 0)
                 lastOpenTime = candleMap.firstKey();
 
-            load2DB(symbol, lastOpenTime);
+            load2DB(symbol, lastOpenTime, now);
         }
 
         log.info("캔들 로드 완료");
@@ -121,15 +126,16 @@ public class CandleService {
     private void allSymbolLoad2DB() {
         List<Symbol> symbolList = adminService.getTrackingSymbolList();
 
-        LocalDateTime targetTime = DateTimeUtil.toDateTime(DateTimeUtil.getCurrentTimeMillis()).truncatedTo(ChronoUnit.MINUTES).minusMinutes(MAX_STORAGE_CANDLE_COUNT);
+        long now = DateTimeUtil.getCurrentTimeMillis();
+        LocalDateTime targetTime = DateTimeUtil.toDateTime(now).truncatedTo(ChronoUnit.MINUTES).minusMinutes(MAX_STORAGE_CANDLE_COUNT);
         long targetTimestamp = DateTimeUtil.toEpochMilli(targetTime);
         for (Symbol symbol : symbolList) {
-            load2DB(symbol, targetTimestamp);
+            load2DB(symbol, targetTimestamp, now);
         }
     }
 
-    private void load2DB(Symbol symbol, long targetTimestamp) {
-        List<CandleEntity> candleEntityList = candleRepository.findAllByOpenTimeAfterAndSymbol(targetTimestamp, symbol);
+    private void load2DB(Symbol symbol, long beginTime, long endTime) {
+        List<CandleEntity> candleEntityList = candleRepository.findAllByOpenTimeBetweenAndSymbol(beginTime, endTime, symbol);
         TreeMap<Long, Candle> candleMap = allSymbolMap.getOrDefault(symbol, new TreeMap<>());
         candleEntityList.forEach(entity -> candleMap.put(entity.getOpenTime(), new Candle(entity)));
 

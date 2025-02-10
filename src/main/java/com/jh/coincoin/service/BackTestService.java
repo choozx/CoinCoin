@@ -52,6 +52,7 @@ public class BackTestService {
         Interval interval = tradeStrategyDto.getInterval();
         Symbol symbol = tradeStrategyDto.getSymbol();
 
+        double changeBalance = initialBalance;
         long ceilBeginTime = DateTimeUtil.ceilToInterval(begin, interval.getMinute());
         long floorEndTime = DateTimeUtil.floorToInterval(end, interval.getMinute());
 
@@ -94,11 +95,11 @@ public class BackTestService {
                     .leverage(buyStrategyDto.getLeverage())
                     .orderBalanceRatio(buyStrategyDto.getOrderBalanceRatio())
                     .build();
-            BackTestBuyDto backTestBuyDto = buyStrategy.backTestBuy(buyParamDto, initialBalance);
+            BackTestBuyDto backTestBuyDto = buyStrategy.backTestBuy(buyParamDto, changeBalance);
 
             // 위에 리턴값으로 candle 돌려가면서 익절/손절 계산
             // 비교는 무조건 1분봉으로 해야겠다. N분봉이면 그 사이에 손익 둘다 찍어 버릴 수 있을것 같음
-            TreeMap<Long, Candle> candleMap = candleService.getCandleMapByBeginAndCount(symbol, Interval.ONE_MINUTE, entryTime, 100);
+            TreeMap<Long, Candle> candleMap = candleService.getCandleMapByBeginOnDB(symbol, Interval.ONE_MINUTE, entryTime, 100);
             boolean isActivePotion = true;
             double size = backTestBuyDto.getSize();
             double avgPrice = backTestBuyDto.getAvgPrice();
@@ -113,7 +114,7 @@ public class BackTestService {
                     if (shouldExitTrade(side, candle.getClosePrice(), limitPrice, finalStopPrice)) {
                         pnl = Math.abs(avgPrice - (side.equals(Side.BUY) ? (candle.getClosePrice() > limitPrice ? limitPrice : finalStopPrice) : (candle.getClosePrice() < limitPrice ? limitPrice : finalStopPrice))) * size;
 
-                        initialBalance += (candle.getClosePrice() > limitPrice) == side.equals(Side.BUY) ? pnl : -pnl;
+                        changeBalance += (candle.getClosePrice() > limitPrice) == side.equals(Side.BUY) ? pnl : -pnl;
                         isActivePotion = false;
                         lastPositionCloseTime = candle.getOpenTime();
                         break;
@@ -121,8 +122,8 @@ public class BackTestService {
                 }
 
                 // 조건을 충족하지 못하면 다음 캔들로
-                entryTime = DateTimeUtil.toEpochMilli(DateTimeUtil.toDateTime(entryTime).plusMinutes(100));
-                candleMap = candleService.getCandleMapByBeginAndCount(symbol, Interval.ONE_MINUTE, entryTime, 100);
+                entryTime = DateTimeUtil.toEpochMilli(DateTimeUtil.toDateTime(candleMap.lastKey()).plusMinutes(Interval.ONE_MINUTE.getMinute()));
+                candleMap = candleService.getCandleMapByBeginOnDB(symbol, Interval.ONE_MINUTE, entryTime, 100);
             }
 //            while (isActivePotion) {
 //                // 캔들 돌려보면서 익절/손절 체크
