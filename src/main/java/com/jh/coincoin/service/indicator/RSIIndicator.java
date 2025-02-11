@@ -26,6 +26,7 @@ import java.util.*;
 @Service
 public class RSIIndicator extends Indicator {
 
+
     public RSIIndicator(CandleService candleService, IndicatorRepository indicatorRepository) {
         super(candleService, indicatorRepository);
     }
@@ -100,11 +101,38 @@ public class RSIIndicator extends Indicator {
     }
 
     public List<Pair<Long, Double>> getValueList(Symbol symbol, Interval interval, long begin, long end) {
-        List<IndicatorEntity> indicatorEntityList = getIndicatorList(IndicatorType.RSI, symbol, interval, begin, end);
+        Map<Long, IndicatorEntity> indicatorEntityMap = getIndicatorList(IndicatorType.RSI, symbol, interval, begin, end);
 
-        TreeMap<Long, Candle> candleMap = candleService.getCandleMapToDB(symbol, interval, begin, end);
+        // requireBegin은 rsi계산을 위해 200개의 캔들을 추가로 가져오기 위한 시작 시간
+        long requireBegin = DateTimeUtil.toEpochMilli(DateTimeUtil.toDateTime(begin).minusMinutes((long) interval.getMinute() * CANDLE_COUNT));
+        TreeMap<Long, Candle> candleMap = candleService.getCandleMapToDB(symbol, interval, requireBegin, end);
 
-        return List.of();
+        Deque<Candle> deque = new ArrayDeque<>();
+        List<Pair<Long, Double>> rsiList = new ArrayList<>();
+        for (var entry : candleMap.entrySet()) {
+            deque.offer(entry.getValue());
+
+            if (deque.size() != 200)
+                continue;
+
+            long openTime = entry.getKey();
+
+            double rsi;
+            if (indicatorEntityMap.containsKey(openTime)) {
+                String[] rsiString = indicatorEntityMap.get(openTime).getValueArray();
+                rsi = Double.parseDouble(rsiString[0]);
+            } else {
+                rsi = formula(deque);
+                save(IndicatorType.RSI, symbol, interval, openTime, String.valueOf(rsi));
+            }
+
+            Pair<Long, Double> pair = Pair.of(openTime, rsi);
+            rsiList.add(pair);
+
+            deque.poll();
+        }
+
+        return rsiList;
     }
 
     public void changeRSIValue(double low, double high) {

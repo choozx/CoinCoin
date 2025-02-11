@@ -13,5 +13,5 @@ import java.util.List;
  */
 public interface IndicatorRepository extends JpaRepository<IndicatorEntity, Long> {
 
-    List<IndicatorEntity> findAllByTypeAndSymbolAndIntervalAndOpenTimeBetween(IndicatorType type, Symbol symbol, Interval interval, long begin, long end);
+    List<IndicatorEntity> findAllByTypeAndSymbolAndIntervalAndOpenTimeBetween(IndicatorType type, Symbol symbol, int interval, long begin, long end);
 }

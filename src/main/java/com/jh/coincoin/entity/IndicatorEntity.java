@@ -2,13 +2,10 @@ package com.jh.coincoin.entity;
 
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.BinanceType.Symbol.SymbolConverter;
-import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.jh.coincoin.model.type.IndicatorType;
+import com.jh.coincoin.model.type.IndicatorType.IndicatorConverter;
+import jakarta.annotation.PostConstruct;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Persistable;
@@ -27,8 +24,8 @@ public class IndicatorEntity implements Persistable<Long> {
     @Column(name = "idx")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long idx;
-    @Column(name = "type")
-    private int type;
+    @Column(name = "type") @Convert(converter = IndicatorConverter.class)
+    private IndicatorType type;
     @Column(name = "symbol") @Convert(converter = SymbolConverter.class)
     private Symbol symbol;
     @Column(name = "`interval`")
@@ -36,7 +33,25 @@ public class IndicatorEntity implements Persistable<Long> {
     @Column(name = "open_time")
     private long openTime;
     @Column(name = "`value`")
-    private String value;
+    private String value;           // DB 저장용 지표값
+
+    @Transient
+    private String[] valueArray;    // 앱에서 사용할 지표값
+
+    @PostConstruct
+    public void init() {
+        valueArray = value.split("\\|");
+    }
+
+    public static IndicatorEntity create(IndicatorType type, Symbol symbol, int interval, long openTime, String value) {
+        IndicatorEntity entity = new IndicatorEntity();
+        entity.type = type;
+        entity.symbol = symbol;
+        entity.interval = interval;
+        entity.openTime = openTime;
+        entity.value = value;
+        return entity;
+    }
 
     @Override
     public Long getId() {

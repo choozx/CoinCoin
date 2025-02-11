@@ -12,6 +12,9 @@ import com.slack.api.model.block.composition.TextObject;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Created by dale on 2024-09-11.
@@ -21,17 +24,23 @@ import java.util.List;
 public abstract class Indicator {
 
     protected final CandleService candleService;
-    private final IndicatorRepository indicatorRepository;
+    protected final IndicatorRepository indicatorRepository;
     public abstract IndicatorType getType();
     public abstract Double getLastValue(Symbol symbol, Interval interval);
     public abstract TextObject wrappingMessage(Symbol symbol, Double result);
     public abstract boolean isDetectLastValue(Double result);
     public abstract void update(Symbol symbol, Interval interval);
 
-    protected List<IndicatorEntity> getIndicatorList(IndicatorType type, Symbol symbol, Interval interval, long begin, long end) {
+    protected Map<Long, IndicatorEntity> getIndicatorList(IndicatorType type, Symbol symbol, Interval interval, long begin, long end) {
         long ceil = DateTimeUtil.ceilToInterval(begin, interval.getMinute());
         long floor = DateTimeUtil.floorToInterval(end, interval.getMinute());
-        return indicatorRepository.findAllByTypeAndSymbolAndIntervalAndOpenTimeBetween(type, symbol, interval, ceil, floor);
+        List<IndicatorEntity> indicatorEntityList = indicatorRepository.findAllByTypeAndSymbolAndIntervalAndOpenTimeBetween(type, symbol, interval.getMinute(), ceil, floor);
+        return indicatorEntityList.stream().collect(Collectors.toMap(IndicatorEntity::getOpenTime, Function.identity()));
+    }
+
+    protected void save(IndicatorType type, Symbol symbol, Interval interval, long openTime, String value) {
+        IndicatorEntity newEntity = IndicatorEntity.create(type, symbol, interval.getMinute(), openTime, value);
+        indicatorRepository.save(newEntity);
     }
 
 }
