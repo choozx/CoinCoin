@@ -7,6 +7,7 @@ import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.BinanceType.Interval;
 import com.jh.coincoin.model.type.IndicatorType;
 import com.jh.coincoin.repo.IndicatorRepository;
+import com.jh.coincoin.repo.jdbc.IndicatorBatchRepository;
 import com.jh.coincoin.service.CandleService;
 import com.jh.coincoin.util.DateTimeUtil;
 import com.slack.api.model.block.composition.MarkdownTextObject;
@@ -26,9 +27,8 @@ import java.util.*;
 @Service
 public class RSIIndicator extends Indicator {
 
-
-    public RSIIndicator(CandleService candleService, IndicatorRepository indicatorRepository) {
-        super(candleService, indicatorRepository);
+    public RSIIndicator(CandleService candleService, IndicatorRepository indicatorRepository, IndicatorBatchRepository indicatorBatchRepository) {
+        super(candleService, indicatorRepository, indicatorBatchRepository);
     }
 
     record RSIKey(Symbol symbol, Interval interval) { }
@@ -90,6 +90,7 @@ public class RSIIndicator extends Indicator {
 
         Deque<Candle> deque = new ArrayDeque<>();
         TreeMap<Long, Double> rsiMap = new TreeMap<>();
+        List<IndicatorEntity> newIndicatorEntityList = new ArrayList<>();
         for (var entry : candleMap.entrySet()) {
             deque.offer(entry.getValue());
 
@@ -104,7 +105,7 @@ public class RSIIndicator extends Indicator {
                 rsi = Double.parseDouble(rsiString[0]);
             } else {
                 rsi = formula(deque);
-                save(IndicatorType.RSI, symbol, interval, openTime, String.valueOf(rsi));
+                newIndicatorEntityList.add(IndicatorEntity.create(IndicatorType.RSI, symbol, interval.getMinute(), openTime, String.format("%.2f", rsi)));
             }
 
             rsiMap.put(openTime, rsi);
@@ -112,6 +113,7 @@ public class RSIIndicator extends Indicator {
             deque.poll();
         }
 
+        indicatorBatchRepository.bulkInsert(newIndicatorEntityList);
         return rsiMap;
     }
 
@@ -119,7 +121,7 @@ public class RSIIndicator extends Indicator {
         rsiValuePair = Pair.of(low, high);
     }
 
-    public long adjustBeginTime(long begin, Interval interval) {
+    private long adjustBeginTime(long begin, Interval interval) {
         LocalDateTime nextOpenTime = DateTimeUtil.toDateTime(begin).plusMinutes(interval.getMinute());
         return DateTimeUtil.toEpochMilli(nextOpenTime.minusMinutes((long) interval.getMinute() * CANDLE_COUNT)); // rsi값을 구하기 위해서는 200개의 캔들이 필요
     }

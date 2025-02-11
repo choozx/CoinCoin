@@ -38,7 +38,7 @@ public class IndicatorEntity implements Persistable<Long> {
     @Transient
     private String[] valueArray;    // 앱에서 사용할 지표값
 
-    @PostConstruct
+    @PostLoad
     public void init() {
         valueArray = value.split("\\|");
     }

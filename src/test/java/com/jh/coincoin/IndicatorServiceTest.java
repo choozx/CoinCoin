@@ -38,16 +38,16 @@ public class IndicatorServiceTest {
     @Test
     public void rsi_지표_맵_기져오기() {
         Symbol symbol = Symbol.ETHUSDT;
-        Interval interval = Interval.FIVE_MINUTE;
+        Interval interval = Interval.ONE_MINUTE;
         long end = DateTimeUtil.getCurrentTimeMillis();
-        long begin = DateTimeUtil.calcBeginTime(end, interval.getMinute(), 1000);
+        long begin = DateTimeUtil.calcBeginTime(end, interval.getMinute(), 100);
 
         log.info("시작 시간 {}", DateTimeUtil.toDateTime(begin));
         log.info("종료 시간 {}", DateTimeUtil.toDateTime(end));
 
         TreeMap<Long, Double> rsiMap = rsiIndicator.getValueMap(symbol, interval, begin, end);
 
-        log.info("rsi :: 시작시간:{} 값:{}", rsiMap.firstKey(), rsiMap.firstEntry().getValue());
-        log.info("rsi :: 종료시간:{} 값:{}", rsiMap.lastKey(), rsiMap.lastEntry().getValue());
+        log.info("rsi :: 시작시간:{} 값:{}", DateTimeUtil.toDateTime(rsiMap.firstKey()), rsiMap.firstEntry().getValue());
+        log.info("rsi :: 종료시간:{} 값:{}", DateTimeUtil.toDateTime(rsiMap.lastKey()), rsiMap.lastEntry().getValue());
     }
 }

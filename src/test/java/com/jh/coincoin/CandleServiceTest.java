@@ -1,5 +1,6 @@
 package com.jh.coincoin;
 
+import com.jh.coincoin.model.Candle;
 import com.jh.coincoin.model.type.BinanceType.*;
 import com.jh.coincoin.service.CandleService;
 import com.jh.coincoin.util.DateTimeUtil;
@@ -11,6 +12,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestConstructor;
 
 import java.time.LocalDateTime;
+import java.util.TreeMap;
 
 /**
  * Created by dale on 2024-09-07.
@@ -79,7 +81,7 @@ public class CandleServiceTest {
     }
 
     @Test
-    public void 캔들_DB에서_가져오기() {
+    public void 캔들_DB에서_count만큼_가져오기() {
         Symbol symbol = Symbol.ETHUSDT;
         Interval interval = Interval.FIVE_MINUTE;
         int candleCount = 100;
@@ -95,5 +97,28 @@ public class CandleServiceTest {
         var lastCandle = candleMap.lastEntry();
         log.info("시간 : {} | first candle : {}", DateTimeUtil.toDateTime(firstCandle.getKey()), firstCandle);
         log.info("시간 : {} | last candle : {}", DateTimeUtil.toDateTime(lastCandle.getKey()), lastCandle);
+    }
+
+    @Test
+    public void 캔들_DB에서_가져오기() {
+        Symbol symbol = Symbol.ETHUSDT;
+        Interval interval = Interval.FIVE_MINUTE;
+        long now = DateTimeUtil.getCurrentTimeMillis();
+        LocalDateTime beginDateTime = DateTimeUtil.toDateTime(now).minusMinutes(1000L * interval.getMinute());
+
+        long beginTime = adjustBeginTime(DateTimeUtil.toEpochMilli(beginDateTime), interval); // rsi값을 구하기 위해서는 200개의 캔들이 필요
+        log.info("시작 시간:{}", beginDateTime);
+        TreeMap<Long, Candle> candleMap = candleService.getCandleMapToDB(symbol, interval, beginTime, now);
+
+        log.info("캔들 사이즈 {}", candleMap.size());
+        var firstCandle = candleMap.firstEntry();
+        var lastCandle = candleMap.lastEntry();
+        log.info("시간 : {} | first candle : {}", DateTimeUtil.toDateTime(firstCandle.getKey()), firstCandle);
+        log.info("시간 : {} | last candle : {}", DateTimeUtil.toDateTime(lastCandle.getKey()), lastCandle);
+    }
+
+    private long adjustBeginTime(long begin, Interval interval) {
+        LocalDateTime nextOpenTime = DateTimeUtil.toDateTime(begin).plusMinutes(interval.getMinute());
+        return DateTimeUtil.toEpochMilli(nextOpenTime.minusMinutes((long) interval.getMinute() * 200)); // rsi값을 구하기 위해서는 200개의 캔들이 필요
     }
 }
