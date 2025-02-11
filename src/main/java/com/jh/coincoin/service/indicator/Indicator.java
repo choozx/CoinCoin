@@ -31,7 +31,7 @@ public abstract class Indicator {
     public abstract boolean isDetectLastValue(Double result);
     public abstract void update(Symbol symbol, Interval interval);
 
-    protected Map<Long, IndicatorEntity> getIndicatorList(IndicatorType type, Symbol symbol, Interval interval, long begin, long end) {
+    protected Map<Long, IndicatorEntity> getIndicatorEntityMap(IndicatorType type, Symbol symbol, Interval interval, long begin, long end) {
         long ceil = DateTimeUtil.ceilToInterval(begin, interval.getMinute());
         long floor = DateTimeUtil.floorToInterval(end, interval.getMinute());
         List<IndicatorEntity> indicatorEntityList = indicatorRepository.findAllByTypeAndSymbolAndIntervalAndOpenTimeBetween(type, symbol, interval.getMinute(), ceil, floor);

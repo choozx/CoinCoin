@@ -59,10 +59,10 @@ public class ReverseTrendUsingRsiOrderStrategy implements OrderStrategy {
     @Override
     public List<Pair<Long, Side>> getHitList(Symbol symbol, Interval interval, String targetValue, long begin, long end) {
         RSIValue rsiValue = convertToRSI(targetValue);
-        var rsiValueList = rsiIndicator.getValueList(symbol, interval, begin, end);
+        var rsiValueList = rsiIndicator.getValueMap(symbol, interval, begin, end);
 
         List<Pair<Long, Side>> hitList = new ArrayList<>();
-        for (var pair : rsiValueList) {
+        for (var pair : rsiValueList.entrySet()) {
             long timestamp = pair.getKey();
             double rsi = pair.getValue();
             if (rsi >= rsiValue.getOverBought())
