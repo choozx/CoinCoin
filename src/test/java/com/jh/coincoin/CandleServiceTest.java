@@ -117,6 +117,22 @@ public class CandleServiceTest {
         log.info("시간 : {} | last candle : {}", DateTimeUtil.toDateTime(lastCandle.getKey()), lastCandle);
     }
 
+    @Test
+    public void 캔들_하나_가져오기() {
+        Symbol symbol = Symbol.ETHUSDT;
+        Interval interval = Interval.FIVE_MINUTE;
+        long now = DateTimeUtil.getCurrentTimeMillis();
+        LocalDateTime entryLocalTime = DateTimeUtil.toDateTime(now).minusMinutes(100);
+        long entryTime = DateTimeUtil.toEpochMilli(entryLocalTime);
+
+        log.info("시작시간:{}", entryLocalTime);
+
+        var candle = candleService.getCandleMap(symbol, interval, entryTime, DateTimeUtil.calcEndTime(entryTime, interval.getMinute(), 1));
+
+        log.info("size:{}", candle.size());
+        log.info("캔들시간:{} {}", DateTimeUtil.toDateTime(candle.firstKey()), candle.firstEntry().getValue());
+    }
+
     private long adjustBeginTime(long begin, Interval interval) {
         LocalDateTime nextOpenTime = DateTimeUtil.toDateTime(begin).plusMinutes(interval.getMinute());
         return DateTimeUtil.toEpochMilli(nextOpenTime.minusMinutes((long) interval.getMinute() * 200)); // rsi값을 구하기 위해서는 200개의 캔들이 필요

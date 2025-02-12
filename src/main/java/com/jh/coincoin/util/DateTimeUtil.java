@@ -838,6 +838,10 @@ public final class DateTimeUtil {
         return DateTimeUtil.toEpochMilli(toDateTime(end).minusMinutes(((long) interval * count) + interval));
     }
 
+    public static long calcEndTime(long begin, int interval, int count) {
+        return DateTimeUtil.toEpochMilli(toDateTime(begin).plusMinutes(((long) interval * count) + interval));
+    }
+
     /**
      * apache-common, spring.util 을 비롯하여 많은 라이브러리에서 Pair 클래스를 제공한다.
      * 다만 DateTimeUtil 클래스는 JDK 를 제외한 어떤 라이브러리에도 종속된 코드가 들어가는것을 지양하므로..

@@ -2,6 +2,7 @@ package com.jh.coincoin.service;
 
 import com.jh.coincoin.entity.CandleEntity;
 import com.jh.coincoin.model.Candle;
+import com.jh.coincoin.model.type.BinanceType;
 import com.jh.coincoin.model.type.BinanceType.Interval;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.ErrorType;

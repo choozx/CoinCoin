@@ -87,10 +87,10 @@ public class BackTestService {
                 Pair<Long, Side> sidePair = hitList.poll();
                 long signalTime = sidePair.getLeft();
                 Side side = sidePair.getRight();
-//                if (lastPositionCloseTime > signalTime)   // 일단 시그널은 다 넣고 아래 캔들 돌릴때 필터링 하는게 나을듯
-//                    continue;
 
                 long entryTime = DateTimeUtil.toEpochMilli(DateTimeUtil.toDateTime(signalTime).plusMinutes(interval.getMinute()));
+                var candleMap = candleService.getCandleMap(symbol, interval, entryTime, DateTimeUtil.calcEndTime(entryTime, interval.getMinute(), 1));
+                Candle entryCandle = candleMap.lastEntry().getValue();
                 BuyParamDto buyParamDto = BuyParamDto.builder()
                         .symbol(tradeStrategyDto.getSymbol())
                         .side(side)
@@ -98,17 +98,35 @@ public class BackTestService {
                         .leverage(buyStrategyDto.getLeverage())
                         .orderBalanceRatio(buyStrategyDto.getOrderBalanceRatio())
                         .build();
-//                BackTestBuyDto backTestBuyDto = buyStrategy.backTestBuy(buyParamDto, );
-//                positionDeque.add(backTestBuyDto);
+                BackTestBuyDto backTestBuyDto = buyStrategy.backTestBuy(buyParamDto, entryCandle);
+                positionDeque.add(backTestBuyDto);
             }
         });
         buyThread.start();
 
         // 캔들 불러오기
         double changeBalance = initialBalance;
-        long entryTime = positionDeque.peekFirst().getEntryTime();
+        long lastPositionCloseTime = 0;
         while (buyThread.isAlive() || !positionDeque.isEmpty()) {
+            if (positionDeque.isEmpty())
+                continue;
+
             BackTestBuyDto backTestBuyDto = positionDeque.poll();
+            // 포지션 종료보다 전에 진입조건은 무시한다.
+            if (lastPositionCloseTime >= backTestBuyDto.getEntryTime())
+                continue;
+
+            long entryTime = backTestBuyDto.getEntryTime();
+            while (true) {
+                // 비교를 하려면 캔들은 1분봉으로 보는게 더 정확함.
+                TreeMap<Long, Candle> candleMap = candleService.getCandleMapByBeginToDB(symbol, Interval.ONE_MINUTE, entryTime, 100);
+
+                for (var candle : candleMap.entrySet()) {
+                    // TODO 캔들이 backTestBuyDto와 비교해서 손익절 계산
+                }
+
+                entryTime = DateTimeUtil.calcEndTime(end, Interval.ONE_MINUTE.getMinute(), 100);
+            }
         }
 
         // 지표 계산이 아직 진행중이고, hitList에 요소가 남아있을때까지
