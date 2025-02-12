@@ -274,6 +274,13 @@ public class Binance {
         private Long timestamp;
     }
 
+    @Builder
+    public static class LeverageBracketReq extends BaseReq {
+        private Symbol symbol;
+        private Long recvWindow;
+        private Long timestamp;
+    }
+
     @Data
     public static class TradeLogDto {
         private long idx;

@@ -105,7 +105,7 @@ public class Strategy {
     @Getter
     @Builder
     public static class BackTestBuyDto {
-        private double size;
+        private long entryTime;
         private double avgPrice;
         private double stopPrice;
         private double limitPrice;

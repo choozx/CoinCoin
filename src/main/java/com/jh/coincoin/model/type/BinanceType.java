@@ -307,6 +307,7 @@ public class BinanceType {
         CANCEL_ALL_ORDER("/v1/allOpenOrders"),
         MODIFY_LEVERAGE("/v1/leverage"),
         LISTEN_KEY("/v1/listenKey"),
+        LEVERAGE_BRACKET("/v1/leverageBracket"),
         ;
 
         private final String url;
