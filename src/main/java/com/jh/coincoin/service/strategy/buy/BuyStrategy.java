@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.jh.coincoin.entity.BuyStrategyEntity;
 import com.jh.coincoin.model.Binance.PositionInfoRes;
 import com.jh.coincoin.model.Candle;
-import com.jh.coincoin.model.Strategy.BackTestBuyDto;
+import com.jh.coincoin.model.BackTest.BackTestBuyDto;
 import com.jh.coincoin.model.Strategy.BuyParamDto;
 import com.jh.coincoin.model.type.StrategyType.BuyStrategyType;
 import com.slack.api.model.block.InputBlock;

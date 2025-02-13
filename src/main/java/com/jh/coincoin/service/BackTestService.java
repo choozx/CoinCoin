@@ -1,7 +1,8 @@
 package com.jh.coincoin.service;
 
+import com.jh.coincoin.model.BackTest.PnlDto;
 import com.jh.coincoin.model.Candle;
-import com.jh.coincoin.model.Strategy.BackTestBuyDto;
+import com.jh.coincoin.model.BackTest.BackTestBuyDto;
 import com.jh.coincoin.model.Strategy.BuyParamDto;
 import com.jh.coincoin.model.Strategy.OrderStrategyDto;
 import com.jh.coincoin.model.Strategy.BuyStrategyDto;
@@ -17,6 +18,7 @@ import com.jh.coincoin.service.strategy.buy.BuyStrategy;
 import com.jh.coincoin.service.strategy.order.OrderStrategy;
 import com.jh.coincoin.util.DateTimeUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BackTestService {
@@ -65,6 +68,7 @@ public class BackTestService {
 
             // 청크 단위로 조져
             while (floorEndTime > chunkCeilBeginTime) {
+                log.info("order thread 실행중");
                 var chunkHitList = orderStrategy.getHitList(tradeStrategyDto.getSymbol(), interval, orderStrategyDto.getTargetValue(), chunkCeilBeginTime, chunkFloorEndTime);
                 hitList.addAll(chunkHitList);
                 chunkCeilBeginTime += interval.getMinute() * GlobalConst.CHUNK_SIZE;
@@ -73,14 +77,12 @@ public class BackTestService {
         });
         orderThread.start();
 
-        // TODO 진입DTO 만드는 쓰레드 따로 만들기
-        // TODO 캔들 돌려가면서 진입DTO에 따라 손/익절 코드 만들기 <- 마지막 라인이니까 굳이 쓰레드 따로 안써도 될듯
-
         BuyStrategyDto buyStrategyDto = tradeStrategyDto.getBuyStrategy();
         BuyStrategy buyStrategy = buyStrategyMap.get(buyStrategyDto.getType());
         Deque<BackTestBuyDto> positionDeque = new ArrayDeque<>();
         Thread buyThread = new Thread(() -> {
             while (orderThread.isAlive() || !hitList.isEmpty()) {
+                log.info("buy thread 실행중");
                 if (hitList.isEmpty())
                     continue;
 
@@ -106,7 +108,10 @@ public class BackTestService {
 
         // 캔들 불러오기
         double totalBalance = initialBalance;
+        int winCount = 0;
+        int tradeCount = 0;
         long lastPositionCloseTime = 0;
+        List<PnlDto> pnlList = new ArrayList<>();
         while (buyThread.isAlive() || !positionDeque.isEmpty()) {
             if (positionDeque.isEmpty())
                 continue;
@@ -117,7 +122,6 @@ public class BackTestService {
                 continue;
 
             long entryTime = backTestBuyDto.getEntryTime();
-            double pnl = 0;
             boolean isPositionActive = true;
             while (isPositionActive) {
                 // 비교를 하려면 캔들은 1분봉으로 보는게 더 정확함.
@@ -126,22 +130,75 @@ public class BackTestService {
                 for (var candle : candleMap.entrySet()) {
                     // 캔들을 backTestBuyDto와 비교해서 손익절 계산
                     double closePrice = candle.getValue().getClosePrice();
+
                     if (backTestBuyDto.isPriceHit(closePrice)) {
-                        pnl = backTestBuyDto.calcPnl(closePrice);
+                        log.info("손익절 발생!");
+                        PnlDto pnlDto = calcPnl(closePrice, backTestBuyDto, totalBalance, buyStrategyDto.getLeverage(), buyStrategyDto.getOrderBalanceRatio());
+
+                        double pnl = pnlDto.getPnl();
+                        if (pnl >= 0)
+                            winCount++;
+
+                        tradeCount++;
+                        totalBalance += pnl;
                         isPositionActive = false;
                         lastPositionCloseTime = candle.getKey();
+                        pnlList.add(pnlDto);
                         break;
                     }
                 }
 
-                entryTime = DateTimeUtil.calcEndTime(end, Interval.ONE_MINUTE.getMinute(), 100);
+                if (isPositionActive)
+                    entryTime = DateTimeUtil.calcEndTime(end, Interval.ONE_MINUTE.getMinute(), 100);
             }
-
-            totalBalance += pnl;
-            // TODO 손익 객체 생성후 list add
         }
 
-        slackMessageService.sendMessage("");
+        log.info("{} ~ {} 총 수익:{} | 승률:{}", DateTimeUtil.toDateTime(ceilBeginTime), DateTimeUtil.toDateTime(floorEndTime), totalBalance, (double) winCount/tradeCount);
+        for (var pnl : pnlList) {
+            log.info("pnl : {}", pnl);
+        }
+//        slackMessageService.sendMessage("");
+    }
+
+    private PnlDto calcPnl(double closePrice, BackTestBuyDto backTestBuyDto, double balance, int leverage, double orderBalanceRatio) {
+        double avgPrice = backTestBuyDto.getAvgPrice();
+        double limitPrice = backTestBuyDto.getLimitPrice();
+        double stopPrice = backTestBuyDto.getStopPrice();
+
+        Side side = backTestBuyDto.getLimitPrice() > avgPrice ? Side.BUY : Side.SELL;
+        double positionSize = (balance * orderBalanceRatio * leverage) / backTestBuyDto.getAvgPrice(); // 포지션 크기 계산
+
+        double priceDiff = 0;
+        double closePosition = 0;
+        if (side == Side.BUY) {
+            if (closePrice > limitPrice){
+                priceDiff = limitPrice - avgPrice;
+                closePosition = limitPrice;
+            }
+            if (closePrice < stopPrice) {
+                priceDiff = stopPrice - avgPrice;
+                closePosition = stopPrice;
+            }
+        } else {
+            if (closePrice < limitPrice) {
+                priceDiff = avgPrice - limitPrice;
+                closePosition = limitPrice;
+            }
+            if (closePrice > stopPrice) {
+                priceDiff = avgPrice - stopPrice;
+                closePosition = stopPrice;
+            }
+        }
+
+        double pnl = priceDiff * positionSize; // 손익 계산
+        double pnlPercentage = (priceDiff / avgPrice) * 100 * leverage; // 손익률 계산
+
+        return PnlDto.builder()
+                .avgPrice(avgPrice)
+                .closePrice(closePosition)
+                .pnl(pnl)
+                .pnlPercentage(pnlPercentage)
+                .build();
     }
 
     private boolean shouldExitTrade(Side side, double closePrice, double limitPrice, double finalStopPrice) {

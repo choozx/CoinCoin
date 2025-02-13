@@ -102,24 +102,6 @@ public class Strategy {
         private double riskRewardRatio;
     }
 
-    @Getter
-    @Builder
-    public static class BackTestBuyDto {
-        private long entryTime;
-        private double avgPrice;
-        private double stopPrice;
-        private double limitPrice;
-
-        public boolean isPriceHit(double closePrice) {
-            return (stopPrice < limitPrice) ? (closePrice <= stopPrice || closePrice >= limitPrice) : (closePrice >= stopPrice || closePrice <= limitPrice);
-        }
-
-        public double calcPnl(double closePrice) {
-            // TODO 계산식 추가
-            return 0L;
-        }
-    }
-
     @Data
     @Builder
     @NoArgsConstructor

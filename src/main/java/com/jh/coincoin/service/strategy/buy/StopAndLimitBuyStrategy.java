@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jh.coincoin.entity.BuyStrategyEntity;
-import com.jh.coincoin.model.Binance.LeverageBracketReq;
 import com.jh.coincoin.model.Binance.CancelOpenOrderReq;
 import com.jh.coincoin.model.Binance.ModifyLeverageReq;
 import com.jh.coincoin.model.Binance.PositionInfoRes;
@@ -15,7 +14,7 @@ import com.jh.coincoin.model.Binance.AccountBalanceReq;
 import com.jh.coincoin.model.Binance.AccountBalanceRes;
 import com.jh.coincoin.model.Binance.NewOrderReq;
 import com.jh.coincoin.model.Candle;
-import com.jh.coincoin.model.Strategy.BackTestBuyDto;
+import com.jh.coincoin.model.BackTest.BackTestBuyDto;
 import com.jh.coincoin.model.Strategy.RiskRewardStrategy;
 import com.jh.coincoin.model.Strategy.PriceCalculatorDto;
 import com.jh.coincoin.model.Strategy.BuyParamDto;
@@ -194,13 +193,9 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
 
     @Override
     public BackTestBuyDto backTestBuy(BuyParamDto buyParamDto, Candle entryCandle) {
-//        double orderBalanceRatio = buyParamDto.getOrderBalanceRatio();
-//        double orderBalance = Math.max(buyParamDto.getLeverage() * (orderBalanceRatio * balance), GlobalConst.MIN_ORDER_AMOUNT);
         double entryPrice = entryCandle.getOpenPrice();
         Symbol symbol = buyParamDto.getSymbol();
         Side side = buyParamDto.getSide();
-
-//        double quantity = orderBalance / entryPrice;
 
         RiskRewardStrategy riskRewardStrategy;
         ObjectMapper objectMapper = new ObjectMapper();
@@ -234,7 +229,7 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
         double slPrice = calculator.calcPrice(slPriceDto);
 
         // TODO 추후 redis에서 marginRatio값 가져오기
-        double liquidationPrice = BinanceUtil.calcLiquidationPrice(side, entryPrice, buyParamDto.getLeverage(), 0d);   // TODO 청산가 계산
+        double liquidationPrice = BinanceUtil.calcLiquidationPrice(side, entryPrice, buyParamDto.getLeverage());   // TODO 청산가 계산
         double stopPrice = side == Side.BUY ? Math.max(slPrice, liquidationPrice): Math.min(slPrice, liquidationPrice);
         return BackTestBuyDto.builder()
                 .entryTime(entryCandle.getOpenTime())
