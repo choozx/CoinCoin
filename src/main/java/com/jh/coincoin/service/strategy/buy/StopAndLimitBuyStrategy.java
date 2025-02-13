@@ -235,13 +235,12 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
 
         // TODO 추후 redis에서 marginRatio값 가져오기
         double liquidationPrice = BinanceUtil.calcLiquidationPrice(side, entryPrice, buyParamDto.getLeverage(), 0d);   // TODO 청산가 계산
-
+        double stopPrice = side == Side.BUY ? Math.max(slPrice, liquidationPrice): Math.min(slPrice, liquidationPrice);
         return BackTestBuyDto.builder()
                 .entryTime(entryCandle.getOpenTime())
                 .avgPrice(entryPrice)
                 .limitPrice(tkPrice)
-                .stopPrice(slPrice)
-                .liquidationPrice(liquidationPrice)
+                .stopPrice(stopPrice)
                 .build();
     }
 

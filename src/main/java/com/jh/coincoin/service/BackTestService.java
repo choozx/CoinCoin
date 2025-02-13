@@ -105,7 +105,7 @@ public class BackTestService {
         buyThread.start();
 
         // 캔들 불러오기
-        double changeBalance = initialBalance;
+        double totalBalance = initialBalance;
         long lastPositionCloseTime = 0;
         while (buyThread.isAlive() || !positionDeque.isEmpty()) {
             if (positionDeque.isEmpty())
@@ -117,114 +117,29 @@ public class BackTestService {
                 continue;
 
             long entryTime = backTestBuyDto.getEntryTime();
-            while (true) {
+            double pnl = 0;
+            boolean isPositionActive = true;
+            while (isPositionActive) {
                 // 비교를 하려면 캔들은 1분봉으로 보는게 더 정확함.
                 TreeMap<Long, Candle> candleMap = candleService.getCandleMapByBeginToDB(symbol, Interval.ONE_MINUTE, entryTime, 100);
 
                 for (var candle : candleMap.entrySet()) {
-                    // TODO 캔들이 backTestBuyDto와 비교해서 손익절 계산
+                    // 캔들을 backTestBuyDto와 비교해서 손익절 계산
+                    double closePrice = candle.getValue().getClosePrice();
+                    if (backTestBuyDto.isPriceHit(closePrice)) {
+                        pnl = backTestBuyDto.calcPnl(closePrice);
+                        isPositionActive = false;
+                        lastPositionCloseTime = candle.getKey();
+                        break;
+                    }
                 }
 
                 entryTime = DateTimeUtil.calcEndTime(end, Interval.ONE_MINUTE.getMinute(), 100);
             }
-        }
 
-        // 지표 계산이 아직 진행중이고, hitList에 요소가 남아있을때까지
-//        long lastPositionCloseTime = 0;
-//        while (orderThread.isAlive() || !hitList.isEmpty()) {
-//            if (hitList.isEmpty())
-//                continue;
-//
-//            Pair<Long, Side> sidePair = hitList.poll();
-//            long signalTime = sidePair.getLeft();
-//            Side side = sidePair.getRight();
-//            if (lastPositionCloseTime > signalTime)
-//                continue;
-//
-//            long entryTime = DateTimeUtil.toEpochMilli(DateTimeUtil.toDateTime(signalTime).plusMinutes(interval.getMinute()));
-//            BuyParamDto buyParamDto = BuyParamDto.builder()
-//                    .symbol(tradeStrategyDto.getSymbol())
-//                    .side(side)
-//                    .interval(tradeStrategyDto.getInterval())
-//                    .leverage(buyStrategyDto.getLeverage())
-//                    .orderBalanceRatio(buyStrategyDto.getOrderBalanceRatio())
-//                    .build();
-//            BackTestBuyDto backTestBuyDto = buyStrategy.backTestBuy(buyParamDto, changeBalance, entryTime);
-//
-//            // 위에 리턴값으로 candle 돌려가면서 익절/손절 계산
-//            // 비교는 무조건 1분봉으로 해야겠다. N분봉이면 그 사이에 손익 둘다 찍어 버릴 수 있을것 같음
-//            TreeMap<Long, Candle> candleMap = candleService.getCandleMapByBeginToDB(symbol, Interval.ONE_MINUTE, signalTime, 100);
-//            boolean isActivePotion = true;
-//            double size = backTestBuyDto.getSize();
-//            double avgPrice = backTestBuyDto.getAvgPrice();
-//            double limitPrice = backTestBuyDto.getLimitPrice();
-//            double liquidationPrice = backTestBuyDto.getLiquidationPrice();
-//            double stopPrice = backTestBuyDto.getStopPrice();
-//            double finalStopPrice = side.equals(Side.BUY) ? Math.max(stopPrice, liquidationPrice) : Math.min(stopPrice, liquidationPrice);
-//            double pnl = 0;
-//
-//            while (isActivePotion) {
-//                for (Candle candle : candleMap.values()) {
-//                    if (shouldExitTrade(side, candle.getClosePrice(), limitPrice, finalStopPrice)) {
-//                        pnl = Math.abs(avgPrice - (side.equals(Side.BUY) ? (candle.getClosePrice() > limitPrice ? limitPrice : finalStopPrice) : (candle.getClosePrice() < limitPrice ? limitPrice : finalStopPrice))) * size;
-//
-//                        changeBalance += (candle.getClosePrice() > limitPrice) == side.equals(Side.BUY) ? pnl : -pnl;
-//                        isActivePotion = false;
-//                        lastPositionCloseTime = candle.getOpenTime();
-//                        break;
-//                    }
-//                }
-//
-//                // 조건을 충족하지 못하면 다음 캔들로
-//                signalTime = DateTimeUtil.toEpochMilli(DateTimeUtil.toDateTime(candleMap.lastKey()).plusMinutes(Interval.ONE_MINUTE.getMinute()));
-//                candleMap = candleService.getCandleMapByBeginToDB(symbol, Interval.ONE_MINUTE, signalTime, 100);
-//            }
-////            while (isActivePotion) {
-////                // 캔들 돌려보면서 익절/손절 체크
-////                for (var entrySet : candleMap.entrySet()) {
-////                    Candle candle = entrySet.getValue();
-////
-////                    if (side.equals(Side.BUY)) {
-////                        if (candle.getClosePrice() > limitPrice) { // 롱 익절
-////                            pnl = Math.abs(avgPrice - limitPrice) * size;
-////                            initialBalance += pnl;
-////                            isActivePotion = false;
-////                            lastPositionCloseTime = candle.getOpenTime();
-////                            break;
-////                        }
-////
-////                        if (candle.getClosePrice() < finalStopPrice) { // 롱 손절
-////                            pnl = Math.abs(avgPrice - finalStopPrice) * size;
-////                            initialBalance -= pnl;
-////                            isActivePotion = false;
-////                            lastPositionCloseTime = candle.getOpenTime();
-////                            break;
-////                        }
-////                    } else {
-////                        if (candle.getClosePrice() < limitPrice) { // 숏 익절
-////                            pnl = Math.abs(avgPrice - limitPrice) * size;
-////                            initialBalance += pnl;
-////                            isActivePotion = false;
-////                            lastPositionCloseTime = candle.getOpenTime();
-////                            break;
-////                        }
-////
-////                        if (candle.getClosePrice() > finalStopPrice) { // 숏 손절
-////                            pnl = Math.abs(avgPrice - finalStopPrice) * size;
-////                            initialBalance -= pnl;
-////                            isActivePotion = false;
-////                            lastPositionCloseTime = candle.getOpenTime();
-////                            break;
-////                        }
-////                    }
-////                }
-////
-////                // 조건 도달 못했으면 다음 캔들로
-////                entryTime = DateTimeUtil.toEpochMilli(DateTimeUtil.toDateTime(entryTime).plusMinutes(100));
-////                candleMap = candleService.getCandleMapByBeginAndCount(symbol, Interval.ONE_MINUTE, entryTime, 100);
-////            }
-////        }
-//        }
+            totalBalance += pnl;
+            // TODO 손익 객체 생성후 list add
+        }
 
         slackMessageService.sendMessage("");
     }

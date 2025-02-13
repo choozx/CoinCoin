@@ -109,7 +109,15 @@ public class Strategy {
         private double avgPrice;
         private double stopPrice;
         private double limitPrice;
-        private double liquidationPrice;
+
+        public boolean isPriceHit(double closePrice) {
+            return (stopPrice < limitPrice) ? (closePrice <= stopPrice || closePrice >= limitPrice) : (closePrice >= stopPrice || closePrice <= limitPrice);
+        }
+
+        public double calcPnl(double closePrice) {
+            // TODO 계산식 추가
+            return 0L;
+        }
     }
 
     @Data
