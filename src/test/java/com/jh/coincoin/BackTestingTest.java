@@ -57,10 +57,10 @@ public class BackTestingTest {
     public void 백테스트() {
         int strategyIdx = 1;
         long end = DateTimeUtil.getCurrentTimeMillis();
-        long begin = DateTimeUtil.toEpochMilli(DateTimeUtil.toDateTime(end).minusDays(2));
+        long begin = DateTimeUtil.toEpochMilli(DateTimeUtil.toDateTime(end).minusMonths(1));
         double initBalance = 1000;
 
-        backTestService.backTest(strategyIdx, end, begin, initBalance);
+        backTestService.backTest(strategyIdx, begin, end, initBalance);
     }
 
     private BackTest.PnlDto calcPnl(double closePrice, BackTestBuyDto backTestBuyDto, double balance, int leverage, double orderBalanceRatio) {

@@ -18,5 +18,5 @@ public class GlobalConst {
     public static final double MIN_ORDER_PRICE_GAP_PER = 0.001;
 
     public static final int MAX_STORAGE_INDICATOR_COUNT = 12000;
-    public static final long CHUNK_SIZE = 1000;
+    public static final int CHUNK_SIZE = 1000;
 }

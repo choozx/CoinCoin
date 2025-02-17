@@ -113,7 +113,9 @@ public class RSIIndicator extends Indicator {
             deque.poll();
         }
 
-        indicatorBatchRepository.bulkInsert(newIndicatorEntityList);
+        if (!newIndicatorEntityList.isEmpty())
+            indicatorBatchRepository.bulkInsert(newIndicatorEntityList);
+
         return rsiMap;
     }
 
