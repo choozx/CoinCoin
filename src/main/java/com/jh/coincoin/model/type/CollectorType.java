@@ -9,7 +9,7 @@ import lombok.Getter;
 public enum CollectorType {
 
     COLLECT_START("/symbol/collect-start"),
-    ;
+    COLLECT_PAST_CANDLE("/symbol/collect-past-start");
 
     private final String url;
     CollectorType(String url) {
