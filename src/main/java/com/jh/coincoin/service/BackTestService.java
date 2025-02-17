@@ -24,6 +24,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -61,32 +64,39 @@ public class BackTestService {
         OrderStrategyDto orderStrategyDto = tradeStrategyDto.getOrderStrategy();
         OrderStrategy orderStrategy = orderStrategyMap.get(orderStrategyDto.getType());
 
-        Deque<Pair<Long, Side>> hitList = new ArrayDeque<>();
-        Thread orderThread = new Thread(() -> {
+        BlockingQueue<Pair<Long, Side>> hitQueue = new LinkedBlockingQueue<>();
+        AtomicBoolean isOrderThreadAlive = new AtomicBoolean(true);
+        Thread.startVirtualThread(() -> {
+            log.info("order thread 실행중");
             long chunkCeilBeginTime = ceilBeginTime;
             long chunkFloorEndTime = floorEndTime;
 
             // 청크 단위로 조져
-            while (floorEndTime > chunkCeilBeginTime) {
-                log.info("order thread 실행중");
+            long period = interval.getMinute() * GlobalConst.CHUNK_SIZE;
+            while (chunkCeilBeginTime < floorEndTime) {
                 var chunkHitList = orderStrategy.getHitList(tradeStrategyDto.getSymbol(), interval, orderStrategyDto.getTargetValue(), chunkCeilBeginTime, chunkFloorEndTime);
-                hitList.addAll(chunkHitList);
-                chunkCeilBeginTime += interval.getMinute() * GlobalConst.CHUNK_SIZE;
-                chunkFloorEndTime = Math.min(chunkFloorEndTime + interval.getMinute() * GlobalConst.CHUNK_SIZE, floorEndTime);
+                hitQueue.addAll(chunkHitList);
+                chunkCeilBeginTime += period;
+                chunkFloorEndTime = Math.min(chunkFloorEndTime + period, floorEndTime);
             }
+
+            isOrderThreadAlive.set(false);
         });
-        orderThread.start();
 
         BuyStrategyDto buyStrategyDto = tradeStrategyDto.getBuyStrategy();
         BuyStrategy buyStrategy = buyStrategyMap.get(buyStrategyDto.getType());
-        Deque<BackTestBuyDto> positionDeque = new ArrayDeque<>();
-        Thread buyThread = new Thread(() -> {
-            while (orderThread.isAlive() || !hitList.isEmpty()) {
+        BlockingQueue<BackTestBuyDto> positionQueue = new LinkedBlockingQueue<>();
+        AtomicBoolean isBuyThreadAlive = new AtomicBoolean(true);
+        Thread.startVirtualThread(() -> {
+            while (isOrderThreadAlive.get() || !hitQueue.isEmpty()) {
                 log.info("buy thread 실행중");
-                if (hitList.isEmpty())
-                    continue;
 
-                Pair<Long, Side> sidePair = hitList.poll();
+                Pair<Long, Side> sidePair;
+                try {
+                    sidePair = hitQueue.take();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
                 long signalTime = sidePair.getLeft();
                 Side side = sidePair.getRight();
 
@@ -101,10 +111,11 @@ public class BackTestService {
                         .orderBalanceRatio(buyStrategyDto.getOrderBalanceRatio())
                         .build();
                 BackTestBuyDto backTestBuyDto = buyStrategy.backTestBuy(buyParamDto, entryCandle);
-                positionDeque.add(backTestBuyDto);
+                positionQueue.add(backTestBuyDto);
             }
+
+            isBuyThreadAlive.set(false);
         });
-        buyThread.start();
 
         // 캔들 불러오기
         double totalBalance = initialBalance;
@@ -112,11 +123,14 @@ public class BackTestService {
         int tradeCount = 0;
         long lastPositionCloseTime = 0;
         List<PnlDto> pnlList = new ArrayList<>();
-        while (buyThread.isAlive() || !positionDeque.isEmpty()) {
-            if (positionDeque.isEmpty())
-                continue;
+        while (isBuyThreadAlive.get()|| !positionQueue.isEmpty()) {
 
-            BackTestBuyDto backTestBuyDto = positionDeque.poll();
+            BackTestBuyDto backTestBuyDto;
+            try {
+                backTestBuyDto = positionQueue.take();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             // 포지션 종료보다 전에 진입조건은 무시한다.
             if (lastPositionCloseTime >= backTestBuyDto.getEntryTime())
                 continue;
@@ -153,7 +167,7 @@ public class BackTestService {
             }
         }
 
-        log.info("{} ~ {} 총 수익:{} | 승률:{}", DateTimeUtil.toDateTime(ceilBeginTime), DateTimeUtil.toDateTime(floorEndTime), totalBalance, (double) winCount/tradeCount);
+        log.info("{} ~ {} 총 수익:{} | 승률:{}", DateTimeUtil.toDateTime(ceilBeginTime), DateTimeUtil.toDateTime(floorEndTime), totalBalance, String.format("%.3f", (double) winCount/tradeCount));
         for (var pnl : pnlList) {
             log.info("pnl : {}", pnl);
         }
