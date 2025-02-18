@@ -26,8 +26,14 @@ public class CollectPastCandleCommand extends SlashCommandHandler {
 
     @Override
     public void doCommand(String triggerId, String parameter) {
-        Symbol symbol = Symbol.of(parameter);
+        String[] splitParam = parameter.split(" ");
+        String onOff = splitParam[0];
+        Symbol symbol = Symbol.of(splitParam[1]);
 
-        ccApiService.startCollectPastCandle(symbol);
+        if (onOff.equals("on")) {
+            ccApiService.startCollectPastCandle(symbol);
+        } else {
+            ccApiService.stopCollectPastCandle(symbol);
+        }
     }
 }

@@ -46,15 +46,29 @@ public class CandleCollectorAPIService {
         CollectSymbolReq req = new CollectSymbolReq(symbol.getKey());
 
         restClient.post()
-                .uri(baseUrl + CollectorType.COLLECT_PAST_CANDLE.getUrl())
+                .uri(baseUrl + CollectorType.COLLECT_PAST_CANDLE_START.getUrl())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(req)
                 .retrieve()
                 .onStatus(httpStatusCode -> httpStatusCode.value() == 1002, (request, response) -> {
-                    throw new ServerException(ErrorType.COMMON_FAIL, String.format("현재 캔들을 수집중 입니다. 잠시 후 다시 시도해주세요.")); // TODO : candle-collector 에서 현재 수집중인 심볼가져와야됨
+                    throw new ServerException(ErrorType.COMMON_FAIL, "현재 캔들을 수집중 입니다. 잠시 후 다시 시도해주세요."); // TODO : candle-collector 에서 현재 수집중인 심볼가져와야됨
                 })
                 .onStatus(HttpStatusCode::is4xxClientError, (request, response) -> {
                     throw new ServerException(ErrorType.COMMON_FAIL, String.format("%s 과거 캔들 수집 실패!", symbol.getKey()));
+                })
+                .toBodilessEntity();
+    }
+
+    public void stopCollectPastCandle(Symbol symbol) {
+        CollectSymbolReq req = new CollectSymbolReq(symbol.getKey());
+
+        restClient.post()
+                .uri(baseUrl + CollectorType.COLLECT_PAST_CANDLE_STOP.getUrl())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(req)
+                .retrieve()
+                .onStatus(httpStatusCode -> httpStatusCode.value() == 1003, (request, response) -> {
+                    throw new ServerException(ErrorType.COMMON_FAIL, "수집중인 캔들이 없습니다!");
                 })
                 .toBodilessEntity();
     }
