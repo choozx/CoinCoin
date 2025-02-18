@@ -194,6 +194,8 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
     @Override
     public BackTestBuyDto backTestBuy(BuyParamDto buyParamDto, Candle entryCandle) {
         double entryPrice = entryCandle.getOpenPrice();
+        long entryTime = entryCandle.getOpenTime();
+
         Symbol symbol = buyParamDto.getSymbol();
         Side side = buyParamDto.getSide();
 
@@ -215,7 +217,7 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
                 .entryPrice(entryPrice)
                 .riskRewardRatio(riskRewardStrategy.getLimit())
                 .build();
-        double tkPrice = calculator.calcPrice(tkPriceDto);
+        double tkPrice = calculator.calcPriceForBackTest(tkPriceDto, entryTime);
 
         // 손절가
         PriceCalculatorDto slPriceDto = PriceCalculatorDto.builder()
@@ -226,12 +228,13 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
                 .entryPrice(entryPrice)
                 .riskRewardRatio(riskRewardStrategy.getStop())
                 .build();
-        double slPrice = calculator.calcPrice(slPriceDto);
+        double slPrice = calculator.calcPriceForBackTest(slPriceDto, entryTime);
 
         // TODO 추후 redis에서 marginRatio값 가져오기
         double liquidationPrice = BinanceUtil.calcLiquidationPrice(side, entryPrice, buyParamDto.getLeverage());   // TODO 청산가 계산
         double stopPrice = side == Side.BUY ? Math.max(slPrice, liquidationPrice): Math.min(slPrice, liquidationPrice);
         return BackTestBuyDto.builder()
+                .side(side)
                 .entryTime(entryCandle.getOpenTime())
                 .avgPrice(entryPrice)
                 .limitPrice(tkPrice)

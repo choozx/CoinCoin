@@ -20,10 +20,16 @@ public class BackTest {
         private double limitPrice;
 
         public boolean isPriceHit(double closePrice) {
-            if (limitPrice > avgPrice) {
-                return closePrice > limitPrice || closePrice < stopPrice;
+            if (side == Side.BUY) {
+                if (closePrice > limitPrice){
+                    return true;
+                }
+                return closePrice < stopPrice;
             } else {
-                return closePrice < limitPrice || closePrice > stopPrice;
+                if (closePrice < limitPrice) {
+                    return true;
+                }
+                return closePrice > stopPrice;
             }
         }
 
@@ -57,9 +63,13 @@ public class BackTest {
     @Data
     @Builder
     public static class PnlDto {
+        private long openTime;
+        private long closeTime;
+        private Side side;
         private double avgPrice;
         private double closePrice;
         private double pnl;
-        private double pnlPercentage;
+        private double pnlPercentage;           // 포지션에 대비 수익률
+        private double pnlPercentageByBalance;  // 계좌 대비 수익률
     }
 }

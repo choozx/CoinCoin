@@ -147,7 +147,7 @@ public class BackTestService {
 
                     if (backTestBuyDto.isPriceHit(closePrice)) {
                         log.info("손익절 발생!");
-                        PnlDto pnlDto = calcPnl(closePrice, backTestBuyDto, backTestResultDto.getTotalBalance(), buyStrategyDto.getLeverage(), buyStrategyDto.getOrderBalanceRatio());
+                        PnlDto pnlDto = calcPnl(candle.getValue(), backTestBuyDto, backTestResultDto.getTotalBalance(), buyStrategyDto.getLeverage(), buyStrategyDto.getOrderBalanceRatio());
                         pnlList.add(pnlDto);
 
                         double pnl = pnlDto.getPnl();
@@ -173,44 +173,52 @@ public class BackTestService {
 //        slackMessageService.sendMessage("");
     }
 
-    private PnlDto calcPnl(double closePrice, BackTestBuyDto backTestBuyDto, double balance, int leverage, double orderBalanceRatio) {
+    private PnlDto calcPnl(Candle candle, BackTestBuyDto backTestBuyDto, double balance, int leverage, double orderBalanceRatio) {
+        double closePrice = candle.getClosePrice();
+
         double avgPrice = backTestBuyDto.getAvgPrice();
         double limitPrice = backTestBuyDto.getLimitPrice();
         double stopPrice = backTestBuyDto.getStopPrice();
+        double entryBalance = balance * orderBalanceRatio;
 
-        Side side = backTestBuyDto.getLimitPrice() > avgPrice ? Side.BUY : Side.SELL;
-        double positionSize = (balance * orderBalanceRatio * leverage) / backTestBuyDto.getAvgPrice(); // 포지션 크기 계산
+        Side side = backTestBuyDto.getSide();
+        double positionSize = (entryBalance * leverage) / avgPrice; // 포지션 크기 계산
 
         double priceDiff = 0;
-        double closePosition = 0;
+        double closePositionPrice = 0;
         if (side == Side.BUY) {
             if (closePrice > limitPrice){
                 priceDiff = limitPrice - avgPrice;
-                closePosition = limitPrice;
+                closePositionPrice = limitPrice;
             }
             if (closePrice < stopPrice) {
                 priceDiff = stopPrice - avgPrice;
-                closePosition = stopPrice;
+                closePositionPrice = stopPrice;
             }
         } else {
             if (closePrice < limitPrice) {
                 priceDiff = avgPrice - limitPrice;
-                closePosition = limitPrice;
+                closePositionPrice = limitPrice;
             }
             if (closePrice > stopPrice) {
                 priceDiff = avgPrice - stopPrice;
-                closePosition = stopPrice;
+                closePositionPrice = stopPrice;
             }
         }
 
         double pnl = priceDiff * positionSize; // 손익 계산
-        double pnlPercentage = (priceDiff / avgPrice) * 100 * leverage; // 손익률 계산
+        double pnlPercentage = (pnl / entryBalance) * 100; // 손익률 계산
+        double pnlByBalance = (pnl / balance) * 100;
 
         return PnlDto.builder()
+                .openTime(backTestBuyDto.getEntryTime())
+                .closeTime(candle.getOpenTime())
+                .side(side)
                 .avgPrice(avgPrice)
-                .closePrice(closePosition)
+                .closePrice(closePositionPrice)
                 .pnl(pnl)
                 .pnlPercentage(pnlPercentage)
+                .pnlPercentageByBalance(pnlByBalance)
                 .build();
     }
 }

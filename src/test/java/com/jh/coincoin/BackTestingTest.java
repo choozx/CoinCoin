@@ -30,7 +30,7 @@ public class BackTestingTest {
     public void 손익계산() {
         double candlePrice = 975;
         double balance = 1000;
-        int leverage = 5;
+        int leverage = 10;
         double orderRatio = 0.1;
         BackTestBuyDto dto = BackTestBuyDto.builder()
                 .entryTime(1000000)
@@ -67,10 +67,12 @@ public class BackTestingTest {
         double avgPrice = backTestBuyDto.getAvgPrice();
         double limitPrice = backTestBuyDto.getLimitPrice();
         double stopPrice = backTestBuyDto.getStopPrice();
+        double entryBalance = balance * orderBalanceRatio;
 
         Side side = backTestBuyDto.getLimitPrice() > avgPrice ? Side.BUY : Side.SELL;
-        double positionSize = (balance * orderBalanceRatio * leverage) / backTestBuyDto.getAvgPrice(); // 포지션 크기 계산
+        double positionSize = (balance * orderBalanceRatio * leverage) / avgPrice; // 포지션 크기 계산
 
+        log.info("수량:{}", positionSize);
         double priceDiff = 0;
         double closePosition = 0;
         if (side == Side.BUY) {
@@ -94,13 +96,15 @@ public class BackTestingTest {
         }
 
         double pnl = priceDiff * positionSize; // 손익 계산
-        double pnlPercentage = (priceDiff / avgPrice) * 100 * leverage; // 손익률 계산
+        double pnlPercentage = (pnl / entryBalance) * 100; // 손익률 계산
+        double pnlByBalance = (pnl / balance) * 100;
 
         return BackTest.PnlDto.builder()
                 .avgPrice(avgPrice)
                 .closePrice(closePosition)
                 .pnl(pnl)
                 .pnlPercentage(pnlPercentage)
+                .pnlPercentageByBalance(pnlByBalance)
                 .build();
     }
 }
