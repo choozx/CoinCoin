@@ -29,6 +29,31 @@ public class BackTest {
 
     }
 
+    @Getter
+    public static class BackTestResultDto {
+        private double totalBalance;
+        private int tradeCount;
+        private int winCount;
+
+        public BackTestResultDto(double initialBalance) {
+            this.totalBalance = initialBalance;
+            this.tradeCount = 0;
+            this.winCount = 0;
+        }
+
+        public void mergeResult(double pnl) {
+            totalBalance += pnl;
+            tradeCount++;
+
+            if (pnl > 0)
+                winCount++;
+        }
+
+        public double getWinRate() {
+            return (double) winCount / tradeCount * 100;
+        }
+    }
+
     @Data
     @Builder
     public static class PnlDto {

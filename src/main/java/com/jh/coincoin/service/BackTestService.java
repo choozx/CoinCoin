@@ -1,5 +1,6 @@
 package com.jh.coincoin.service;
 
+import com.jh.coincoin.model.BackTest.BackTestResultDto;
 import com.jh.coincoin.model.BackTest.PnlDto;
 import com.jh.coincoin.model.Candle;
 import com.jh.coincoin.model.BackTest.BackTestBuyDto;
@@ -118,12 +119,10 @@ public class BackTestService {
         });
 
         // 캔들 불러오기
-        double totalBalance = initialBalance;
-        int winCount = 0;
-        int tradeCount = 0;
+        BackTestResultDto backTestResultDto = new BackTestResultDto(initialBalance);
         long lastPositionCloseTime = 0;
         List<PnlDto> pnlList = new ArrayList<>();
-        while (isBuyThreadAlive.get()|| !positionQueue.isEmpty()) {
+        while (isBuyThreadAlive.get() || !positionQueue.isEmpty()) {
             BackTestBuyDto backTestBuyDto = positionQueue.poll();
             if (backTestBuyDto == null)
                 continue;
@@ -135,8 +134,12 @@ public class BackTestService {
             long entryTime = backTestBuyDto.getEntryTime();
             boolean isPositionActive = true;
             while (isPositionActive) {
+                if (entryTime > end)    // 진입시간이 캔들 끝에 도달했는지 체크
+                    break;
+
                 // 비교를 하려면 캔들은 1분봉으로 보는게 더 정확함.
-                TreeMap<Long, Candle> candleMap = candleService.getCandleMapByBeginToDB(symbol, Interval.ONE_MINUTE, entryTime, 100);
+                TreeMap<Long, Candle> candleMap = candleService.getCandleMapByBeginToDB(symbol, Interval.ONE_MINUTE, entryTime, GlobalConst.CHUNK_SIZE);
+
                 log.info("{}~{} 사이즈:{}", candleMap.firstKey(), candleMap.lastKey(), candleMap.size());
                 for (var candle : candleMap.entrySet()) {
                     // 캔들을 backTestBuyDto와 비교해서 손익절 계산
@@ -144,28 +147,25 @@ public class BackTestService {
 
                     if (backTestBuyDto.isPriceHit(closePrice)) {
                         log.info("손익절 발생!");
-                        PnlDto pnlDto = calcPnl(closePrice, backTestBuyDto, totalBalance, buyStrategyDto.getLeverage(), buyStrategyDto.getOrderBalanceRatio());
+                        PnlDto pnlDto = calcPnl(closePrice, backTestBuyDto, backTestResultDto.getTotalBalance(), buyStrategyDto.getLeverage(), buyStrategyDto.getOrderBalanceRatio());
+                        pnlList.add(pnlDto);
 
                         double pnl = pnlDto.getPnl();
-                        if (pnl >= 0)
-                            winCount++;
+                        backTestResultDto.mergeResult(pnl);
 
-                        tradeCount++;
-                        totalBalance += pnl;
                         isPositionActive = false;
                         lastPositionCloseTime = candle.getKey();
-                        pnlList.add(pnlDto);
                         break;
                     }
                 }
 
                 if (isPositionActive)
-                    entryTime = DateTimeUtil.calcEndTime(end, Interval.ONE_MINUTE.getMinute(), 100);
+                    entryTime = DateTimeUtil.calcEndTime(entryTime, Interval.ONE_MINUTE.getMinute(), GlobalConst.CHUNK_SIZE);
             }
         }
 
-        if (tradeCount != 0)
-            log.info("{} ~ {} 총 수익:{} | 승률:{}", DateTimeUtil.toDateTime(ceilBeginTime), DateTimeUtil.toDateTime(floorEndTime), totalBalance, String.format("%.3f", (double) winCount/tradeCount));
+        if (backTestResultDto.getTradeCount() > 0)
+            log.info("{} ~ {} 총 수익:{} | 승률:{}", DateTimeUtil.toDateTime(ceilBeginTime), DateTimeUtil.toDateTime(floorEndTime), backTestResultDto.getTotalBalance(), String.format("%.3f", backTestResultDto.getWinRate()));
 
         for (var pnl : pnlList) {
             log.info("pnl : {}", pnl);
@@ -212,13 +212,5 @@ public class BackTestService {
                 .pnl(pnl)
                 .pnlPercentage(pnlPercentage)
                 .build();
-    }
-
-    private boolean shouldExitTrade(Side side, double closePrice, double limitPrice, double finalStopPrice) {
-        if (side.equals(Side.BUY)) {
-            return closePrice > limitPrice || closePrice < finalStopPrice;
-        } else {
-            return closePrice < limitPrice || closePrice > finalStopPrice;
-        }
     }
 }
