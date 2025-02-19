@@ -16,7 +16,6 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.time.temporal.TemporalUnit;
 import java.time.temporal.WeekFields;
@@ -28,7 +27,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by dale on 2024-09-12.
@@ -414,26 +412,26 @@ public final class DateTimeUtil {
     /**
      * 현 시점 기준 월요일 날짜를 요청된 DateTimeFormatter 포맷 형식의 정수 타입으로 리턴
      */
-    public static int getWeekId(long now, DateTimeFormatter formatter) {
-        long epochDay = TimeUnit.MILLISECONDS.toDays(now);
-        LocalDate today = LocalDate.ofEpochDay(epochDay);
-        LocalDate lastMonday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-        return Integer.parseInt(lastMonday.format(formatter));
-    }
+//    public static int getWeekId(long now, DateTimeFormatter formatter) {
+//        long epochDay = TimeUnit.MILLISECONDS.toDays(now);
+//        LocalDate today = LocalDate.ofEpochDay(epochDay);
+//        LocalDate lastMonday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+//        return Integer.parseInt(lastMonday.format(formatter));
+//    }
 
     /**
      * 현 시점 기준 월요일 날짜를 yyMMdd 정수 타입으로 리턴
      */
-    public static int getWeekId(long time) {
-        long epochDay = TimeUnit.MILLISECONDS.toDays(time);
-        LocalDate today = LocalDate.ofEpochDay(epochDay);
-        LocalDate lastMonday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-        int weekId =
-                (lastMonday.getYear() - 2000) * 10000
-                        + lastMonday.getMonthValue() * 100
-                        + lastMonday.getDayOfMonth();
-        return weekId;
-    }
+//    public static int getWeekId(long time) {
+//        long epochDay = TimeUnit.MILLISECONDS.toDays(time);
+//        LocalDate today = LocalDate.ofEpochDay(epochDay);
+//        LocalDate lastMonday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+//        int weekId =
+//                (lastMonday.getYear() - 2000) * 10000
+//                        + lastMonday.getMonthValue() * 100
+//                        + lastMonday.getDayOfMonth();
+//        return weekId;
+//    }
 
 
     /**
@@ -598,31 +596,31 @@ public final class DateTimeUtil {
      * 만약 yyMMdd 형식에 맞지 않는 dateId가 주어져서 날짜계산이 불가능한 경우,
      * 그냥 end-start의 단순 연산을 시행한다
      */
-    public static int getDaysBetween(int startDateId, int endDateId) {
-        try {
-            LocalDate startDate = convertDateIdToLocalDate(startDateId);
-            LocalDate endDate = convertDateIdToLocalDate(endDateId);
-            return (int) ChronoUnit.DAYS.between(startDate, endDate); // long으로 차이가 날만큼의 days는 없음..
-        } catch (Exception e) {
-            return endDateId - startDateId;
-        }
-    }
-
-    public static int getDaysBetween(LocalDate startDate, LocalDate endDate) {
-        return (int) ChronoUnit.DAYS.between(startDate, endDate);
-    }
-
-    public static int getHoursBetween(LocalDateTime startDateTime, LocalDateTime endDateTime) {
-        return (int) ChronoUnit.HOURS.between(startDateTime, endDateTime);
-    }
-
-    public static int getMinutesBetween(LocalDateTime startDateTime, LocalDateTime endDateTime) {
-        return (int) ChronoUnit.MINUTES.between(startDateTime, endDateTime);
-    }
-
-    public static int getSecondBetween(LocalDateTime startDateTime, LocalDateTime endDateTime) {
-        return (int) ChronoUnit.SECONDS.between(startDateTime, endDateTime);
-    }
+//    public static int getDaysBetween(int startDateId, int endDateId) {
+//        try {
+//            LocalDate startDate = convertDateIdToLocalDate(startDateId);
+//            LocalDate endDate = convertDateIdToLocalDate(endDateId);
+//            return (int) ChronoUnit.DAYS.between(startDate, endDate); // long으로 차이가 날만큼의 days는 없음..
+//        } catch (Exception e) {
+//            return endDateId - startDateId;
+//        }
+//    }
+//
+//    public static int getDaysBetween(LocalDate startDate, LocalDate endDate) {
+//        return (int) ChronoUnit.DAYS.between(startDate, endDate);
+//    }
+//
+//    public static int getHoursBetween(LocalDateTime startDateTime, LocalDateTime endDateTime) {
+//        return (int) ChronoUnit.HOURS.between(startDateTime, endDateTime);
+//    }
+//
+//    public static int getMinutesBetween(LocalDateTime startDateTime, LocalDateTime endDateTime) {
+//        return (int) ChronoUnit.MINUTES.between(startDateTime, endDateTime);
+//    }
+//
+//    public static int getSecondBetween(LocalDateTime startDateTime, LocalDateTime endDateTime) {
+//        return (int) ChronoUnit.SECONDS.between(startDateTime, endDateTime);
+//    }
     /**
      * yyMMdd 형식의 dateId(int)를 LocalDate 값으로 변환한다.
      *
@@ -775,12 +773,12 @@ public final class DateTimeUtil {
     /**
      * t1과 t2 사이의 날짜수를 계산한다. 동일 날짜의 경우 0이 리턴된다.
      */
-    public static int getDaysBetween(long t1, long t2) {
-        LocalDate t1DateZeroHour = DateTimeUtil.toDateTime(t1).toLocalDate();
-        LocalDate t2DateZeroHour = DateTimeUtil.toDateTime(t2).toLocalDate();
-        int day = (int) ChronoUnit.DAYS.between(t1DateZeroHour, t2DateZeroHour);
-        return day;
-    }
+//    public static int getDaysBetween(long t1, long t2) {
+//        LocalDate t1DateZeroHour = DateTimeUtil.toDateTime(t1).toLocalDate();
+//        LocalDate t2DateZeroHour = DateTimeUtil.toDateTime(t2).toLocalDate();
+//        int day = (int) ChronoUnit.DAYS.between(t1DateZeroHour, t2DateZeroHour);
+//        return day;
+//    }
 
     /**
      * @param currentDateTime   현 일시
@@ -840,6 +838,17 @@ public final class DateTimeUtil {
 
     public static long calcEndTime(long begin, int interval, int count) {
         return DateTimeUtil.toEpochMilli(toDateTime(begin).plusMinutes(((long) interval * count) + interval));
+    }
+
+    public static long convertDateStringToEpoch(String dateString, DateTimeFormatter formatter) {
+        LocalDate localDate = LocalDate.parse(dateString, formatter);
+        LocalDateTime localDateTime = localDate.atStartOfDay();
+        return DateTimeUtil.toEpochMilli(localDateTime);
+    }
+
+    public static LocalDateTime convertDateStringToDateTime(String dateString, DateTimeFormatter formatter) {
+        LocalDate localDate = LocalDate.parse(dateString, formatter);
+        return localDate.atStartOfDay();
     }
 
     /**

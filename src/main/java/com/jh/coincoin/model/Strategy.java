@@ -37,7 +37,7 @@ public class Strategy {
         }
 
         public String toDescription() {
-            return symbol + " | " + interval + " | " + orderStrategy.type.getDescription() + " | " + orderStrategy.toDescription() + " | " + buyStrategy.getType().getDescription() + " | " + buyStrategy.toDescription();
+            return symbol + "|" + interval.getName() + "|X" + buyStrategy.getLeverage() + "|" + orderStrategy.type.getDescription() + "|" + buyStrategy.getType().getDescription();
         }
     }
 

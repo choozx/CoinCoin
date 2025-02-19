@@ -6,6 +6,7 @@ public class SlackConst {
     public static final String HEADER = "header";
     public static final String TYPE = "type";
     public static final String SELECTED_OPTION = "selected_option";
+    public static final String SELECTED_DATE = "selected_date";
     public static final String VALUE = "value";
     public static final String COMMAND = "command";
     public static final String TRIGGER_ID = "trigger_id";
@@ -27,8 +28,6 @@ public class SlackConst {
 
     public static final String INTERVAL = "interval";
     public static final String SELECT_INTERVAL = "select_interval";
-
-    public static final String PERIOD = "period";
     public static final String SELECT_PERIOD = "select_period";
 
     public static final String TRADE_STRATEGY = "trade_strategy";
@@ -57,4 +56,13 @@ public class SlackConst {
 
     public static final String OVER_SELL = "over_sell";
     public static final String SELECT_OVER_SELL = "select_over_sell";
+
+    public static final String BEGIN = "begin";
+    public static final String SELECT_BEGIN = "select_begin";
+
+    public static final String END = "end";
+    public static final String SELECT_END = "select_end";
+
+    public static final String INIT_BALANCE = "init_balance";
+    public static final String SELECT_INIT_BALANCE = "select_init_balance";
 }

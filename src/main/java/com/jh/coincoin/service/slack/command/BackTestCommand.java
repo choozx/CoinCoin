@@ -7,10 +7,14 @@ import com.jh.coincoin.model.type.SlackType.SlashCommand;
 import com.jh.coincoin.service.SlackMessageService;
 import com.jh.coincoin.service.slack.SlashCommandHandler;
 import com.jh.coincoin.service.strategy.StrategyService;
+import com.slack.api.model.block.ActionsBlock;
 import com.slack.api.model.block.InputBlock;
 import com.slack.api.model.block.LayoutBlock;
+import com.slack.api.model.block.composition.ConfirmationDialogObject;
 import com.slack.api.model.block.composition.OptionObject;
 import com.slack.api.model.block.composition.PlainTextObject;
+import com.slack.api.model.block.element.BlockElement;
+import com.slack.api.model.block.element.DatePickerElement;
 import com.slack.api.model.block.element.DatetimePickerElement;
 import com.slack.api.model.block.element.NumberInputElement;
 import com.slack.api.model.block.element.StaticSelectElement;
@@ -49,32 +53,39 @@ public class BackTestCommand extends SlashCommandHandler {
     private View createBackTestView() {
         var tradeStrategyList = strategyService.getAllTradeStrategy();
 
-        List<OptionObject> buyStrategyOptionList = new ArrayList<>();
+        List<OptionObject> tradeStrategyOptionList = new ArrayList<>();
         for (var tradeStrategy : tradeStrategyList) {
             OptionObject optionObject = OptionObject.builder()
                     .text(PlainTextObject.builder().text(tradeStrategy.toDescription()).build())
                     .value(String.valueOf(tradeStrategy.getIdx()))
                     .build();
-            buyStrategyOptionList.add(optionObject);
+            tradeStrategyOptionList.add(optionObject);
         }
 
-        InputBlock periodBlock = InputBlock.builder()
-                .blockId(SlackConst.PERIOD)
-                .label(PlainTextObject.builder().text("백테스트 기간 설정").build())
-                .element(DatetimePickerElement.builder()
-                        .actionId(SlackConst.SELECT_PERIOD)
+        InputBlock beginPeriodBlock = InputBlock.builder()
+                .blockId(SlackConst.BEGIN)
+                .label(PlainTextObject.builder().text("백테스트 시작 시간").build())
+                .element(DatePickerElement.builder()
+                        .actionId(SlackConst.SELECT_BEGIN)
+                        .build())
+                .build();
+
+        InputBlock endPeriodBlock = InputBlock.builder()
+                .blockId(SlackConst.END)
+                .label(PlainTextObject.builder().text("백테스트 종료 시간").build())
+                .element(DatePickerElement.builder()
+                        .actionId(SlackConst.SELECT_END)
                         .build())
                 .build();
 
         InputBlock balanceBlock = InputBlock.builder()
-                .blockId(SlackConst.LEVERAGE)
+                .blockId(SlackConst.INIT_BALANCE)
                 .label(PlainTextObject.builder().text("초기 시드 설정").build())
                 .element(NumberInputElement.builder()
-                        .actionId(SlackConst.SELECT_LEVERAGE)
+                        .actionId(SlackConst.SELECT_INIT_BALANCE)
                         .placeholder(PlainTextObject.builder().text("시드를 설정하세요").build())
                         .minValue(String.valueOf(GlobalConst.MIN_BACK_TEST_BALANCE))
                         .maxValue(String.valueOf(GlobalConst.MAX_BACK_TEST_BALANCE))
-                        .decimalAllowed(false)
                         .build())
                 .build();
 
@@ -84,12 +95,13 @@ public class BackTestCommand extends SlashCommandHandler {
                 .element(StaticSelectElement.builder()
                         .actionId(SlackConst.SELECT_TRADE_STRATEGY)
                         .placeholder(PlainTextObject.builder().text("매매 전략을 선택하세요").build())
-                        .options(buyStrategyOptionList)
+                        .options(tradeStrategyOptionList)
                         .build())
                 .build();
 
         List<LayoutBlock> layoutBlockList = new ArrayList<>();
-        layoutBlockList.add(periodBlock);
+        layoutBlockList.add(beginPeriodBlock);
+        layoutBlockList.add(endPeriodBlock);
         layoutBlockList.add(balanceBlock);
         layoutBlockList.add(tradeStrategyBlock);
 

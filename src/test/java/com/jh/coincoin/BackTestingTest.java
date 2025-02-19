@@ -13,6 +13,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestConstructor;
 
+import java.time.LocalDateTime;
+
 /**
  * Created by dale on 2024-09-07.
  */
@@ -106,5 +108,15 @@ public class BackTestingTest {
                 .pnlPercentage(pnlPercentage)
                 .pnlPercentageByBalance(pnlByBalance)
                 .build();
+    }
+
+    @Test
+    public void 시간_변환_테스트() {
+        String dateString = "2025-01-22";
+        long time = DateTimeUtil.convertDateStringToEpoch(dateString, DateTimeUtil.YYYY_MM_DD_FMT);
+
+        LocalDateTime dateTime = DateTimeUtil.toDateTime(time);
+
+        log.info("{} == {}", time, dateTime);
     }
 }
