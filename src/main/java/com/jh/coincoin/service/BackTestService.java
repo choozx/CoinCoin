@@ -18,6 +18,7 @@ import com.jh.coincoin.service.strategy.StrategyService;
 import com.jh.coincoin.service.strategy.buy.BuyStrategy;
 import com.jh.coincoin.service.strategy.order.OrderStrategy;
 import com.jh.coincoin.util.DateTimeUtil;
+import com.slack.api.model.block.ContextBlock;
 import com.slack.api.model.block.HeaderBlock;
 import com.slack.api.model.block.LayoutBlock;
 import com.slack.api.model.block.SectionBlock;
@@ -201,7 +202,7 @@ public class BackTestService {
         double priceDiff = 0;
         double closePositionPrice = 0;
         if (side == Side.BUY) {
-            if (closePrice > limitPrice){
+            if (closePrice > limitPrice) {
                 priceDiff = limitPrice - avgPrice;
                 closePositionPrice = limitPrice;
             }
@@ -237,10 +238,6 @@ public class BackTestService {
     }
 
     private List<LayoutBlock> makeMessageBlock(long begin, long end, BackTestResultDto backTestResultDto) {
-        HeaderBlock headerBlock = HeaderBlock.builder()
-                .text(PlainTextObject.builder().text("백테스트 결과").build())
-                .build();
-
         List<TextObject> summaryBlockList = new ArrayList<>();
         var periodText = MarkdownTextObject.builder().text(String.format("*테스트 기간:%s ~ %s*", DateTimeUtil.toLocalDate(begin), DateTimeUtil.toLocalDate(end))).build();
         var totalPnlText = MarkdownTextObject.builder().text(String.format("*총 수익*: %.5f", backTestResultDto.getTotalBalance())).build();
@@ -250,6 +247,14 @@ public class BackTestService {
         summaryBlockList.add(totalPnlText);
         summaryBlockList.add(winRateText);
 
+        HeaderBlock headerBlock = HeaderBlock.builder()
+                .text(PlainTextObject.builder().text("백테스트 결과").build())
+                .build();
+
+        ContextBlock contextBlock = ContextBlock.builder()
+                .elements(Collections.singletonList(MarkdownTextObject.builder().text("*실제 트레이딩과는 다소 차이가 있을 수 있습니다.*").build()))
+                .build();
+
         SectionBlock sectionBlock = SectionBlock.builder()
                 .text(MarkdownTextObject.builder().text("*요약*").build())
                 .fields(summaryBlockList)
@@ -257,6 +262,7 @@ public class BackTestService {
 
         List<LayoutBlock> layoutBlockList = new ArrayList<>();
         layoutBlockList.add(headerBlock);
+        layoutBlockList.add(contextBlock);
         layoutBlockList.add(sectionBlock);
 
         return layoutBlockList;
