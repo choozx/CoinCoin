@@ -45,6 +45,16 @@ public class StrategyService {
         return tradeStrategyDtoList;
     }
 
+    public List<TradeStrategyDto> getAllTradeStrategy() {
+        List<TradeStrategyEntity> tradeStrategyEntityList = tradeStrategyRepository.findAll();
+
+        List<TradeStrategyDto> tradeStrategyDtoList = new ArrayList<>();
+        for (TradeStrategyEntity tradeStrategyEntity : tradeStrategyEntityList) {
+            tradeStrategyDtoList.add(TradeStrategyDto.create(tradeStrategyEntity));
+        }
+        return tradeStrategyDtoList;
+    }
+
     public List<OrderStrategyDto> getOrderStrategyList() {
         List<OrderStrategyDto> orderStrategyDtoList = new ArrayList<>();
         orderStrategyRepository.findAll().forEach(orderStrategyEntity -> orderStrategyDtoList.add(OrderStrategyDto.create(orderStrategyEntity)));

@@ -28,6 +28,12 @@ public class SlackConst {
     public static final String INTERVAL = "interval";
     public static final String SELECT_INTERVAL = "select_interval";
 
+    public static final String PERIOD = "period";
+    public static final String SELECT_PERIOD = "select_period";
+
+    public static final String TRADE_STRATEGY = "trade_strategy";
+    public static final String SELECT_TRADE_STRATEGY = "select_trade_strategy";
+
     public static final String BUY_STRATEGY = "buy_strategy";
     public static final String SELECT_BUY_STRATEGY = "select_buy_strategy";
 
