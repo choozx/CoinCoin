@@ -18,6 +18,12 @@ import com.jh.coincoin.service.strategy.StrategyService;
 import com.jh.coincoin.service.strategy.buy.BuyStrategy;
 import com.jh.coincoin.service.strategy.order.OrderStrategy;
 import com.jh.coincoin.util.DateTimeUtil;
+import com.slack.api.model.block.HeaderBlock;
+import com.slack.api.model.block.LayoutBlock;
+import com.slack.api.model.block.SectionBlock;
+import com.slack.api.model.block.composition.MarkdownTextObject;
+import com.slack.api.model.block.composition.PlainTextObject;
+import com.slack.api.model.block.composition.TextObject;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -133,12 +139,14 @@ public class BackTestService {
 
             long entryTime = backTestBuyDto.getEntryTime();
             boolean isPositionActive = true;
+            TreeMap<Long, Candle> candleMap = new TreeMap<>();
             while (isPositionActive) {
                 if (entryTime > end)    // 진입시간이 캔들 끝에 도달했는지 체크
                     break;
 
                 // 비교를 하려면 캔들은 1분봉으로 보는게 더 정확함.
-                TreeMap<Long, Candle> candleMap = candleService.getCandleMapByBeginToDB(symbol, Interval.ONE_MINUTE, entryTime, GlobalConst.CHUNK_SIZE);
+                candleMap.clear();
+                candleMap.putAll(candleService.getCandleMapByBeginToDB(symbol, Interval.ONE_MINUTE, entryTime, GlobalConst.CHUNK_SIZE));
 
                 log.info("{}~{} 사이즈:{}", candleMap.firstKey(), candleMap.lastKey(), candleMap.size());
                 for (var candle : candleMap.entrySet()) {
@@ -159,6 +167,15 @@ public class BackTestService {
                     }
                 }
 
+                if (pnlList.size() >= GlobalConst.MAX_STORAGE_PNL_DTO_COUNT) {
+                    // 테스트 기간이 길어질수록, pnlList의 메모리 사용량이 늘어남.
+                    // pnl 상세는 redis에 저장하고 요약만 slack으로 보내기. 그래서 추후 상세보기 버튼을 만들어 redis에서 읽어오는 식으로 변경하자
+                    // ttl은 한시간정도?
+
+                    // TODO redis 저장
+                    pnlList.clear();
+                }
+
                 if (isPositionActive)
                     entryTime = DateTimeUtil.calcEndTime(entryTime, Interval.ONE_MINUTE.getMinute(), GlobalConst.CHUNK_SIZE);
             }
@@ -167,10 +184,7 @@ public class BackTestService {
         if (backTestResultDto.getTradeCount() > 0)
             log.info("{} ~ {} 총 수익:{} | 승률:{}", DateTimeUtil.toDateTime(ceilBeginTime), DateTimeUtil.toDateTime(floorEndTime), backTestResultDto.getTotalBalance(), String.format("%.3f", backTestResultDto.getWinRate()));
 
-        for (var pnl : pnlList) {
-            log.info("pnl : {}", pnl);
-        }
-//        slackMessageService.sendMessage("");
+        slackMessageService.sendMessage(makeMessageBlock(begin, end, backTestResultDto));
     }
 
     private PnlDto calcPnl(Candle candle, BackTestBuyDto backTestBuyDto, double balance, int leverage, double orderBalanceRatio) {
@@ -220,5 +234,31 @@ public class BackTestService {
                 .pnlPercentage(pnlPercentage)
                 .pnlPercentageByBalance(pnlByBalance)
                 .build();
+    }
+
+    private List<LayoutBlock> makeMessageBlock(long begin, long end, BackTestResultDto backTestResultDto) {
+        HeaderBlock headerBlock = HeaderBlock.builder()
+                .text(PlainTextObject.builder().text("백테스트 결과").build())
+                .build();
+
+        List<TextObject> summaryBlockList = new ArrayList<>();
+        var periodText = MarkdownTextObject.builder().text(String.format("*테스트 기간:%s ~ %s*", DateTimeUtil.toLocalDate(begin), DateTimeUtil.toLocalDate(end))).build();
+        var totalPnlText = MarkdownTextObject.builder().text(String.format("*총 수익*: %.5f", backTestResultDto.getTotalBalance())).build();
+        var winRateText = MarkdownTextObject.builder().text(String.format("*승률*: %.3f", backTestResultDto.getWinRate())).build();
+
+        summaryBlockList.add(periodText);
+        summaryBlockList.add(totalPnlText);
+        summaryBlockList.add(winRateText);
+
+        SectionBlock sectionBlock = SectionBlock.builder()
+                .text(MarkdownTextObject.builder().text("*요약*").build())
+                .fields(summaryBlockList)
+                .build();
+
+        List<LayoutBlock> layoutBlockList = new ArrayList<>();
+        layoutBlockList.add(headerBlock);
+        layoutBlockList.add(sectionBlock);
+
+        return layoutBlockList;
     }
 }

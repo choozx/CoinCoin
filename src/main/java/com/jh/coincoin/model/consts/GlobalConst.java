@@ -19,4 +19,5 @@ public class GlobalConst {
 
     public static final int MAX_STORAGE_INDICATOR_COUNT = 12000;
     public static final int CHUNK_SIZE = 1000;
+    public static final int MAX_STORAGE_PNL_DTO_COUNT = 100;
 }
