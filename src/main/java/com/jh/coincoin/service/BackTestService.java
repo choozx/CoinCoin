@@ -80,7 +80,6 @@ public class BackTestService {
         BlockingQueue<Pair<Long, Side>> hitQueue = new LinkedBlockingQueue<>();
         AtomicBoolean isOrderThreadAlive = new AtomicBoolean(true);
         Thread.startVirtualThread(() -> {
-            log.info("order thread 실행중");
             long chunkCeilBeginTime = ceilBeginTime;
             long chunkFloorEndTime = Math.min(DateTimeUtil.calcEndTime(chunkCeilBeginTime, interval.getMinute(), GlobalConst.CHUNK_SIZE), floorEndTime);
 
@@ -93,7 +92,6 @@ public class BackTestService {
                 chunkFloorEndTime = Math.min(DateTimeUtil.calcEndTime(chunkFloorEndTime, interval.getMinute(), GlobalConst.CHUNK_SIZE), floorEndTime);
             }
 
-            log.info("진입 조건 체크 끝!");
             isOrderThreadAlive.set(false);
         });
 
@@ -102,14 +100,12 @@ public class BackTestService {
         BlockingQueue<BackTestBuyDto> positionQueue = new LinkedBlockingQueue<>();
         AtomicBoolean isBuyThreadAlive = new AtomicBoolean(true);
         Thread.startVirtualThread(() -> {
-            log.info("buy thread 실행중");
             while (isOrderThreadAlive.get() || !hitQueue.isEmpty()) {
                 Pair<Long, Side> sidePair = hitQueue.poll();
                 if (sidePair == null)
                     continue;
 
                 long signalTime = sidePair.getLeft();
-                log.info("주문! {}", DateTimeUtil.toDateTime(signalTime));
                 Side side = sidePair.getRight();
 
                 long entryTime = DateTimeUtil.toEpochMilli(DateTimeUtil.toDateTime(signalTime).plusMinutes(interval.getMinute()));
@@ -145,21 +141,21 @@ public class BackTestService {
             long entryTime = backTestBuyDto.getEntryTime();
             boolean isPositionActive = true;
             TreeMap<Long, Candle> candleMap = new TreeMap<>();
+            long compareBeginTime = DateTimeUtil.toEpochMilli(DateTimeUtil.toDateTime(entryTime).plusMinutes(1));
             while (isPositionActive) {
-                if (entryTime > end)    // 진입시간이 캔들 끝에 도달했는지 체크
+                if (compareBeginTime > end)    // 진입시간이 캔들 끝에 도달했는지 체크
                     break;
 
                 // 비교를 하려면 캔들은 1분봉으로 보는게 더 정확함.
                 candleMap.clear();
-                candleMap.putAll(candleService.getCandleMapByBeginToDB(symbol, Interval.ONE_MINUTE, entryTime, GlobalConst.CHUNK_SIZE));
+                candleMap.putAll(candleService.getCandleMapByBeginToDB(symbol, Interval.ONE_MINUTE, compareBeginTime, GlobalConst.CHUNK_SIZE));
 
-                log.info("{}~{} 사이즈:{}", candleMap.firstKey(), candleMap.lastKey(), candleMap.size());
+                log.info("{}~{} 사이즈:{}", DateTimeUtil.toDateTime(candleMap.firstKey()), DateTimeUtil.toDateTime(candleMap.lastKey()), candleMap.size());
                 for (var candle : candleMap.entrySet()) {
                     // 캔들을 backTestBuyDto와 비교해서 손익절 계산
                     double closePrice = candle.getValue().getClosePrice();
 
                     if (backTestBuyDto.isPriceHit(closePrice)) {
-                        log.info("손익절 발생!");
                         PnlDto pnlDto = calcPnl(candle.getValue(), backTestBuyDto, backTestResultDto.getTotalBalance(), buyStrategyDto.getLeverage(), buyStrategyDto.getOrderBalanceRatio());
 
                         double pnl = pnlDto.getPnl();
@@ -172,7 +168,7 @@ public class BackTestService {
                 }
 
                 if (isPositionActive)
-                    entryTime = DateTimeUtil.calcEndTime(entryTime, Interval.ONE_MINUTE.getMinute(), GlobalConst.CHUNK_SIZE);
+                    compareBeginTime = DateTimeUtil.calcEndTime(compareBeginTime, Interval.ONE_MINUTE.getMinute(), GlobalConst.CHUNK_SIZE);
             }
         }
 

@@ -2,6 +2,8 @@ package com.jh.coincoin;
 
 import com.jh.coincoin.model.BackTest;
 import com.jh.coincoin.model.BackTest.BackTestBuyDto;
+import com.jh.coincoin.model.consts.GlobalConst;
+import com.jh.coincoin.model.type.BinanceType;
 import com.jh.coincoin.model.type.BinanceType.Side;
 import com.jh.coincoin.service.BackTestService;
 import com.jh.coincoin.util.BinanceUtil;
@@ -118,5 +120,16 @@ public class BackTestingTest {
         LocalDateTime dateTime = DateTimeUtil.toDateTime(time);
 
         log.info("{} == {}", time, dateTime);
+    }
+
+    @Test
+    public void 다음_캔들_시간() {
+        long entryTime = 1739630040000L;
+        log.info("{}", DateTimeUtil.toDateTime(entryTime));
+        long compareBeginTime = DateTimeUtil.toEpochMilli(DateTimeUtil.toDateTime(entryTime).plusMinutes(1));
+
+        log.info("{}", DateTimeUtil.toDateTime(compareBeginTime));
+        compareBeginTime = DateTimeUtil.calcEndTime(compareBeginTime, BinanceType.Interval.ONE_MINUTE.getMinute(), GlobalConst.CHUNK_SIZE);
+        log.info("{}", DateTimeUtil.toDateTime(compareBeginTime));
     }
 }

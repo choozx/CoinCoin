@@ -27,7 +27,8 @@ public class IndicatorBatchRepository {
         List<Object[]> batchArgs = indicatorEntityList.stream()
                 .map(indicator -> new Object[]{indicator.getType().getCode(), indicator.getOpenTime(), indicator.getSymbol().getCode(), indicator.getInterval(), indicator.getValue()}).toList();
 
+        var firstIndicatorEntity = indicatorEntityList.get(0);
         jdbcTemplate.batchUpdate(sql, batchArgs);
-        log.info("지표 업데이트 {} : {}", indicatorEntityList.get(0).getType(), indicatorEntityList.size());
+        log.info("지표 업데이트 {} : {} : {}", firstIndicatorEntity.getType(), firstIndicatorEntity.getInterval(), indicatorEntityList.size());
     }
 }
