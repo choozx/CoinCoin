@@ -65,4 +65,6 @@ public class SlackConst {
 
     public static final String INIT_BALANCE = "init_balance";
     public static final String SELECT_INIT_BALANCE = "select_init_balance";
+
+    public static final String BACK_TEST_DETAIL = "back_test_detail";
 }

@@ -9,6 +9,7 @@ import com.jh.coincoin.model.Strategy.OrderStrategyDto;
 import com.jh.coincoin.model.Strategy.BuyStrategyDto;
 import com.jh.coincoin.model.Strategy.TradeStrategyDto;
 import com.jh.coincoin.model.consts.GlobalConst;
+import com.jh.coincoin.model.consts.SlackConst;
 import com.jh.coincoin.model.type.BinanceType.Side;
 import com.jh.coincoin.model.type.BinanceType.Interval;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
@@ -18,13 +19,11 @@ import com.jh.coincoin.service.strategy.StrategyService;
 import com.jh.coincoin.service.strategy.buy.BuyStrategy;
 import com.jh.coincoin.service.strategy.order.OrderStrategy;
 import com.jh.coincoin.util.DateTimeUtil;
-import com.slack.api.model.block.ContextBlock;
-import com.slack.api.model.block.HeaderBlock;
-import com.slack.api.model.block.LayoutBlock;
-import com.slack.api.model.block.SectionBlock;
+import com.slack.api.model.block.*;
 import com.slack.api.model.block.composition.MarkdownTextObject;
 import com.slack.api.model.block.composition.PlainTextObject;
 import com.slack.api.model.block.composition.TextObject;
+import com.slack.api.model.block.element.ButtonElement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -260,10 +259,18 @@ public class BackTestService {
                 .fields(summaryBlockList)
                 .build();
 
+        ActionsBlock actionsBlock = ActionsBlock.builder()
+                .elements(Collections.singletonList(ButtonElement.builder()
+                        .actionId(SlackConst.BACK_TEST_DETAIL)
+                        .text(PlainTextObject.builder().text("거래 내역 보기").build())
+                        .build()))
+                .build();
+
         List<LayoutBlock> layoutBlockList = new ArrayList<>();
         layoutBlockList.add(headerBlock);
         layoutBlockList.add(contextBlock);
         layoutBlockList.add(sectionBlock);
+        layoutBlockList.add(actionsBlock);
 
         return layoutBlockList;
     }
