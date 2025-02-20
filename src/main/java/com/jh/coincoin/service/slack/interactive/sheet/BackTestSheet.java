@@ -31,8 +31,7 @@ public class BackTestSheet implements SheetHandler {
 
     @Override
     public void submitSheet(JsonNode backTestParameter) {
-        // TODO 채워넣기
-        log.info("{}", backTestParameter);
+        log.info("backTestParam:{}", backTestParameter);
 
         int tradeStrategyIdx = backTestParameter.path(SlackConst.TRADE_STRATEGY).path(SlackConst.SELECT_TRADE_STRATEGY).path(SlackConst.SELECTED_OPTION).path(SlackConst.VALUE).asInt();
         double initBalance = backTestParameter.path(SlackConst.INIT_BALANCE).path(SlackConst.SELECT_INIT_BALANCE).path(SlackConst.VALUE).asDouble();
@@ -43,6 +42,8 @@ public class BackTestSheet implements SheetHandler {
         long end = DateTimeUtil.toEpochMilli(DateTimeUtil.convertDateStringToDateTime(endString, DateTimeUtil.YYYY_MM_DD_FMT).plusDays(1).minusSeconds(1));
 
         log.info("{}|{}|{} - {}", tradeStrategyIdx, initBalance, DateTimeUtil.toDateTime(begin), DateTimeUtil.toDateTime(end));
-//        backTestService.backTest(tradeStrategyIdx, begin, end, initBalance);
+        Thread.startVirtualThread(() -> {
+            backTestService.backTest(tradeStrategyIdx, begin, end, initBalance);
+        });
     }
 }

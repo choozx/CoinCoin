@@ -1,36 +1,42 @@
 package com.jh.coincoin.service;
 
+import com.jh.coincoin.model.BackTest.BackTestBuyDto;
 import com.jh.coincoin.model.BackTest.BackTestResultDto;
 import com.jh.coincoin.model.BackTest.PnlDto;
 import com.jh.coincoin.model.Candle;
-import com.jh.coincoin.model.BackTest.BackTestBuyDto;
 import com.jh.coincoin.model.Strategy.BuyParamDto;
-import com.jh.coincoin.model.Strategy.OrderStrategyDto;
 import com.jh.coincoin.model.Strategy.BuyStrategyDto;
+import com.jh.coincoin.model.Strategy.OrderStrategyDto;
 import com.jh.coincoin.model.Strategy.TradeStrategyDto;
 import com.jh.coincoin.model.consts.GlobalConst;
-import com.jh.coincoin.model.consts.SlackConst;
-import com.jh.coincoin.model.type.BinanceType.Side;
 import com.jh.coincoin.model.type.BinanceType.Interval;
+import com.jh.coincoin.model.type.BinanceType.Side;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
-import com.jh.coincoin.model.type.StrategyType.OrderStrategyType;
 import com.jh.coincoin.model.type.StrategyType.BuyStrategyType;
+import com.jh.coincoin.model.type.StrategyType.OrderStrategyType;
 import com.jh.coincoin.service.strategy.StrategyService;
 import com.jh.coincoin.service.strategy.buy.BuyStrategy;
 import com.jh.coincoin.service.strategy.order.OrderStrategy;
 import com.jh.coincoin.util.DateTimeUtil;
-import com.slack.api.model.block.*;
+import com.slack.api.model.block.ContextBlock;
+import com.slack.api.model.block.HeaderBlock;
+import com.slack.api.model.block.LayoutBlock;
+import com.slack.api.model.block.SectionBlock;
 import com.slack.api.model.block.composition.MarkdownTextObject;
 import com.slack.api.model.block.composition.PlainTextObject;
 import com.slack.api.model.block.composition.TextObject;
-import com.slack.api.model.block.element.ButtonElement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -127,7 +133,6 @@ public class BackTestService {
         // 캔들 불러오기
         BackTestResultDto backTestResultDto = new BackTestResultDto(initialBalance);
         long lastPositionCloseTime = 0;
-        List<PnlDto> pnlList = new ArrayList<>();
         while (isBuyThreadAlive.get() || !positionQueue.isEmpty()) {
             BackTestBuyDto backTestBuyDto = positionQueue.poll();
             if (backTestBuyDto == null)
@@ -156,7 +161,6 @@ public class BackTestService {
                     if (backTestBuyDto.isPriceHit(closePrice)) {
                         log.info("손익절 발생!");
                         PnlDto pnlDto = calcPnl(candle.getValue(), backTestBuyDto, backTestResultDto.getTotalBalance(), buyStrategyDto.getLeverage(), buyStrategyDto.getOrderBalanceRatio());
-                        pnlList.add(pnlDto);
 
                         double pnl = pnlDto.getPnl();
                         backTestResultDto.mergeResult(pnl);
@@ -165,15 +169,6 @@ public class BackTestService {
                         lastPositionCloseTime = candle.getKey();
                         break;
                     }
-                }
-
-                if (pnlList.size() >= GlobalConst.MAX_STORAGE_PNL_DTO_COUNT) {
-                    // 테스트 기간이 길어질수록, pnlList의 메모리 사용량이 늘어남.
-                    // pnl 상세는 redis에 저장하고 요약만 slack으로 보내기. 그래서 추후 상세보기 버튼을 만들어 redis에서 읽어오는 식으로 변경하자
-                    // ttl은 한시간정도?
-
-                    // TODO redis 저장
-                    pnlList.clear();
                 }
 
                 if (isPositionActive)
@@ -259,18 +254,10 @@ public class BackTestService {
                 .fields(summaryBlockList)
                 .build();
 
-        ActionsBlock actionsBlock = ActionsBlock.builder()
-                .elements(Collections.singletonList(ButtonElement.builder()
-                        .actionId(SlackConst.BACK_TEST_DETAIL)
-                        .text(PlainTextObject.builder().text("거래 내역 보기").build())
-                        .build()))
-                .build();
-
         List<LayoutBlock> layoutBlockList = new ArrayList<>();
         layoutBlockList.add(headerBlock);
         layoutBlockList.add(contextBlock);
         layoutBlockList.add(sectionBlock);
-        layoutBlockList.add(actionsBlock);
 
         return layoutBlockList;
     }
