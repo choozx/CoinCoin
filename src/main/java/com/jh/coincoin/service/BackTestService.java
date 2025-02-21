@@ -106,6 +106,7 @@ public class BackTestService {
                 if (sidePair == null)
                     continue;
 
+                log.info("진입시간:{} | 사이드:{}", DateTimeUtil.toDateTime(sidePair.getLeft()), sidePair.getRight());
                 long signalTime = sidePair.getLeft();
                 Side side = sidePair.getRight();
 
