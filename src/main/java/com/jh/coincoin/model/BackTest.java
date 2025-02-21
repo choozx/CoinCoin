@@ -56,6 +56,9 @@ public class BackTest {
         }
 
         public double getWinRate() {
+            if (tradeCount == 0)
+                return 0;
+
             return (double) winCount / tradeCount * 100;
         }
     }

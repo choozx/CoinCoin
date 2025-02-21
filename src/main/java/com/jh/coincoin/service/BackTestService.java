@@ -66,6 +66,7 @@ public class BackTestService {
     }
 
     public void backTest(int tradeStrategyIdx, long begin, long end, double initialBalance) {
+        log.info("백테스트 시작");
         TradeStrategyDto tradeStrategyDto = strategyService.getTradeStrategy(tradeStrategyIdx);
 
         Interval interval = tradeStrategyDto.getInterval();
@@ -176,6 +177,7 @@ public class BackTestService {
             log.info("{} ~ {} 총 수익:{} | 승률:{}", DateTimeUtil.toDateTime(ceilBeginTime), DateTimeUtil.toDateTime(floorEndTime), backTestResultDto.getTotalBalance(), String.format("%.3f", backTestResultDto.getWinRate()));
 
         slackMessageService.sendMessage(makeMessageBlock(begin, end, backTestResultDto));
+        log.info("백테스트 종료");
     }
 
     private PnlDto calcPnl(Candle candle, BackTestBuyDto backTestBuyDto, double balance, int leverage, double orderBalanceRatio) {
