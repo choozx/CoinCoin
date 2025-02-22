@@ -21,6 +21,7 @@ public interface OrderStrategy {
     List<InputBlock> getInputBlockList();
 
     Pair<Boolean, Side> isHit(Symbol symbol, Interval interval, String targetValue);
+    List<Pair<Long, Side>> getHitList(Symbol symbol, Interval interval, String targetValue, long begin, long end);
 
     void save(JsonNode decideStrategy);
 }

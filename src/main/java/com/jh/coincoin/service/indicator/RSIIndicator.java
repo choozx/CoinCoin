@@ -1,15 +1,17 @@
 package com.jh.coincoin.service.indicator;
 
+import com.jh.coincoin.entity.IndicatorEntity;
 import com.jh.coincoin.model.Candle;
 import com.jh.coincoin.model.consts.GlobalConst;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.BinanceType.Interval;
 import com.jh.coincoin.model.type.IndicatorType;
+import com.jh.coincoin.repo.IndicatorRepository;
+import com.jh.coincoin.repo.jdbc.IndicatorBatchRepository;
 import com.jh.coincoin.service.CandleService;
 import com.jh.coincoin.util.DateTimeUtil;
 import com.slack.api.model.block.composition.MarkdownTextObject;
 import com.slack.api.model.block.composition.TextObject;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
@@ -23,12 +25,13 @@ import java.util.*;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
-public class RSIIndicator implements Indicator {
+public class RSIIndicator extends Indicator {
+
+    public RSIIndicator(CandleService candleService, IndicatorRepository indicatorRepository, IndicatorBatchRepository indicatorBatchRepository) {
+        super(candleService, indicatorRepository, indicatorBatchRepository);
+    }
 
     record RSIKey(Symbol symbol, Interval interval) { }
-
-    private final CandleService candleService;
     Map<RSIKey, TreeMap<Long, Double>> rsiMap = new HashMap<>();
 
     private Pair<Double, Double> rsiValuePair = Pair.of(30d, 70d);
@@ -41,7 +44,7 @@ public class RSIIndicator implements Indicator {
     }
 
     @Override
-    public Double getLastFigure(Symbol symbol, Interval interval) {
+    public Double getLastValue(Symbol symbol, Interval interval) {
         RSIKey rsiKey = new RSIKey(symbol, interval);
 
         TreeMap<Long, Double> map = rsiMap.get(rsiKey);
@@ -56,7 +59,7 @@ public class RSIIndicator implements Indicator {
     }
 
     @Override
-    public boolean isDetect(Double result) {
+    public boolean isDetectLastValue(Double result) {
         return result <= rsiValuePair.getLeft() || result >= rsiValuePair.getRight();
     }
 
@@ -65,40 +68,64 @@ public class RSIIndicator implements Indicator {
         RSIKey rsiKey = new RSIKey(symbol, interval);
         TreeMap<Long, Double> rsiValueMap = rsiMap.computeIfAbsent(rsiKey, k -> new TreeMap<>());
 
-        TreeMap<Long, Candle> candleMap;
-        long endTime = DateTimeUtil.getCurrentTimeMillis();
-        if (rsiValueMap.isEmpty()) {
-            candleMap = candleService.getCandleMap(symbol, interval, 0,endTime);
-        } else {
-            long lastOpenTime = rsiValueMap.firstKey();
-            LocalDateTime nextOpenTime = DateTimeUtil.toDateTime(lastOpenTime).plusMinutes(interval.getMinute());
-            long beginTime = DateTimeUtil.toEpochMilli(nextOpenTime.minusMinutes((long) interval.getMinute() * CANDLE_COUNT)); // rsi값을 구하기 위해서는 200개의 캔들이 필요
+        long end = DateTimeUtil.getCurrentTimeMillis();
+        long begin = rsiValueMap.isEmpty() ? DateTimeUtil.calcBeginTime(end, interval.getMinute(), 1000) : rsiValueMap.lastKey();
 
-            candleMap = candleService.getCandleMap(symbol, interval, beginTime, endTime);
-        }
+        Map<Long, Double> newValueMap = getValueMap(symbol, interval, begin, end);
+        rsiValueMap.putAll(newValueMap);
 
-        Deque<Candle> deque = new ArrayDeque<>();
-        for (var entry : candleMap.entrySet()) {
-            deque.offer(entry.getValue());
-
-            if (deque.size() != 200)
-                continue;
-
-            double rsi = formula(deque);
-            rsiValueMap.put(entry.getKey(), rsi);
-
-            if (rsiValueMap.size() > GlobalConst.MAX_STORAGE_INDICATOR_COUNT)
-                rsiValueMap.pollFirstEntry();
-
-            deque.poll();
-        }
+        while (rsiValueMap.size() > GlobalConst.MAX_STORAGE_INDICATOR_COUNT)
+            rsiValueMap.pollFirstEntry();
 
         var lastEntry = rsiMap.get(rsiKey).lastEntry();
         log.info("RSI 업데이트 :: symbol:{}, time:{}, value:{}", symbol, DateTimeUtil.toDateTime(lastEntry.getKey()), lastEntry.getValue());
     }
 
+    public TreeMap<Long, Double> getValueMap(Symbol symbol, Interval interval, long begin, long end) {
+        Map<Long, IndicatorEntity> indicatorEntityMap = getIndicatorEntityMap(IndicatorType.RSI, symbol, interval, begin, end);
+
+        long beginTime = adjustBeginTime(begin, interval); // rsi값을 구하기 위해서는 200개의 캔들이 필요
+        // FIXME 아마 추후에는 getCandleMap으로 바꿔야함 ex) 처음은 redis에서 캔들 검색 -> 없으면 db에서 가져오기
+        TreeMap<Long, Candle> candleMap = candleService.getCandleMapToDB(symbol, interval, beginTime, end);
+
+        Deque<Candle> deque = new ArrayDeque<>();
+        TreeMap<Long, Double> rsiMap = new TreeMap<>();
+        List<IndicatorEntity> newIndicatorEntityList = new ArrayList<>();
+        for (var entry : candleMap.entrySet()) {
+            deque.offer(entry.getValue());
+
+            if (deque.size() != CANDLE_COUNT)
+                continue;
+
+            long openTime = entry.getKey();
+
+            double rsi;
+            if (indicatorEntityMap.containsKey(openTime)) {
+                String[] rsiString = indicatorEntityMap.get(openTime).getValueArray();
+                rsi = Double.parseDouble(rsiString[0]);
+            } else {
+                rsi = formula(deque);
+                newIndicatorEntityList.add(IndicatorEntity.create(IndicatorType.RSI, symbol, interval.getMinute(), openTime, String.format("%.2f", rsi)));
+            }
+
+            rsiMap.put(openTime, rsi);
+
+            deque.poll();
+        }
+
+        if (!newIndicatorEntityList.isEmpty())
+            indicatorBatchRepository.bulkInsert(newIndicatorEntityList);
+
+        return rsiMap;
+    }
+
     public void changeRSIValue(double low, double high) {
         rsiValuePair = Pair.of(low, high);
+    }
+
+    private long adjustBeginTime(long begin, Interval interval) {
+        LocalDateTime nextOpenTime = DateTimeUtil.toDateTime(begin).plusMinutes(interval.getMinute());
+        return DateTimeUtil.toEpochMilli(nextOpenTime.minusMinutes((long) interval.getMinute() * CANDLE_COUNT)); // rsi값을 구하기 위해서는 200개의 캔들이 필요
     }
 
     private double formula(Deque<Candle> closePriceList) {

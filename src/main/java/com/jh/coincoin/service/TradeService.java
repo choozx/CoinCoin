@@ -84,7 +84,7 @@ public class TradeService {
                         .orderBalanceRatio(buyStrategyDto.getOrderBalanceRatio())
                         .targetValue(buyStrategyDto.getTargetValue())
                         .build();
-                PositionInfoRes positionInfoRes = buyStrategy.order(buyParamDto);   // 새로운 주문 return
+                PositionInfoRes positionInfoRes = buyStrategy.buy(buyParamDto);   // 새로운 주문 return
 
                 TradeLogEntity logEntity = TradeLogEntity.create(positionInfoRes, side, orderStrategyType, buyStrategyType);
                 tradeLogRepository.saveAndFlush(logEntity);

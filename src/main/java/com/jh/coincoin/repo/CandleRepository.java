@@ -1,7 +1,7 @@
 package com.jh.coincoin.repo;
 
 import com.jh.coincoin.entity.CandleEntity;
-import com.jh.coincoin.model.type.BinanceType;
+import com.jh.coincoin.model.type.BinanceType.Symbol;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -11,5 +11,7 @@ import java.util.List;
  */
 public interface CandleRepository extends JpaRepository<CandleEntity, Long> {
 
-    List<CandleEntity> findAllByOpenTimeAfterAndSymbol(long openTime, BinanceType.Symbol symbol);
+    List<CandleEntity> findAllByOpenTimeAfterAndSymbol(long openTime, Symbol symbol);
+
+    List<CandleEntity> findAllByOpenTimeBetweenAndSymbol(long openTimeAfter, long openTimeBefore, Symbol symbol);
 }

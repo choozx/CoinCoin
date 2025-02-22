@@ -72,7 +72,7 @@ public class ApiTest {
     public void rsi() {
 //        candleService.manualUpdate(300);
 
-        Double rsi = rsiIndicatorService.getLastFigure(Symbol.BTCUSDT, Interval.ONE_MINUTE);
+        Double rsi = rsiIndicatorService.getLastValue(Symbol.BTCUSDT, Interval.ONE_MINUTE);
 
         log.info("RSI : {}", rsi);
     }

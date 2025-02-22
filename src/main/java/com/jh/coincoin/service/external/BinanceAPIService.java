@@ -1,5 +1,6 @@
 package com.jh.coincoin.service.external;
 
+import com.jh.coincoin.model.Binance.LeverageBracketReq;
 import com.jh.coincoin.model.Binance.CancelOpenOrderReq;
 import com.jh.coincoin.model.Binance.ListenKeyRes;
 import com.jh.coincoin.model.Binance.ModifyLeverageReq;
@@ -259,6 +260,18 @@ public class BinanceAPIService {
                 .contentType(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .toBodilessEntity();
+    }
+
+    // TODO 하루마다 스케쥴링 돌리자 -> redis에 저장
+    public String getLeverageBracket(LeverageBracketReq req) {
+        return restClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path(BinanceURL.LEVERAGE_BRACKET.getUrl())
+                        .query(req.toQueryString())
+                        .build())
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .body(String.class);
     }
 
     private String makeSignature(String data) {

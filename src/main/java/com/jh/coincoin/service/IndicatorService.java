@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,6 +38,7 @@ public class IndicatorService {
         this.indicatorServiceMap = indicatorSet.stream().collect(Collectors.toMap(Indicator::getType, Function.identity()));
     }
 
+    // FIXME Double result = indicator.getLastFigure(symbol, interval); 리턴값 수정해야됨... 꼭 double이 아닐지도 모름, ex) 볼린져밴드
     public void detectIndicator(Interval interval) {
         List<IndicatorType> indicatorList = adminService.getTrackingIndicatorList();
         List<Symbol> symbolList = adminService.getTrackingSymbolList();
@@ -54,9 +54,9 @@ public class IndicatorService {
             List<TextObject> resultBlockList = new ArrayList<>();
             for (Symbol symbol : symbolList) {
                 Indicator indicator = indicatorServiceMap.get(indicatorType);
-                Double result = indicator.getLastFigure(symbol, interval);
+                Double result = indicator.getLastValue(symbol, interval);
 
-                if (indicator.isDetect(result)) {
+                if (indicator.isDetectLastValue(result)) {
                     TextObject text = indicator.wrappingMessage(symbol, result);
                     resultBlockList.add(text);
                 }

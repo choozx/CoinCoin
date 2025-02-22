@@ -13,6 +13,8 @@ import com.jh.coincoin.model.Binance.TickerPriceReq;
 import com.jh.coincoin.model.Binance.AccountBalanceReq;
 import com.jh.coincoin.model.Binance.AccountBalanceRes;
 import com.jh.coincoin.model.Binance.NewOrderReq;
+import com.jh.coincoin.model.Candle;
+import com.jh.coincoin.model.BackTest.BackTestBuyDto;
 import com.jh.coincoin.model.Strategy.RiskRewardStrategy;
 import com.jh.coincoin.model.Strategy.PriceCalculatorDto;
 import com.jh.coincoin.model.Strategy.BuyParamDto;
@@ -27,6 +29,7 @@ import com.jh.coincoin.service.SlackMessageService;
 import com.jh.coincoin.service.TradeLogService;
 import com.jh.coincoin.service.external.BinanceAPIService;
 import com.jh.coincoin.service.strategy.buy.calculator.RiskRewardCalculator;
+import com.jh.coincoin.util.BinanceUtil;
 import com.jh.coincoin.util.CommonUtil;
 import com.jh.coincoin.util.DateTimeUtil;
 import com.slack.api.model.block.InputBlock;
@@ -72,7 +75,7 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
     }
 
     @Override
-    public PositionInfoRes order(BuyParamDto buyParamDto) {
+    public PositionInfoRes buy(BuyParamDto buyParamDto) {
         // 1.주문된 상태 체크 redis에서 주문정보 get-> 주문된 상태면 return
         long now = DateTimeUtil.getCurrentTimeMillis();
         Symbol symbol = buyParamDto.getSymbol();
@@ -186,6 +189,57 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
         slackMessageService.sendMessage(positionInfoRes.toDescription(side));
 
         return positionInfoRes;
+    }
+
+    @Override
+    public BackTestBuyDto backTestBuy(BuyParamDto buyParamDto, Candle entryCandle) {
+        double entryPrice = entryCandle.getOpenPrice();
+        long entryTime = entryCandle.getOpenTime();
+
+        Symbol symbol = buyParamDto.getSymbol();
+        Side side = buyParamDto.getSide();
+
+        RiskRewardStrategy riskRewardStrategy;
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            riskRewardStrategy = objectMapper.readValue(buyParamDto.getTargetValue(), RiskRewardStrategy.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        RiskRewardCalculator calculator = riskRewardCalculatorMap.get(riskRewardStrategy.getType());
+
+        // 익절가
+        PriceCalculatorDto tkPriceDto = PriceCalculatorDto.builder()
+                .symbol(symbol)
+                .interval(buyParamDto.getInterval())
+                .side(side)
+                .order(Order.TAKE_PROFIT_MARKET)
+                .entryPrice(entryPrice)
+                .riskRewardRatio(riskRewardStrategy.getLimit())
+                .build();
+        double tkPrice = calculator.calcPriceForBackTest(tkPriceDto, entryTime);
+
+        // 손절가
+        PriceCalculatorDto slPriceDto = PriceCalculatorDto.builder()
+                .symbol(symbol)
+                .interval(buyParamDto.getInterval())
+                .side(side)
+                .order(Order.STOP_MARKET)
+                .entryPrice(entryPrice)
+                .riskRewardRatio(riskRewardStrategy.getStop())
+                .build();
+        double slPrice = calculator.calcPriceForBackTest(slPriceDto, entryTime);
+
+        // TODO 추후 redis에서 marginRatio값 가져오기
+        double liquidationPrice = BinanceUtil.calcLiquidationPrice(side, entryPrice, buyParamDto.getLeverage());   // TODO 청산가 계산
+        double stopPrice = side == Side.BUY ? Math.max(slPrice, liquidationPrice): Math.min(slPrice, liquidationPrice);
+        return BackTestBuyDto.builder()
+                .side(side)
+                .entryTime(entryCandle.getOpenTime())
+                .avgPrice(entryPrice)
+                .limitPrice(tkPrice)
+                .stopPrice(stopPrice)
+                .build();
     }
 
     @Override

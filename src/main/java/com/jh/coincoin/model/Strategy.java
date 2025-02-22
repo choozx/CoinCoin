@@ -35,6 +35,10 @@ public class Strategy {
             tradeStrategyDto.buyStrategy = BuyStrategyDto.create(tradeStrategyEntity.getBuyStrategyEntity());
             return tradeStrategyDto;
         }
+
+        public String toDescription() {
+            return symbol + "|" + interval.getName() + "|X" + buyStrategy.getLeverage() + "|" + orderStrategy.type.getDescription() + "|" + buyStrategy.getType().getDescription();
+        }
     }
 
     @Data

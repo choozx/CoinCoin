@@ -18,7 +18,8 @@ public class SlackType {
         CREATE_ORDER_STRATEGY(5, "/create_order_strategy"),
         CREATE_BUY_STRATEGY(6, "/create_buy_strategy"),
         SWITCH_AUTO_TRADE(7, "/auto_trade"),
-        COLLECT_PAST_CANDLE(8, "/collect_past_candle"),
+        BACK_TEST(8, "/back_test"),
+        COLLECT_PAST_CANDLE(9, "/collect_past_candle"),
         ;
 
         private final int code;
@@ -78,6 +79,7 @@ public class SlackType {
         TRADE(1, "trade"),
         ORDER(2, "order"),
         BUY(3, "buy"),
+        BACK_TEST(4, "back_test"),
         ;
 
         private final int code;
