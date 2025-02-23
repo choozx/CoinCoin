@@ -83,7 +83,7 @@ public class CandleService {
 
     public Candle getLastCandle(Symbol symbol, Interval interval) {
         TreeMap<Long, Candle> lastCandleMap = getCandleMap(symbol, interval);
-        return lastCandleMap.firstEntry().getValue();
+        return lastCandleMap.lastEntry().getValue();
     }
 
     public void update() {
