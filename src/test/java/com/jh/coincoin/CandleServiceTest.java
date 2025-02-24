@@ -3,6 +3,7 @@ package com.jh.coincoin;
 import com.jh.coincoin.model.Candle;
 import com.jh.coincoin.model.type.BinanceType.*;
 import com.jh.coincoin.service.CandleService;
+import com.jh.coincoin.service.external.CandleCollectorAPIService;
 import com.jh.coincoin.util.DateTimeUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,7 @@ import java.util.TreeMap;
 public class CandleServiceTest {
 
     private final CandleService candleService;
+    private final CandleCollectorAPIService candleCollectorAPIService;
 
     @Test
     public void 과거캔들_200개_포함해서_가져오기() {
@@ -131,6 +133,12 @@ public class CandleServiceTest {
 
         log.info("size:{}", candle.size());
         log.info("캔들시간:{} {}", DateTimeUtil.toDateTime(candle.firstKey()), candle.firstEntry().getValue());
+    }
+
+    @Test
+    public void 과거_캔들_업데이트_시작() {
+        Symbol symbol = Symbol.BTCUSDT;
+        candleCollectorAPIService.startCollectPastCandle(symbol);
     }
 
     private long adjustBeginTime(long begin, Interval interval) {

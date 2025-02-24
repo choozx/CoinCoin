@@ -25,7 +25,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestConstructor;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -85,21 +84,21 @@ public class ApiTest {
 //        candleService.saveCandle(candleMap.values().stream().toList());
     }
 
-    @Test
-    public void timeTest() {
-        long now = DateTimeUtil.getCurrentTimeMillis();
-        LocalDateTime nowLocal = DateTimeUtil.toDateTime(now);
-        log.info("now : {}", nowLocal);
-
-        LocalDateTime truncate = nowLocal.truncatedTo(ChronoUnit.MINUTES);
-        log.info("truncated : {}", truncate);
-
-        LocalDateTime minus = truncate.minusMinutes(1000);
-        log.info("minus : {}", minus);
-
-        long epochMilli = DateTimeUtil.toEpochMilli(minus);
-        log.info("result : {}", epochMilli);
-    }
+//    @Test
+//    public void timeTest() {
+//        long now = DateTimeUtil.getCurrentTimeMillis();
+//        LocalDateTime nowLocal = DateTimeUtil.toDateTime(now);
+//        log.info("now : {}", nowLocal);
+//
+//        LocalDateTime truncate = nowLocal.truncatedTo();
+//        log.info("truncated : {}", truncate);
+//
+//        LocalDateTime minus = truncate.minusMinutes(1000);
+//        log.info("minus : {}", minus);
+//
+//        long epochMilli = DateTimeUtil.toEpochMilli(minus);
+//        log.info("result : {}", epochMilli);
+//    }
 
     @Test
     public void cccc() {
@@ -156,7 +155,7 @@ public class ApiTest {
     public void 손익_가격_계산() {
         StrategyType.RiskRewardRatioType type = StrategyType.RiskRewardRatioType.PEAK_RATIO;
         Symbol symbol = Symbol.ETHUSDT;
-        Interval interval = Interval.ONE_MINUTE;
+        Interval interval = Interval.FIVE_MINUTE;
 
         Candle candle = candleService.getLastCandle(symbol, interval);
         log.info("캔들 : {}", candle);
