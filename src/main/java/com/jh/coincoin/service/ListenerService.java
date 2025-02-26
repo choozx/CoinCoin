@@ -51,6 +51,10 @@ public class ListenerService extends TextWebSocketHandler {
             return;
 
         EventHandler eventHandler = eventHandlerMap.get(eventType);
-        eventHandler.process(jsonNode);
+        try {
+            eventHandler.process(jsonNode);
+        } catch (Exception e) {
+            log.error("웹 소캣 에러! {}", e.getMessage());
+        }
     }
 }
