@@ -40,7 +40,7 @@ public class Scheduler {
 
     @Scheduled(cron = "0 */20 * * * *")
     public void updateSocket(){
-         binanceAPIService. updateListenKey();
+         binanceAPIService.updateListenKey();
          log.info("웹 소켓 만료기간 업데이트");
     }
 
