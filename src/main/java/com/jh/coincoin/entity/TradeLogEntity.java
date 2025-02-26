@@ -85,6 +85,7 @@ public class TradeLogEntity implements Persistable<Long> {
     }
 
     public void close(double closePrice, double pnl) {
+        this.orderState = OrderState.FILLED;
         this.closePrice = closePrice;
         this.pnl = pnl;
     }
