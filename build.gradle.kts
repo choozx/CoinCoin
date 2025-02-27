@@ -2,6 +2,7 @@ plugins {
     java
     id("org.springframework.boot") version "3.3.3"
     id("io.spring.dependency-management") version "1.1.6"
+    id("io.sentry.jvm.gradle") version "5.2.0"
 }
 
 group = "com.jh"
@@ -24,6 +25,7 @@ repositories {
 }
 
 dependencies {
+    implementation ("io.sentry:sentry-spring-boot-starter-jakarta:7.9.0")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-websocket:3.4.2")

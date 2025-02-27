@@ -16,6 +16,7 @@ import com.jh.coincoin.service.external.CandleCollectorAPIService;
 import com.jh.coincoin.service.indicator.RSIIndicator;
 import com.jh.coincoin.service.strategy.buy.calculator.RiskRewardCalculator;
 import com.jh.coincoin.util.DateTimeUtil;
+import io.sentry.Sentry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -170,5 +171,14 @@ public class ApiTest {
                 .build());
 
         log.info("계산된 가격: {}", price);
+    }
+
+    @Test
+    public void 센트리_테스트() {
+        try {
+            int a = 10 / 0;
+        } catch (Exception e) {
+            Sentry.captureException(e);
+        }
     }
 }

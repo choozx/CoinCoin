@@ -1,6 +1,7 @@
 package com.jh.coincoin.support;
 
 import com.jh.coincoin.service.SlackMessageService;
+import io.sentry.Sentry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -21,6 +22,7 @@ public class ServerExceptionHandler {
     protected void exceptionHandler(ServerException exception) {
         log.error(ExceptionUtils.getStackTrace(exception));
 
+        Sentry.captureException(exception);
         slackMessageService.sendMessage(exception.getMsg());
     }
 }
