@@ -181,4 +181,16 @@ public class ApiTest {
             Sentry.captureException(e);
         }
     }
+
+    @Test
+    public void 센트리_SLF4J() {
+        var dto = Strategy.PriceCalculatorDto.builder()
+                .riskRewardRatio(2)
+                .interval(Interval.FIFTEEN_MINUTE)
+                .order(Order.STOP_MARKET)
+                .symbol(Symbol.ETHUSDT)
+                .side(Side.SELL)
+                .build();
+        log.info("센트리에 전송 testDto : {}", dto);
+    }
 }

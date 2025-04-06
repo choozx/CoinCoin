@@ -9,12 +9,13 @@ import com.jh.coincoin.model.type.BinanceType.Order;
 import com.jh.coincoin.model.type.StrategyType.RiskRewardRatioType;
 import com.jh.coincoin.service.CandleService;
 import com.jh.coincoin.util.DateTimeUtil;
-import io.sentry.Sentry;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.TreeMap;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PeakRatio implements RiskRewardCalculator {
@@ -42,7 +43,7 @@ public class PeakRatio implements RiskRewardCalculator {
             return priceDto.getSide().equals(Side.BUY) ? entryPrice - priceGap : entryPrice + priceGap;
         }
 
-        Sentry.captureMessage(String.format("[%s] 캔들 시간 : %s | 캔들 시작가 : %s | 캔들 종가 : %s", priceDto.getSymbol(), DateTimeUtil.toDateTime(lastCandle.getOpenTime()), lastCandle.getOpenPrice(), lastCandle.getClosePrice()));
+        log.info(String.format("[%s] 캔들 시간 : %s | 캔들 시작가 : %s | 캔들 종가 : %s", priceDto.getSymbol(), DateTimeUtil.toDateTime(lastCandle.getOpenTime()), lastCandle.getOpenPrice(), lastCandle.getClosePrice()));
 
         return priceDto.getSide().equals(Side.BUY) ? entryPrice + (priceGap * ratio) : entryPrice - (priceGap * ratio);
     }
