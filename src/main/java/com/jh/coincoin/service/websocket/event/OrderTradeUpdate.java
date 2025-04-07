@@ -10,6 +10,7 @@ import com.jh.coincoin.service.TradeLogService;
 import com.jh.coincoin.service.strategy.buy.BuyStrategy;
 import com.jh.coincoin.service.websocket.EventHandler;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
  * Created by dale on 2025-02-07.
  */
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderTradeUpdate implements EventHandler {
@@ -44,6 +46,7 @@ public class OrderTradeUpdate implements EventHandler {
     @Override
     @Transactional
     public void process(JsonNode jsonNode) {
+        log.warn("바이낸스 OrderUpdateJson : {}", jsonNode);
         JsonNode objectJsonNode = jsonNode.path("o");
         Symbol symbol = Symbol.of(objectJsonNode.path("s").asText());
 

@@ -43,7 +43,7 @@ public class PeakRatio implements RiskRewardCalculator {
             return priceDto.getSide().equals(Side.BUY) ? entryPrice - priceGap : entryPrice + priceGap;
         }
 
-        log.info(String.format("[%s] 캔들 시간 : %s | 캔들 시작가 : %s | 캔들 종가 : %s", priceDto.getSymbol(), DateTimeUtil.toDateTime(lastCandle.getOpenTime()), lastCandle.getOpenPrice(), lastCandle.getClosePrice()));
+        log.warn(String.format("[%s] 캔들 시간 : %s | 캔들 시작가 : %s | 캔들 종가 : %s", priceDto.getSymbol(), DateTimeUtil.toDateTime(lastCandle.getOpenTime()), lastCandle.getOpenPrice(), lastCandle.getClosePrice()));
 
         return priceDto.getSide().equals(Side.BUY) ? entryPrice + (priceGap * ratio) : entryPrice - (priceGap * ratio);
     }
