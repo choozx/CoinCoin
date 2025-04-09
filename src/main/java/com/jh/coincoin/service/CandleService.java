@@ -46,17 +46,6 @@ public class CandleService {
         return getCandleMap(symbol, interval, candleMap.firstKey(), candleMap.lastKey());
     }
 
-    public TreeMap<Long, Candle> getCandleMap(Symbol symbol, Interval interval, int candleCount) {
-        long beginTime = DateTimeUtil.getCurrentTimeMillis();
-        LocalDateTime endDateTime = DateTimeUtil.toDateTime(beginTime);
-
-        long minusMinute = (long) interval.getMinute() * candleCount;
-        endDateTime.minusMinutes(minusMinute);
-        long endTime = DateTimeUtil.toEpochMilli(endDateTime);
-
-        return getCandleMap(symbol, interval, beginTime, endTime);
-    }
-
     public TreeMap<Long, Candle> getCandleMap(Symbol symbol, Interval interval, long beginTime) {
         return getCandleMap(symbol, interval, beginTime, DateTimeUtil.getCurrentTimeMillis());
     }
@@ -83,7 +72,21 @@ public class CandleService {
 
     public Candle getLastCandle(Symbol symbol, Interval interval) {
         TreeMap<Long, Candle> lastCandleMap = getCandleMap(symbol, interval);
+        log.warn("[{}] | lastKey:{} firstKey:{}", symbol, DateTimeUtil.toDateTime(lastCandleMap.lastKey()), DateTimeUtil.toDateTime(lastCandleMap.firstKey()));
         return lastCandleMap.lastEntry().getValue();
+    }
+
+    public Candle getLastCandleToDB(Symbol symbol, Interval interval) {
+        int minutes = interval.getMinute();
+        long end = DateTimeUtil.floorToInterval(DateTimeUtil.getCurrentTimeMillis(), minutes);
+        long begin = DateTimeUtil.toEpochMilli(DateTimeUtil.toDateTime(end).minusMinutes(minutes));
+
+        log.warn("[{}] | 캔들 시작 시간:{} 캔들 종료 시간:{}", symbol, DateTimeUtil.toDateTime(begin), DateTimeUtil.toDateTime(end));
+        List<CandleEntity> candleList = candleRepository.findAllBySymbolAndOpenTimeGreaterThanEqualAndOpenTimeLessThan(symbol, begin, end);
+        TreeMap<Long, Candle> candleMap = new TreeMap<>();
+        candleList.forEach(entity -> candleMap.put(entity.getOpenTime(), new Candle(entity)));
+
+        return mergeCandle(candleMap, interval, begin, end).lastEntry().getValue();
     }
 
     public void update() {

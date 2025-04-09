@@ -11,7 +11,6 @@ import java.util.List;
  */
 public interface CandleRepository extends JpaRepository<CandleEntity, Long> {
 
-    List<CandleEntity> findAllByOpenTimeAfterAndSymbol(long openTime, Symbol symbol);
-
     List<CandleEntity> findAllByOpenTimeBetweenAndSymbol(long openTimeAfter, long openTimeBefore, Symbol symbol);
+    List<CandleEntity> findAllBySymbolAndOpenTimeGreaterThanEqualAndOpenTimeLessThan(Symbol symbol, long openTime, long closeTime);
 }

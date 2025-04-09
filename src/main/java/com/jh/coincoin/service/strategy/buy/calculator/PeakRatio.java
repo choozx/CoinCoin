@@ -32,8 +32,9 @@ public class PeakRatio implements RiskRewardCalculator {
         double entryPrice = priceDto.getEntryPrice();
         double ratio = priceDto.getRiskRewardRatio();
 
-        Candle lastCandle = candleService.getLastCandle(priceDto.getSymbol(), priceDto.getInterval());
-        double prePeakPrice = priceDto.getSide().equals(Side.BUY) ? lastCandle.getLowPrice() : lastCandle.getHighPrice();
+        Candle lastCandleToDB = candleService.getLastCandle(priceDto.getSymbol(), priceDto.getInterval());
+
+        double prePeakPrice = priceDto.getSide().equals(Side.BUY) ? lastCandleToDB.getLowPrice() : lastCandleToDB.getHighPrice();
 
         double priceGap = Math.abs(entryPrice - prePeakPrice);
         double minGap = entryPrice * GlobalConst.MIN_ORDER_PRICE_GAP_PER; // 0.1%의 차이
@@ -43,7 +44,8 @@ public class PeakRatio implements RiskRewardCalculator {
             return priceDto.getSide().equals(Side.BUY) ? entryPrice - priceGap : entryPrice + priceGap;
         }
 
-        log.warn(String.format("[%s] 캔들 시간 : %s | 캔들 시작가 : %s | 캔들 종가 : %s", priceDto.getSymbol(), DateTimeUtil.toDateTime(lastCandle.getOpenTime()), lastCandle.getOpenPrice(), lastCandle.getClosePrice()));
+        Candle lastCandleToServer = candleService.getLastCandle(priceDto.getSymbol(), priceDto.getInterval());
+        log.warn(String.format("[%s] 캔들 시간 : %s | 캔들 정보: %s", priceDto.getSymbol(), DateTimeUtil.toDateTime(lastCandleToServer.getOpenTime()), lastCandleToServer));
 
         return priceDto.getSide().equals(Side.BUY) ? entryPrice + (priceGap * ratio) : entryPrice - (priceGap * ratio);
     }

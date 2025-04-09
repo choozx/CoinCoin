@@ -141,6 +141,16 @@ public class CandleServiceTest {
         candleCollectorAPIService.startCollectPastCandle(symbol);
     }
 
+    @Test
+    public void DB_에서_마지막_캔들_추출() {
+        Symbol symbol = Symbol.ETHUSDT;
+        Interval interval = Interval.FIFTEEN_MINUTE;
+        var lastCandle = candleService.getLastCandleToDB(symbol, interval);
+
+        log.info("지금 시간:{}", DateTimeUtil.toDateTime(DateTimeUtil.getCurrentTimeMillis()));
+        log.info("Symbol:{} | 오픈시간:{} | 캔들:{}", lastCandle.getSymbol(), DateTimeUtil.toDateTime(lastCandle.getOpenTime()), lastCandle);
+    }
+
     private long adjustBeginTime(long begin, Interval interval) {
         LocalDateTime nextOpenTime = DateTimeUtil.toDateTime(begin).plusMinutes(interval.getMinute());
         return DateTimeUtil.toEpochMilli(nextOpenTime.minusMinutes((long) interval.getMinute() * 200)); // rsi값을 구하기 위해서는 200개의 캔들이 필요
