@@ -144,7 +144,7 @@ public class CandleServiceTest {
     @Test
     public void DB_에서_마지막_캔들_추출() {
         Symbol symbol = Symbol.ETHUSDT;
-        Interval interval = Interval.FIFTEEN_MINUTE;
+        Interval interval = Interval.FIVE_MINUTE;
         var lastCandle = candleService.getLastCandleToDB(symbol, interval);
 
         log.info("지금 시간:{}", DateTimeUtil.toDateTime(DateTimeUtil.getCurrentTimeMillis()));

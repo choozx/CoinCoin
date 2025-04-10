@@ -32,7 +32,7 @@ public class PeakRatio implements RiskRewardCalculator {
         double entryPrice = priceDto.getEntryPrice();
         double ratio = priceDto.getRiskRewardRatio();
 
-        Candle lastCandleToDB = candleService.getLastCandle(priceDto.getSymbol(), priceDto.getInterval());
+        Candle lastCandleToDB = candleService.getLastCandleToDB(priceDto.getSymbol(), priceDto.getInterval());
 
         double prePeakPrice = priceDto.getSide().equals(Side.BUY) ? lastCandleToDB.getLowPrice() : lastCandleToDB.getHighPrice();
 
