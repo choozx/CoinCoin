@@ -1,6 +1,9 @@
 package com.jh.coincoin.service;
 
-import com.jh.coincoin.entity.TradeLogEntity;
+import com.jh.coincoin.model.Binance.TradeLogReq;
+import com.jh.coincoin.model.Binance.TradeLogRes;
+import com.jh.coincoin.model.Binance.PositionInfoReq;
+import com.jh.coincoin.model.Binance.TradeLogDto;
 import com.jh.coincoin.model.Binance.PositionInfoRes;
 import com.jh.coincoin.model.Strategy.BuyParamDto;
 import com.jh.coincoin.model.Strategy.OrderStrategyDto;
@@ -11,10 +14,11 @@ import com.jh.coincoin.model.type.BinanceType.Interval;
 import com.jh.coincoin.model.type.BinanceType.Side;
 import com.jh.coincoin.model.type.StrategyType.BuyStrategyType;
 import com.jh.coincoin.model.type.StrategyType.OrderStrategyType;
-import com.jh.coincoin.repo.TradeLogRepository;
+import com.jh.coincoin.service.external.BinanceAPIService;
 import com.jh.coincoin.service.strategy.StrategyService;
 import com.jh.coincoin.service.strategy.buy.BuyStrategy;
 import com.jh.coincoin.service.strategy.order.OrderStrategy;
+import com.jh.coincoin.util.DateTimeUtil;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +43,7 @@ public class TradeService {
     // 매수를 위한 전략 서버스
     private final StrategyService strategyService;
     private final TradeLogService tradeLogService;
-    private final TradeLogRepository tradeLogRepository;
+    private final BinanceAPIService binanceAPIService;
 
     private Map<OrderStrategyType, OrderStrategy> orderStrategyMap;
     private Map<BuyStrategyType, BuyStrategy> buyStrategyMap;
@@ -86,9 +90,46 @@ public class TradeService {
                         .build();
                 PositionInfoRes positionInfoRes = buyStrategy.buy(buyParamDto);   // 새로운 주문 return
 
-                TradeLogEntity logEntity = TradeLogEntity.create(positionInfoRes, side, orderStrategyType, buyStrategyType);
-                tradeLogRepository.saveAndFlush(logEntity);
+                tradeLogService.loggingPosition(positionInfoRes, side, orderStrategyType, buyStrategyType);
             }
+        }
+    }
+
+    public void positionCheck() {
+        long now = DateTimeUtil.getCurrentTimeMillis();
+        List<TradeLogDto> loggingActivePositionList = tradeLogService.getActivePositionList();
+
+        PositionInfoReq positionInfoReq = PositionInfoReq.builder()
+                .timestamp(now)
+                .build();
+        List<PositionInfoRes> activePositionList = binanceAPIService.getPositionInfo(positionInfoReq);
+
+        for (TradeLogDto logDto : loggingActivePositionList) {
+            boolean isActive = activePositionList.stream().anyMatch(position -> position.getSymbol().equals(logDto.getSymbol()));
+
+            if (isActive)
+                continue;
+
+            // 포지션이 종료된 경우
+            Symbol symbol = logDto.getSymbol();
+            long startTime = DateTimeUtil.toEpochMilli(logDto.getOpenTime().minusSeconds(5));   // 채결 시간 보정
+            TradeLogReq tradeLogReq = TradeLogReq.builder()
+                    .symbol(symbol)
+                    .startTime(startTime)
+                    .timestamp(now)
+                    .build();
+            List<TradeLogRes> tradeLogList = binanceAPIService.getTradeLogList(tradeLogReq);
+
+            // 수익률 계산
+            double pnl = 0;
+            double fee = 0;
+            for (TradeLogRes tradeLog : tradeLogList) {
+                pnl += tradeLog.getRealizedPnl();
+                fee += tradeLog.getCommission();
+            }
+
+            double avgPrice = tradeLogList.stream().filter(log -> !log.getSide().equals(logDto.getSide())).toList().getFirst().getPrice();
+            tradeLogService.closePosition(symbol, avgPrice, pnl, fee);
         }
     }
 

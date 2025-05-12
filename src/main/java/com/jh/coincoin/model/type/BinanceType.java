@@ -308,6 +308,7 @@ public class BinanceType {
         MODIFY_LEVERAGE("/v1/leverage"),
         LISTEN_KEY("/v1/listenKey"),
         LEVERAGE_BRACKET("/v1/leverageBracket"),
+        GET_ACCOUNT_TRADE_LIST("/v1/userTrades"),
         ;
 
         private final String url;

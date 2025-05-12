@@ -22,6 +22,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Persistable;
 
+import java.time.LocalDateTime;
+
 /**
  * Created by dale on 2025-02-07.
  */
@@ -42,6 +44,10 @@ public class TradeLogEntity implements Persistable<Long> {
     @Column(name = "side")
     @Convert(converter = SideConverter.class)
     private Side side;
+    @Column(name = "open_time")
+    private LocalDateTime openTime;
+    @Column(name = "close_time")
+    private LocalDateTime closeTime;
     @Column(name = "order_strategy_type")
     @Convert(converter = OrderStrategyConverter.class)
     private OrderStrategyType orderStrategyType;
@@ -59,6 +65,8 @@ public class TradeLogEntity implements Persistable<Long> {
     private Double closePrice;
     @Column(name = "pnl")
     private Double pnl;
+    @Column(name = "fee")
+    private Double fee;
     @Column(name = "`option`")
     private String option;  // 매수 전략에 사용될 값 ex) 물타기 전략-> 물탄 횟수 저장
 
@@ -66,6 +74,7 @@ public class TradeLogEntity implements Persistable<Long> {
         TradeLogEntity entity = new TradeLogEntity();
         entity.symbol = positionInfoRes.getSymbol();
         entity.side = side;
+        entity.openTime = LocalDateTime.now();
         entity.orderStrategyType = orderStrategyType;
         entity.buyStrategyType = buyStrategyType;
         entity.orderState = OrderState.NEW;
@@ -84,9 +93,11 @@ public class TradeLogEntity implements Persistable<Long> {
         return false;
     }
 
-    public void close(double closePrice, double pnl) {
+    public void close(double closePrice, double pnl, double fee) {
+        this.closeTime = LocalDateTime.now();
         this.orderState = OrderState.FILLED;
         this.closePrice = closePrice;
         this.pnl = pnl;
+        this.fee = fee;
     }
 }

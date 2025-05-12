@@ -1,5 +1,7 @@
 package com.jh.coincoin.service.external;
 
+import com.jh.coincoin.model.Binance.TradeLogReq;
+import com.jh.coincoin.model.Binance.TradeLogRes;
 import com.jh.coincoin.model.Binance.LeverageBracketReq;
 import com.jh.coincoin.model.Binance.CancelOpenOrderReq;
 import com.jh.coincoin.model.Binance.ListenKeyRes;
@@ -25,7 +27,6 @@ import org.springframework.web.client.RestClient;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -33,7 +34,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * Created by dale on 2024-09-11.
@@ -272,6 +272,32 @@ public class BinanceAPIService {
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body(String.class);
+    }
+
+    public List<TradeLogRes> getTradeLogList(TradeLogReq req) {
+        String queryString = req.toQueryString();
+        String signature = makeSignature(queryString);
+
+        List<Map<String, Object>> rawDataList = restClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path(BinanceURL.GET_ACCOUNT_TRADE_LIST.getUrl())
+                        .query(queryString)
+                        .queryParam("signature", signature)
+                        .build())
+                .headers(httpHeaders -> httpHeaders
+                        .add("X-MBX-APIKEY", apiKey))
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .body(List.class);
+
+        if (rawDataList == null)
+            throw new ServerException(ErrorType.COMMON_FAIL, "주문 오류!");
+
+        List<TradeLogRes> tradeLogList = new ArrayList<>();
+        for (var rawData : rawDataList) {
+            tradeLogList.add(new TradeLogRes(rawData));
+        }
+        return tradeLogList;
     }
 
     private String makeSignature(String data) {

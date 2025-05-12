@@ -341,7 +341,7 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
                 .build();
         binanceAPIService.closeOpenOrder(closeOrder);
 
-        tradeLogService.closePosition(symbol, avgPrice, pnl);
+//        tradeLogService.closePosition(symbol, avgPrice, pnl);
 
         slackMessageService.sendMessage(String.format("포시션 종료! [%s] pnl:%.3f", symbol, pnl));
     }

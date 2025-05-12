@@ -34,6 +34,8 @@ public class Scheduler {
         if (timeChecker(interval))
             indicatorService.detectIndicator(interval);
 
+        // 청산된 포지션 체크
+        tradeService.positionCheck();
         if (adminService.isOnAutoTrade())
             tradeService.tradeV2();
     }

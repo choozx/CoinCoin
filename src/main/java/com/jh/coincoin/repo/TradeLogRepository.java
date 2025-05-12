@@ -5,6 +5,7 @@ import com.jh.coincoin.model.type.BinanceType.OrderState;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -13,4 +14,6 @@ import java.util.Optional;
 public interface TradeLogRepository extends JpaRepository<TradeLogEntity, Long> {
 
     Optional<TradeLogEntity> findFirstBySymbolAndOrderState(Symbol symbol, OrderState state);
+
+    List<TradeLogEntity> findAllByOrderState(OrderState orderState);
 }

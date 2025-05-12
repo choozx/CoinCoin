@@ -25,6 +25,7 @@ import org.jetbrains.annotations.NotNull;
 import java.lang.reflect.Field;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.StringJoiner;
 
@@ -247,6 +248,53 @@ public class Binance {
         private long timestamp;
     }
 
+    @Builder
+    public static class TradeLogReq extends BaseReq {
+        private Symbol symbol;
+        private Long startTime;
+        private Long endTime;
+        private Long limit;
+        private Long fromId;
+        private Long recvWindow;
+        private Long timestamp;
+    }
+
+    @Getter
+    @Builder
+    public static class TradeLogRes {
+        private boolean buyer;
+        private double commission;
+        private String commissionAsset;
+        private long id;
+        private boolean maker;
+        private long orderId;
+        private double price;
+        private double qty;
+        private double quoteQty;
+        private double realizedPnl;
+        private Side side;
+        private PositionSide positionSide;
+        private Symbol symbol;
+        private long time;
+
+        public TradeLogRes(Map<String, Object> rawData) {
+            this.buyer = (boolean) rawData.get("buyer");
+            this.commission = (double) rawData.get("commission");
+            this.commissionAsset = (String) rawData.get("commissionAsset");
+            this.id = (long) rawData.get("id");
+            this.maker = (boolean) rawData.get("maker");
+            this.orderId = (long) rawData.get("orderId");
+            this.price = (double) rawData.get("price");
+            this.qty = (double) rawData.get("qty");
+            this.quoteQty = (double) rawData.get("quoteQty");
+            this.realizedPnl = (double) rawData.get("realizedPnl");
+            this.side = Side.valueOf((String) rawData.get("side"));
+            this.positionSide = PositionSide.of((String) rawData.get("positionSide"));
+            this.symbol = Symbol.of((String) rawData.get("symbol"));
+            this.time = (long) rawData.get("time");
+        }
+    }
+
     @Data
     @Builder
     @NoArgsConstructor
@@ -286,12 +334,15 @@ public class Binance {
         private long idx;
         private Symbol symbol;
         private Side side;
+        private LocalDateTime openTime;
+        private LocalDateTime closeTime;
         private BuyStrategyType buyStrategyType;
         private OrderState orderState;
         private double avgPrice;
         private double positionQuantity;
         private Double closePrice;
         private Double pnl;
+        private Double fee;
         private String option;  // 매수 전략에 사용될 값 ex) 물타기 전략-> 물탄 횟수 저장
 
         public static TradeLogDto to(TradeLogEntity entity) {
