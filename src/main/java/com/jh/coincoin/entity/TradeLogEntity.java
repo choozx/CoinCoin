@@ -1,6 +1,6 @@
 package com.jh.coincoin.entity;
 
-import com.jh.coincoin.model.Binance.PositionInfoRes;
+import com.jh.coincoin.model.Binance.BuyResultDto;
 import com.jh.coincoin.model.type.BinanceType.Side;
 import com.jh.coincoin.model.type.BinanceType.Side.SideConverter;
 import com.jh.coincoin.model.type.BinanceType.OrderState;
@@ -70,16 +70,16 @@ public class TradeLogEntity implements Persistable<Long> {
     @Column(name = "`option`")
     private String option;  // 매수 전략에 사용될 값 ex) 물타기 전략-> 물탄 횟수 저장
 
-    public static TradeLogEntity create(PositionInfoRes positionInfoRes, Side side, OrderStrategyType orderStrategyType, BuyStrategyType buyStrategyType) {
+    public static TradeLogEntity create(BuyResultDto buyResultDto) {
         TradeLogEntity entity = new TradeLogEntity();
-        entity.symbol = positionInfoRes.getSymbol();
-        entity.side = side;
+        entity.symbol = buyResultDto.getSymbol();
+        entity.side = buyResultDto.getSide();
         entity.openTime = LocalDateTime.now();
-        entity.orderStrategyType = orderStrategyType;
-        entity.buyStrategyType = buyStrategyType;
+        entity.orderStrategyType = buyResultDto.getOrderStrategyType();
+        entity.buyStrategyType = buyResultDto.getBuyStrategyType();
         entity.orderState = OrderState.NEW;
-        entity.avgPrice = positionInfoRes.getEntryPrice();
-        entity.positionQuantity = Math.abs(positionInfoRes.getPositionAmount());
+        entity.avgPrice = buyResultDto.getEntryPrice();
+        entity.positionQuantity = Math.abs(buyResultDto.getPositionAmount());
         return entity;
     }
 

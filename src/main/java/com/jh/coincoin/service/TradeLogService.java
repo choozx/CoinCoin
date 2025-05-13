@@ -1,14 +1,11 @@
 package com.jh.coincoin.service;
 
 import com.jh.coincoin.entity.TradeLogEntity;
-import com.jh.coincoin.model.Binance.PositionInfoRes;
+import com.jh.coincoin.model.Binance.BuyResultDto;
 import com.jh.coincoin.model.Binance.TradeLogDto;
-import com.jh.coincoin.model.type.BinanceType.Side;
 import com.jh.coincoin.model.type.BinanceType.OrderState;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.ErrorType;
-import com.jh.coincoin.model.type.StrategyType.OrderStrategyType;
-import com.jh.coincoin.model.type.StrategyType.BuyStrategyType;
 import com.jh.coincoin.repo.TradeLogRepository;
 import com.jh.coincoin.support.ServerException;
 import lombok.RequiredArgsConstructor;
@@ -53,8 +50,8 @@ public class TradeLogService {
         tradeLogRepository.saveAndFlush(activePosition);
     }
 
-    public void loggingPosition(PositionInfoRes positionInfoRes, Side side, OrderStrategyType orderStrategyType, BuyStrategyType buyStrategyType) {
-        TradeLogEntity logEntity = TradeLogEntity.create(positionInfoRes, side, orderStrategyType, buyStrategyType);
+    public void loggingPosition(BuyResultDto buyResultDto) {
+        TradeLogEntity logEntity = TradeLogEntity.create(buyResultDto);
         tradeLogRepository.saveAndFlush(logEntity);
     }
 

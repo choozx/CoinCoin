@@ -2,7 +2,7 @@ package com.jh.coincoin.service.strategy.buy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.jh.coincoin.entity.BuyStrategyEntity;
-import com.jh.coincoin.model.Binance.PositionInfoRes;
+import com.jh.coincoin.model.Binance.BuyResultDto;
 import com.jh.coincoin.model.Candle;
 import com.jh.coincoin.model.BackTest.BackTestBuyDto;
 import com.jh.coincoin.model.Strategy.BuyParamDto;
@@ -19,7 +19,7 @@ import java.util.List;
 public interface BuyStrategy {
 
     BuyStrategyType getType();
-    PositionInfoRes buy(BuyParamDto buyParamDto);
+    BuyResultDto buy(BuyParamDto buyParamDto);
     BackTestBuyDto backTestBuy(BuyParamDto buyParamDto, Candle entryCandle);
     List<InputBlock> getInputBlockList();
 

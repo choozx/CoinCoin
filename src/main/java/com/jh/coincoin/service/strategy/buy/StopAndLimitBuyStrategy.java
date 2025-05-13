@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jh.coincoin.entity.BuyStrategyEntity;
+import com.jh.coincoin.model.Binance.BuyResultDto;
 import com.jh.coincoin.model.Binance.CancelOpenOrderReq;
 import com.jh.coincoin.model.Binance.ModifyLeverageReq;
 import com.jh.coincoin.model.Binance.PositionInfoRes;
@@ -26,7 +27,6 @@ import com.jh.coincoin.model.type.BinanceType.Side;
 import com.jh.coincoin.model.type.StrategyType.RiskRewardRatioType;
 import com.jh.coincoin.model.type.StrategyType.BuyStrategyType;
 import com.jh.coincoin.service.SlackMessageService;
-import com.jh.coincoin.service.TradeLogService;
 import com.jh.coincoin.service.external.BinanceAPIService;
 import com.jh.coincoin.service.strategy.buy.calculator.RiskRewardCalculator;
 import com.jh.coincoin.util.BinanceUtil;
@@ -60,7 +60,6 @@ import java.util.stream.Collectors;
 public class StopAndLimitBuyStrategy implements BuyStrategy {
 
     private final BinanceAPIService binanceAPIService;
-    private final TradeLogService tradeLogService;
     private final SlackMessageService slackMessageService;
     private Map<RiskRewardRatioType, RiskRewardCalculator> riskRewardCalculatorMap;
 
@@ -75,7 +74,7 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
     }
 
     @Override
-    public PositionInfoRes buy(BuyParamDto buyParamDto) {
+    public BuyResultDto buy(BuyParamDto buyParamDto) {
         // 1.주문된 상태 체크 redis에서 주문정보 get-> 주문된 상태면 return
         long now = DateTimeUtil.getCurrentTimeMillis();
         Symbol symbol = buyParamDto.getSymbol();
@@ -188,7 +187,12 @@ public class StopAndLimitBuyStrategy implements BuyStrategy {
         // 주문 내용 슬랙에 전송
         slackMessageService.sendMessage(positionInfoRes.toDescription(side));
 
-        return positionInfoRes;
+        return BuyResultDto.builder()
+                .symbol(symbol)
+                .side(side)
+                .entryPrice(entryPrice)
+                .positionAmount(positionInfoRes.getPositionAmount())
+                .build();
     }
 
     @Override

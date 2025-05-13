@@ -1,25 +1,23 @@
 package com.jh.coincoin.service;
 
+import com.jh.coincoin.model.Binance.BuyResultDto;
 import com.jh.coincoin.model.Binance.TradeLogReq;
 import com.jh.coincoin.model.Binance.TradeLogRes;
 import com.jh.coincoin.model.Binance.PositionInfoReq;
 import com.jh.coincoin.model.Binance.TradeLogDto;
 import com.jh.coincoin.model.Binance.PositionInfoRes;
-import com.jh.coincoin.model.Strategy.BuyParamDto;
 import com.jh.coincoin.model.Strategy.OrderStrategyDto;
-import com.jh.coincoin.model.Strategy.BuyStrategyDto;
 import com.jh.coincoin.model.Strategy.TradeStrategyDto;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.BinanceType.Interval;
 import com.jh.coincoin.model.type.BinanceType.Side;
-import com.jh.coincoin.model.type.StrategyType.BuyStrategyType;
 import com.jh.coincoin.model.type.StrategyType.OrderStrategyType;
 import com.jh.coincoin.service.external.BinanceAPIService;
 import com.jh.coincoin.service.strategy.StrategyService;
-import com.jh.coincoin.service.strategy.buy.BuyStrategy;
 import com.jh.coincoin.service.strategy.order.OrderStrategy;
 import com.jh.coincoin.util.DateTimeUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,6 +34,7 @@ import java.util.stream.Collectors;
  * Created by dale on 2024-11-22.
  */
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TradeService {
@@ -44,18 +43,14 @@ public class TradeService {
     private final StrategyService strategyService;
     private final TradeLogService tradeLogService;
     private final BinanceAPIService binanceAPIService;
+    private final BuyService buyService;
+    private final SlackMessageService slackMessageService;
 
     private Map<OrderStrategyType, OrderStrategy> orderStrategyMap;
-    private Map<BuyStrategyType, BuyStrategy> buyStrategyMap;
 
     @Autowired
     public void setOrderStrategyMap(Set<OrderStrategy> orderStrategySet) {
         this.orderStrategyMap = orderStrategySet.stream().collect(Collectors.toMap(OrderStrategy::getType, Function.identity()));
-    }
-
-    @Autowired
-    public void setBuyStrategyMap(Set<BuyStrategy> buyStrategySet) {
-        this.buyStrategyMap = buyStrategySet.stream().collect(Collectors.toMap(BuyStrategy::getType, Function.identity()));
     }
 
     /* 코인 하나당 하나의 전략만 가질 수 있음*/
@@ -75,22 +70,9 @@ public class TradeService {
             Pair<Boolean, Side> hit = orderStrategy.isHit(tradeStrategyDto.getSymbol(), tradeStrategyDto.getInterval(), orderStrategyDto.getTargetValue());
 
             if (hit.getLeft()) {
-                BuyStrategyDto buyStrategyDto = tradeStrategyDto.getBuyStrategy();
-                BuyStrategyType buyStrategyType = buyStrategyDto.getType();
-                BuyStrategy buyStrategy = buyStrategyMap.get(buyStrategyDto.getType());
+                BuyResultDto buyResultDto = buyService.buyPosition(hit.getRight(), tradeStrategyDto);
 
-                Side side = hit.getRight();
-                BuyParamDto buyParamDto = BuyParamDto.builder()
-                        .symbol(tradeStrategyDto.getSymbol())
-                        .side(side)
-                        .interval(tradeStrategyDto.getInterval())
-                        .leverage(buyStrategyDto.getLeverage())
-                        .orderBalanceRatio(buyStrategyDto.getOrderBalanceRatio())
-                        .targetValue(buyStrategyDto.getTargetValue())
-                        .build();
-                PositionInfoRes positionInfoRes = buyStrategy.buy(buyParamDto);   // 새로운 주문 return
-
-                tradeLogService.loggingPosition(positionInfoRes, side, orderStrategyType, buyStrategyType);
+                tradeLogService.loggingPosition(buyResultDto);
             }
         }
     }
@@ -98,6 +80,8 @@ public class TradeService {
     public void positionCheck() {
         long now = DateTimeUtil.getCurrentTimeMillis();
         List<TradeLogDto> loggingActivePositionList = tradeLogService.getActivePositionList();
+        if (loggingActivePositionList.isEmpty())
+            return;
 
         PositionInfoReq positionInfoReq = PositionInfoReq.builder()
                 .timestamp(now)
@@ -118,6 +102,7 @@ public class TradeService {
                     .startTime(startTime)
                     .timestamp(now)
                     .build();
+            log.info("start Time:{}", startTime);
             List<TradeLogRes> tradeLogList = binanceAPIService.getTradeLogList(tradeLogReq);
 
             // 수익률 계산
@@ -130,6 +115,8 @@ public class TradeService {
 
             double avgPrice = tradeLogList.stream().filter(log -> !log.getSide().equals(logDto.getSide())).toList().getFirst().getPrice();
             tradeLogService.closePosition(symbol, avgPrice, pnl, fee);
+
+            slackMessageService.sendMessage(String.format("포시션 종료! [%s] pnl:%.3f fee:%.3f 실제 수익:%.3f", symbol, pnl, fee, pnl-fee));
         }
     }
 

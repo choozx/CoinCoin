@@ -13,6 +13,7 @@ import com.jh.coincoin.model.type.BinanceType.Side;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.BinanceType.TimeInForce;
 import com.jh.coincoin.model.type.BinanceType.TriggerSource;
+import com.jh.coincoin.model.type.StrategyType.OrderStrategyType;
 import com.jh.coincoin.model.type.StrategyType.BuyStrategyType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -253,14 +254,13 @@ public class Binance {
         private Symbol symbol;
         private Long startTime;
         private Long endTime;
-        private Long limit;
         private Long fromId;
+        private Integer limit;
         private Long recvWindow;
         private Long timestamp;
     }
 
     @Getter
-    @Builder
     public static class TradeLogRes {
         private boolean buyer;
         private double commission;
@@ -279,15 +279,15 @@ public class Binance {
 
         public TradeLogRes(Map<String, Object> rawData) {
             this.buyer = (boolean) rawData.get("buyer");
-            this.commission = (double) rawData.get("commission");
+            this.commission = Double.parseDouble((String) rawData.get("commission"));
             this.commissionAsset = (String) rawData.get("commissionAsset");
             this.id = (long) rawData.get("id");
             this.maker = (boolean) rawData.get("maker");
             this.orderId = (long) rawData.get("orderId");
-            this.price = (double) rawData.get("price");
-            this.qty = (double) rawData.get("qty");
-            this.quoteQty = (double) rawData.get("quoteQty");
-            this.realizedPnl = (double) rawData.get("realizedPnl");
+            this.price = Double.parseDouble((String) rawData.get("price"));
+            this.qty = Double.parseDouble((String) rawData.get("qty"));
+            this.quoteQty = Double.parseDouble((String) rawData.get("quoteQty"));
+            this.realizedPnl = Double.parseDouble((String) rawData.get("realizedPnl"));
             this.side = Side.valueOf((String) rawData.get("side"));
             this.positionSide = PositionSide.of((String) rawData.get("positionSide"));
             this.symbol = Symbol.of((String) rawData.get("symbol"));
@@ -349,14 +349,35 @@ public class Binance {
             TradeLogDto dto = new TradeLogDto();
             dto.idx = entity.getIdx();
             dto.symbol = entity.getSymbol();
+            dto.side = entity.getSide();
+            dto.openTime = entity.getOpenTime();
+            dto.closeTime = entity.getCloseTime();
             dto.buyStrategyType = entity.getBuyStrategyType();
             dto.orderState = entity.getOrderState();
             dto.avgPrice = entity.getAvgPrice();
             dto.positionQuantity = entity.getPositionQuantity();
             dto.closePrice = entity.getClosePrice();
             dto.pnl = entity.getPnl();
+            dto.fee = entity.getFee();
             dto.option = entity.getOption();
             return dto;
+        }
+    }
+
+    @Getter
+    @Setter
+    @Builder
+    public static class BuyResultDto {
+        private Symbol symbol;
+        private Side side;
+        private double entryPrice;
+        private double positionAmount;
+        private BuyStrategyType buyStrategyType;
+        private OrderStrategyType orderStrategyType;
+
+        public void setStrategy(BuyStrategyType buyStrategyType, OrderStrategyType orderStrategyType) {
+            this.buyStrategyType = buyStrategyType;
+            this.orderStrategyType = orderStrategyType;
         }
     }
 }
