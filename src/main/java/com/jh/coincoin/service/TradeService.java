@@ -1,5 +1,6 @@
 package com.jh.coincoin.service;
 
+import com.jh.coincoin.model.Binance;
 import com.jh.coincoin.model.Binance.BuyResultDto;
 import com.jh.coincoin.model.Binance.TradeLogReq;
 import com.jh.coincoin.model.Binance.TradeLogRes;
@@ -115,6 +116,12 @@ public class TradeService {
 
             double avgPrice = tradeLogList.stream().filter(log -> !log.getSide().equals(logDto.getSide())).toList().getFirst().getPrice();
             tradeLogService.closePosition(symbol, avgPrice, pnl, fee);
+
+            Binance.CancelOpenOrderReq closeOrder = Binance.CancelOpenOrderReq.builder()
+                    .symbol(symbol)
+                    .timestamp(now)
+                    .build();
+            binanceAPIService.closeOpenOrder(closeOrder);
 
             slackMessageService.sendMessage(String.format("포시션 종료! [%s] pnl:%.3f fee:%.3f 실제 수익:%.3f", symbol, pnl, fee, pnl-fee));
         }
