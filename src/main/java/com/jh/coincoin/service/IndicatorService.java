@@ -38,7 +38,6 @@ public class IndicatorService {
         this.indicatorServiceMap = indicatorSet.stream().collect(Collectors.toMap(Indicator::getType, Function.identity()));
     }
 
-    // FIXME Double result = indicator.getLastFigure(symbol, interval); 리턴값 수정해야됨... 꼭 double이 아닐지도 모름, ex) 볼린져밴드
     public void detectIndicator(Interval interval) {
         List<IndicatorType> indicatorList = adminService.getTrackingIndicatorList();
         List<Symbol> symbolList = adminService.getTrackingSymbolList();
@@ -54,10 +53,8 @@ public class IndicatorService {
             List<TextObject> resultBlockList = new ArrayList<>();
             for (Symbol symbol : symbolList) {
                 Indicator indicator = indicatorServiceMap.get(indicatorType);
-                Double result = indicator.getLastValue(symbol, interval);
-
-                if (indicator.isDetectLastValue(result)) {
-                    TextObject text = indicator.wrappingMessage(symbol, result);
+                if (indicator.isDetectLastValue(symbol, interval)) {
+                    TextObject text = indicator.wrappingMessage(symbol, interval);
                     resultBlockList.add(text);
                 }
             }

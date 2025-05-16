@@ -27,10 +27,10 @@ public abstract class Indicator {
     protected final CandleService candleService;
     protected final IndicatorRepository indicatorRepository;
     protected final IndicatorBatchRepository indicatorBatchRepository;
+
     public abstract IndicatorType getType();
-    public abstract Double getLastValue(Symbol symbol, Interval interval);
-    public abstract TextObject wrappingMessage(Symbol symbol, Double result);
-    public abstract boolean isDetectLastValue(Double result);
+    public abstract TextObject wrappingMessage(Symbol symbol, Interval interval);
+    public abstract boolean isDetectLastValue(Symbol symbol, Interval interval);
     public abstract void update(Symbol symbol, Interval interval);
 
     protected Map<Long, IndicatorEntity> getIndicatorEntityMap(IndicatorType type, Symbol symbol, Interval interval, long begin, long end) {

@@ -43,7 +43,6 @@ public class RSIIndicator extends Indicator {
         return IndicatorType.RSI;
     }
 
-    @Override
     public Double getLastValue(Symbol symbol, Interval interval) {
         RSIKey rsiKey = new RSIKey(symbol, interval);
 
@@ -52,14 +51,16 @@ public class RSIIndicator extends Indicator {
     }
 
     @Override
-    public TextObject wrappingMessage(Symbol symbol, Double result) {
+    public TextObject wrappingMessage(Symbol symbol, Interval interval) {
+        Double result = getLastValue(symbol, interval);
         return MarkdownTextObject.builder()
                 .text(String.format("*[%s]* : %.2f", symbol, result))
                 .build();
     }
 
     @Override
-    public boolean isDetectLastValue(Double result) {
+    public boolean isDetectLastValue(Symbol symbol, Interval interval) {
+        Double result = getLastValue(symbol, interval);
         return result <= rsiValuePair.getLeft() || result >= rsiValuePair.getRight();
     }
 
