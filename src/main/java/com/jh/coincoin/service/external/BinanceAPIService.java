@@ -15,6 +15,7 @@ import com.jh.coincoin.model.Binance.AccountBalanceReq;
 import com.jh.coincoin.model.Binance.NewOrderRes;
 import com.jh.coincoin.model.Binance.NewOrderReq;
 import com.jh.coincoin.model.Binance.PositionInfoRes;
+import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.BinanceType.BinanceURL;
 import com.jh.coincoin.model.type.ErrorType;
 import com.jh.coincoin.support.ServerException;
@@ -72,6 +73,9 @@ public class BinanceAPIService {
 
         List<PositionInfoRes> positionInfoList = new ArrayList<>();
         for (var rawData : rawDataList) {
+            if (!Symbol.isContain((String) rawData.get("symbol")))
+                continue;
+
             PositionInfoRes positionInfo = new PositionInfoRes(rawData);
             positionInfoList.add(positionInfo);
         }

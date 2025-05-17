@@ -49,6 +49,10 @@ public class BinanceType {
                     .orElseThrow(() -> new ServerException(ErrorType.COMMON_FAIL, "등록되지 않은 코인"));
         }
 
+        public static boolean isContain(String name) {
+            return Arrays.stream(values()).anyMatch(symbol -> symbol.name.equals(name));
+        }
+
         @Override
         public Integer getCode() {
             return code;
