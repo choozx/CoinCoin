@@ -4,7 +4,6 @@ import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.BinanceType.Symbol.SymbolConverter;
 import com.jh.coincoin.model.type.IndicatorType;
 import com.jh.coincoin.model.type.IndicatorType.IndicatorConverter;
-import jakarta.annotation.PostConstruct;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,15 +16,13 @@ import org.springframework.data.domain.Persistable;
 @Entity
 @Getter
 @NoArgsConstructor
-@Table(name = "indicator")
-public class IndicatorEntity implements Persistable<Long> {
+@Table(name = "rsi_indicator")
+public class RsiIndicatorEntity implements Persistable<Long> {
 
     @Id
     @Column(name = "idx")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long idx;
-    @Column(name = "type") @Convert(converter = IndicatorConverter.class)
-    private IndicatorType type;
     @Column(name = "symbol") @Convert(converter = SymbolConverter.class)
     private Symbol symbol;
     @Column(name = "`interval`")
@@ -33,19 +30,10 @@ public class IndicatorEntity implements Persistable<Long> {
     @Column(name = "open_time")
     private long openTime;
     @Column(name = "`value`")
-    private String value;           // DB 저장용 지표값
+    private double value;           // DB 저장용 지표값
 
-    @Transient
-    private String[] valueArray;    // 앱에서 사용할 지표값
-
-    @PostLoad
-    public void init() {
-        valueArray = value.split("\\|");
-    }
-
-    public static IndicatorEntity create(IndicatorType type, Symbol symbol, int interval, long openTime, String value) {
-        IndicatorEntity entity = new IndicatorEntity();
-        entity.type = type;
+    public static RsiIndicatorEntity create(Symbol symbol, int interval, long openTime, double value) {
+        RsiIndicatorEntity entity = new RsiIndicatorEntity();
         entity.symbol = symbol;
         entity.interval = interval;
         entity.openTime = openTime;

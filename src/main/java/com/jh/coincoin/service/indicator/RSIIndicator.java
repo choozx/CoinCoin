@@ -1,12 +1,12 @@
 package com.jh.coincoin.service.indicator;
 
-import com.jh.coincoin.entity.IndicatorEntity;
+import com.jh.coincoin.entity.RsiIndicatorEntity;
 import com.jh.coincoin.model.Candle;
 import com.jh.coincoin.model.consts.GlobalConst;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.BinanceType.Interval;
 import com.jh.coincoin.model.type.IndicatorType;
-import com.jh.coincoin.repo.IndicatorRepository;
+import com.jh.coincoin.repo.RsiIndicatorRepository;
 import com.jh.coincoin.repo.jdbc.IndicatorBatchRepository;
 import com.jh.coincoin.service.CandleService;
 import com.jh.coincoin.util.DateTimeUtil;
@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Created by dale on 2024-09-11.
@@ -27,8 +29,11 @@ import java.util.*;
 @Service
 public class RSIIndicator extends Indicator {
 
-    public RSIIndicator(CandleService candleService, IndicatorRepository indicatorRepository, IndicatorBatchRepository indicatorBatchRepository) {
-        super(candleService, indicatorRepository, indicatorBatchRepository);
+    private final RsiIndicatorRepository rsiIndicatorRepository;
+
+    public RSIIndicator(CandleService candleService, IndicatorBatchRepository indicatorBatchRepository, RsiIndicatorRepository rsiIndicatorRepository) {
+        super(candleService, indicatorBatchRepository);
+        this.rsiIndicatorRepository = rsiIndicatorRepository;
     }
 
     record RSIKey(Symbol symbol, Interval interval) { }
@@ -83,7 +88,7 @@ public class RSIIndicator extends Indicator {
     }
 
     public TreeMap<Long, Double> getValueMap(Symbol symbol, Interval interval, long begin, long end) {
-        Map<Long, IndicatorEntity> indicatorEntityMap = getIndicatorEntityMap(IndicatorType.RSI, symbol, interval, begin, end);
+        Map<Long, RsiIndicatorEntity> indicatorEntityMap = getRsiIndicatorEntityMap(symbol, interval, begin, end);
 
         long beginTime = adjustBeginTime(begin, interval); // rsi값을 구하기 위해서는 200개의 캔들이 필요
         // FIXME 아마 추후에는 getCandleMap으로 바꿔야함 ex) 처음은 redis에서 캔들 검색 -> 없으면 db에서 가져오기
@@ -91,7 +96,7 @@ public class RSIIndicator extends Indicator {
 
         Deque<Candle> deque = new ArrayDeque<>();
         TreeMap<Long, Double> rsiMap = new TreeMap<>();
-        List<IndicatorEntity> newIndicatorEntityList = new ArrayList<>();
+        List<RsiIndicatorEntity> newRsiIndicatorEntityList = new ArrayList<>();
         for (var entry : candleMap.entrySet()) {
             deque.offer(entry.getValue());
 
@@ -102,11 +107,11 @@ public class RSIIndicator extends Indicator {
 
             double rsi;
             if (indicatorEntityMap.containsKey(openTime)) {
-                String[] rsiString = indicatorEntityMap.get(openTime).getValueArray();
-                rsi = Double.parseDouble(rsiString[0]);
+                RsiIndicatorEntity entity = indicatorEntityMap.get(openTime);
+                rsi = entity.getValue();
             } else {
                 rsi = formula(deque);
-                newIndicatorEntityList.add(IndicatorEntity.create(IndicatorType.RSI, symbol, interval.getMinute(), openTime, String.format("%.2f", rsi)));
+                newRsiIndicatorEntityList.add(RsiIndicatorEntity.create(symbol, interval.getMinute(), openTime, rsi));
             }
 
             rsiMap.put(openTime, rsi);
@@ -114,14 +119,21 @@ public class RSIIndicator extends Indicator {
             deque.poll();
         }
 
-        if (!newIndicatorEntityList.isEmpty())
-            indicatorBatchRepository.bulkInsert(newIndicatorEntityList);
+        if (!newRsiIndicatorEntityList.isEmpty())
+            indicatorBatchRepository.bulkInsert(newRsiIndicatorEntityList);
 
         return rsiMap;
     }
 
     public void changeRSIValue(double low, double high) {
         rsiValuePair = Pair.of(low, high);
+    }
+
+    private Map<Long, RsiIndicatorEntity> getRsiIndicatorEntityMap(Symbol symbol, Interval interval, long begin, long end) {
+        long ceil = DateTimeUtil.ceilToInterval(begin, interval.getMinute());
+        long floor = DateTimeUtil.floorToInterval(end, interval.getMinute());
+        List<RsiIndicatorEntity> rsiIndicatorEntityList = rsiIndicatorRepository.findAllBySymbolAndIntervalAndOpenTimeBetween(symbol, interval.getMinute(), ceil, floor);
+        return rsiIndicatorEntityList.stream().collect(Collectors.toMap(RsiIndicatorEntity::getOpenTime, Function.identity()));
     }
 
     private long adjustBeginTime(long begin, Interval interval) {

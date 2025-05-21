@@ -1,21 +1,13 @@
 package com.jh.coincoin.service.indicator;
 
 
-import com.jh.coincoin.entity.IndicatorEntity;
 import com.jh.coincoin.model.type.BinanceType.Symbol;
 import com.jh.coincoin.model.type.BinanceType.Interval;
 import com.jh.coincoin.model.type.IndicatorType;
-import com.jh.coincoin.repo.IndicatorRepository;
 import com.jh.coincoin.repo.jdbc.IndicatorBatchRepository;
 import com.jh.coincoin.service.CandleService;
-import com.jh.coincoin.util.DateTimeUtil;
 import com.slack.api.model.block.composition.TextObject;
 import lombok.RequiredArgsConstructor;
-
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Created by dale on 2024-09-11.
@@ -25,19 +17,11 @@ import java.util.stream.Collectors;
 public abstract class Indicator {
 
     protected final CandleService candleService;
-    protected final IndicatorRepository indicatorRepository;
     protected final IndicatorBatchRepository indicatorBatchRepository;
 
     public abstract IndicatorType getType();
     public abstract TextObject wrappingMessage(Symbol symbol, Interval interval);
     public abstract boolean isDetectLastValue(Symbol symbol, Interval interval);
     public abstract void update(Symbol symbol, Interval interval);
-
-    protected Map<Long, IndicatorEntity> getIndicatorEntityMap(IndicatorType type, Symbol symbol, Interval interval, long begin, long end) {
-        long ceil = DateTimeUtil.ceilToInterval(begin, interval.getMinute());
-        long floor = DateTimeUtil.floorToInterval(end, interval.getMinute());
-        List<IndicatorEntity> indicatorEntityList = indicatorRepository.findAllByTypeAndSymbolAndIntervalAndOpenTimeBetween(type, symbol, interval.getMinute(), ceil, floor);
-        return indicatorEntityList.stream().collect(Collectors.toMap(IndicatorEntity::getOpenTime, Function.identity()));
-    }
 
 }

@@ -1,6 +1,7 @@
 package com.jh.coincoin.repo.jdbc;
 
-import com.jh.coincoin.entity.IndicatorEntity;
+import com.jh.coincoin.entity.RsiIndicatorEntity;
+import com.jh.coincoin.model.type.IndicatorType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -22,13 +23,18 @@ public class IndicatorBatchRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
-    public void bulkInsert(List<IndicatorEntity> indicatorEntityList) {
-        String sql = "INSERT INTO indicator (type, open_time, symbol, `interval`, value) VALUES (?,?,?,?,?)";
-        List<Object[]> batchArgs = indicatorEntityList.stream()
-                .map(indicator -> new Object[]{indicator.getType().getCode(), indicator.getOpenTime(), indicator.getSymbol().getCode(), indicator.getInterval(), indicator.getValue()}).toList();
+    public void bulkInsert(List<RsiIndicatorEntity> rsiIndicatorEntityList) {
+        String sql = "INSERT INTO indicator (open_time, symbol, `interval`, value) VALUES (?,?,?,?)";
+        List<Object[]> batchArgs = rsiIndicatorEntityList.stream()
+                .map(indicator -> new Object[]{indicator.getOpenTime(), indicator.getSymbol().getCode(), indicator.getInterval(), indicator.getValue()}).toList();
 
-        var firstIndicatorEntity = indicatorEntityList.get(0);
+        var firstIndicatorEntity = rsiIndicatorEntityList.get(0);
         jdbcTemplate.batchUpdate(sql, batchArgs);
-        log.info("지표 업데이트 {} : {} : {}", firstIndicatorEntity.getType(), firstIndicatorEntity.getInterval(), indicatorEntityList.size());
+
+        consoleLog(IndicatorType.RSI, firstIndicatorEntity.getInterval(), batchArgs.size());
+    }
+
+    private void consoleLog(IndicatorType type, int interval, int updateIndicatorCount) {
+        log.info("지표 업데이트 {} : {} : {}", type, interval, updateIndicatorCount);
     }
 }
