@@ -13,6 +13,7 @@ import java.util.Arrays;
  */
 public enum IndicatorType implements CodeEnum<Integer> {
     RSI(1, "rsi"),
+    EMA(2, "ema"),
     ;
 
     private final int code;
